@@ -17,5 +17,5 @@ func main() {
 }
 
 func handlePing(ctx *gin.Context) {
-	ctx.JSON(http.StatusNotFound, gin.H{"message": "pong"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
