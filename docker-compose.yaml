@@ -5,8 +5,27 @@ services:
       context: . 
       dockerfile: docker/deploy/Dockerfile
     restart: unless-stopped
+    depends_on:
+      - postgres
     command: sh -c "./wait && ./bin/app"
     ports:
       - 8080:8080
+
+  postgres:
+    container_name: aucto-db-1
+    platform: linux/x86_64
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auctodb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  
+volumes:
+  postgres_data:
 
     
