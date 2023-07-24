@@ -3,7 +3,6 @@ services:
     container_name: backend-API-Aucto
     build:
       context: . 
-      dockerfile: docker/deploy/Dockerfile
     restart: unless-stopped
     depends_on:
       - postgres
