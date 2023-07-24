@@ -1,0 +1,37 @@
+services:
+  app:
+    container_name: backend-API-Aucto
+    build:
+      context: . 
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    command: sh -c "./wait && ./bin/app"
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    environment:
+      - WAIT_HOSTS=POSTGRES:5432
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=10
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+
+  postgres:
+    container_name: aucto-db-1
+    platform: linux/x86_64
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auctodb
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+  
+volumes:
+  postgres_data:
+
+    
