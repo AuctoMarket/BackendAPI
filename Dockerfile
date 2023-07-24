@@ -14,6 +14,4 @@ COPY . .
 
 RUN go build -o bin/app cmd/web/*.go
 
-EXPOSE 8080
-
 CMD ["./bin/app"]
