@@ -1,6 +1,7 @@
 package main
 
 import (
+	"BackendAPI/api/buyer"
 	"BackendAPI/store"
 
 	"fmt"
@@ -22,8 +23,19 @@ func main() {
 
 	defer store.CloseDB(db)
 
-	// ping
-	router.GET("/ping", handlePing)
+	apiGroup := router.Group("/api/v1")
+	{
+		buyerGroup := apiGroup.Group("/buyer")
+		{
+			buyerGroup.POST("/login", buyer.HandleBuyerLogin)
+			buyerGroup.POST("/signup", buyer.HandleBuyerSignUp)
+		}
+
+		testGroup := apiGroup.Group("/test")
+		{
+			testGroup.GET("/ping", handlePing)
+		}
+	}
 
 	router.Run(":8080")
 
