@@ -58,7 +58,6 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 		host, port, user, password, dbname)
 
 	db, err := sql.Open("postgres", postgresqlDbInfo)
-
 	if err != nil {
 		return db, err
 	}
