@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -35,7 +36,7 @@ func SetupDB() (*sql.DB, error) {
 		return db, err
 	}
 
-	fmt.Println("Established a successful connection!")
+	log.Println("Established a successful connection!")
 
 	err = CreateTables(db)
 
@@ -43,7 +44,7 @@ func SetupDB() (*sql.DB, error) {
 		return db, err
 	}
 
-	fmt.Println("Tables Created Successfully!")
+	log.Println("Tables Created Successfully!")
 
 	return db, nil
 }

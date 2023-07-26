@@ -35,10 +35,9 @@ func installExtensions(db *sql.DB) error {
 
 func createBuyersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS Buyers(
-		buid uuid DEFAULT uuid_generate_v1(),
+		buid uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		salt VARCHAR NOT NULL,
 		PRIMARY KEY(buid));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -47,10 +46,9 @@ func createBuyersTable(db *sql.DB) error {
 
 func createSellersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS Sellers(
-		suid uuid DEFAULT uuid_generate_v1(),
+		suid uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		salt VARCHAR NOT NULL,
 		PRIMARY KEY(suid));`
 
 	_, err := db.ExecContext(context.Background(), query)
