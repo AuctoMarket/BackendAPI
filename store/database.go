@@ -67,7 +67,7 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 		return db, err
 	}
 
-	fmt.Println("Established a successful connection!")
+	log.Println("Established a successful connection!")
 
 	err = createTables(db)
 
