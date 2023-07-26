@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -28,11 +28,12 @@ Compare passwords takes in the string hashed pwd and converts
 it to a []byte and compares the plaintext and the ciphertext to
 see wether they are equivalent.
 */
-func ComparePasswords(hashedPwd string, plainPwd []byte) bool {
+func ComparePasswords(hashedPwd string, plainPwd string) bool {
+	bytePlaintext := []byte(plainPwd)
 	byteHash := []byte(hashedPwd)
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+	err := bcrypt.CompareHashAndPassword(byteHash, bytePlaintext)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return false
 	}
 

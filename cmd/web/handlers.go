@@ -34,7 +34,22 @@ func handleBuyerLogin(c *gin.Context) {
 Handles error and API response for the Sign Up API for buyers
 */
 func handleBuyerSignUp(c *gin.Context) {
+	var signUpData data.SignUpData
+	err := c.ShouldBindJSON(&signUpData)
 
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
+		return
+	}
+
+	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, &signUpResponse)
 }
 
 /*

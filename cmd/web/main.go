@@ -9,19 +9,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var Db *sql.DB
+var db *sql.DB
 
 func main() {
 
 	//Setup Router and Database Connection
 	router := gin.Default()
-	Db, err := store.SetupDB()
+	var err error
+
+	db, err = store.SetupDB()
 
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
 	}
-
-	defer store.CloseDB(Db)
 
 	apiGroup := router.Group("/api/v1")
 	{
@@ -39,4 +39,5 @@ func main() {
 
 	router.Run(":8080")
 
+	defer store.CloseDB(db)
 }
