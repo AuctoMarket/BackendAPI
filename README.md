@@ -28,3 +28,4 @@ Considerations made are:
 ### API Documentation
 
 This project used swagger to document the various api endpoints and the swagger docs can be found at `http://localhost:8080/api/v1/swagger/index.html` when the project is run.
+
