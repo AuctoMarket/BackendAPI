@@ -16,7 +16,7 @@ func handleBuyerLogin(c *gin.Context) {
 	err := c.ShouldBindJSON(&loginData)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
@@ -38,7 +38,7 @@ func handleBuyerSignUp(c *gin.Context) {
 	err := c.ShouldBindJSON(&signUpData)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
@@ -49,7 +49,7 @@ func handleBuyerSignUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &signUpResponse)
+	c.JSON(http.StatusCreated, &signUpResponse)
 }
 
 /*
