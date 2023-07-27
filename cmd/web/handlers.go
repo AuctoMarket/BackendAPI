@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 // handleBuyerLogin godoc
 // @Summary      Logs a buyer into their account
 // @Description  Checks to see if a user email exists and if supplied password matches the stored password

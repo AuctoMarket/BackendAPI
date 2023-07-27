@@ -24,3 +24,5 @@ Aucto backend runs a Postgres Database Layer with the following ER Diagram:
 
 Considerations made are:
 - Reducing data dependance using Table Normalisation techniques.
+
+
