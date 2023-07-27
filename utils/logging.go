@@ -7,8 +7,7 @@ import (
 /*
 Logs internal server errors and returns sanitized error response
 */
-func LogInternalServerError(msg string, err error) *ErrorHandler {
+func LogError(err error, msg string) {
 	log.Println(msg)
 	log.Println(err)
-	return InternalServerError()
 }
