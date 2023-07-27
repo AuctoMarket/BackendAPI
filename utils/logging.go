@@ -1,15 +1,14 @@
 package utils
 
 import (
-	"errors"
 	"log"
 )
 
 /*
 Logs internal server errors and returns sanitized error response
 */
-func LogError(msg string, err error) error {
+func LogInternalServerError(msg string, err error) *ErrorHandler {
 	log.Println(msg)
 	log.Println(err)
-	return errors.New("Something went wrong")
+	return InternalServerError()
 }
