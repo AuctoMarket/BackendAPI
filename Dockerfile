@@ -12,6 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o bin/app cmd/web/*.go
+RUN go build -tags=jsoniter -o bin/app cmd/web/*.go 
 
 CMD ["./bin/app"]
+

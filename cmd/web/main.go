@@ -1,48 +1,43 @@
 package main
 
 import (
+	"BackendAPI/store"
 	"database/sql"
-	"fmt"
-	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
 
+var db *sql.DB
+
 func main() {
 
+	//Setup Router and Database Connection
 	router := gin.Default()
+	var err error
 
-	const (
-		host     = "aucto-db-1"
-		port     = 5432
-		user     = "user"
-		password = "password"
-		dbname   = "auctodb"
-	)
+	db, err = store.SetupDB()
 
-	postgresqlDbInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-
-	db, err := sql.Open("postgres", postgresqlDbInfo)
 	if err != nil {
-		panic(err)
+		log.Println("Could not connect to the database:", err)
 	}
-	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		panic(err)
+	apiGroup := router.Group("/api/v1")
+	{
+		buyerGroup := apiGroup.Group("/buyer")
+		{
+			buyerGroup.POST("/login", handleBuyerLogin)
+			buyerGroup.POST("/signup", handleBuyerSignUp)
+		}
+
+		testGroup := apiGroup.Group("/test")
+		{
+			testGroup.GET("/ping", handlePing)
+		}
 	}
-	fmt.Println("Established a successful connection!")
-
-	// ping
-	router.GET("/ping", handlePing)
 
 	router.Run(":8080")
-}
 
-func handlePing(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+	defer store.CloseDB(db)
 }
