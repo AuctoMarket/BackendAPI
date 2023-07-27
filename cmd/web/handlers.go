@@ -32,6 +32,11 @@ func handleBuyerLogin(c *gin.Context) {
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
+	if err != nil && err.Error() == "Something went wrong" {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+
 	if err != nil {
 		r := data.Message{Message: err.Error()}
 		c.JSON(err.ErrorCode(), r)
@@ -64,6 +69,11 @@ func handleBuyerSignUp(c *gin.Context) {
 	}
 
 	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
+
+	if err != nil && err.Error() == "Something went wrong" {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}
