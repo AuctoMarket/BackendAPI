@@ -13,22 +13,17 @@ Handles error and API response for the Login API for buyers
 */
 func handleBuyerLogin(c *gin.Context) {
 	var loginData data.LoginData
-	err := c.ShouldBindJSON(&loginData)
+	bindErr := c.ShouldBindJSON(&loginData)
 
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
+	if bindErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
 		return
 	}
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
 		return
 	}
 
@@ -40,22 +35,17 @@ Handles error and API response for the Sign Up API for buyers
 */
 func handleBuyerSignUp(c *gin.Context) {
 	var signUpData data.SignUpData
-	err := c.ShouldBindJSON(&signUpData)
+	bindErr := c.ShouldBindJSON(&signUpData)
 
-	if err != nil {
+	if bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
 	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
 
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
 		return
 	}
 
