@@ -15,3 +15,4 @@ COPY . .
 RUN go build -tags=jsoniter -o bin/app cmd/web/*.go 
 
 CMD ["./bin/app"]
+

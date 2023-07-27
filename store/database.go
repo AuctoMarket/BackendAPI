@@ -23,7 +23,7 @@ func SetupDB() (*sql.DB, error) {
 
 	log.Println("Established a successful connection!")
 
-	err = CreateTables(db)
+	err = createTables(db)
 
 	if err != nil {
 		return db, err
@@ -137,7 +137,7 @@ func SetupTestDB() (*sql.DB, error) {
 
 	log.Println("Established a successful connection!")
 
-	err = CreateTables(db)
+	err = createTables(db)
 
 	if err != nil {
 		return db, err
