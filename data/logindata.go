@@ -11,6 +11,6 @@ type SignUpData struct {
 }
 
 type LoginResponseData struct {
-	Email string `json:"email"`
-	BUID  string `json:"buid"`
+	Email    string `json:"email"`
+	Buyer_id string `json:"buyer_id"`
 }

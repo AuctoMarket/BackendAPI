@@ -1,0 +1,95 @@
+definitions:
+  data.LoginResponseData:
+    properties:
+      buid:
+        type: string
+      email:
+        type: string
+    type: object
+  data.Message:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /buyer/login/:
+    post:
+      consumes:
+      - application/json
+      description: Checks to see if a user email exists and if supplied password matches
+        the stored password
+      parameters:
+      - description: email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.LoginResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Logs a buyer into their account
+  /buyer/signup/:
+    post:
+      consumes:
+      - application/json
+      description: Checks to see if a user email exists and if not creates a new account
+        with supplied email and password
+      parameters:
+      - description: email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.LoginResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Signs a new buyer up
+swagger: "2.0"
