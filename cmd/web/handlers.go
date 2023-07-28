@@ -35,8 +35,9 @@ Handles error and API response for the Login API for buyers
 */
 func handleBuyerLogin(c *gin.Context) {
 	var loginData data.LoginData
-	err := c.ShouldBindJSON(&loginData)
+	bindErr := c.ShouldBindJSON(&loginData)
 
+<<<<<<< HEAD
 	if err != nil {
 <<<<<<< HEAD
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
@@ -44,23 +45,26 @@ func handleBuyerLogin(c *gin.Context) {
 =======
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 >>>>>>> 0b4235d (Changer Status to 201, Update error msg)
+=======
+	if bindErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
+>>>>>>> c9cf9e0 (Update Error Handling)
 		return
 	}
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	if err != nil {
+<<<<<<< HEAD
 <<<<<<< HEAD
 		r := data.Message{Message: err.Error()}
 		c.JSON(err.ErrorCode(), r)
 =======
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
+>>>>>>> c9cf9e0 (Update Error Handling)
 		return
 	}
 
@@ -105,25 +109,24 @@ Handles error and API response for the Sign Up API for buyers
 */
 func handleBuyerSignUp(c *gin.Context) {
 	var signUpData data.SignUpData
-	err := c.ShouldBindJSON(&signUpData)
+	bindErr := c.ShouldBindJSON(&signUpData)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 005bc68 (Add login and signup API)
 =======
 	if err != nil {
+=======
+	if bindErr != nil {
+>>>>>>> c9cf9e0 (Update Error Handling)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
 	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
 
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
 		return
 	}
 
