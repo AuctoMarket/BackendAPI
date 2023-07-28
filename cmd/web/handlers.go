@@ -9,7 +9,10 @@ import (
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 // handleBuyerLogin godoc
 // @Summary      Logs a buyer into their account
 // @Description  Checks to see if a user email exists and if supplied password matches the stored password
@@ -22,6 +25,7 @@ import (
 // @Failure      401  {object}  data.Message
 // @Failure      500  {object}  data.Message
 // @Router       /buyer/login/ [post]
+<<<<<<< HEAD
 func handleBuyerLogin(c *gin.Context) {
 	var loginData data.LoginData
 	bindErr := c.ShouldBindJSON(&loginData)
@@ -33,6 +37,8 @@ func handleBuyerLogin(c *gin.Context) {
 /*
 Handles error and API response for the Login API for buyers
 */
+=======
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 func handleBuyerLogin(c *gin.Context) {
 	var loginData data.LoginData
 	bindErr := c.ShouldBindJSON(&loginData)
@@ -48,18 +54,24 @@ func handleBuyerLogin(c *gin.Context) {
 >>>>>>> 0b4235d (Changer Status to 201, Update error msg)
 =======
 	if bindErr != nil {
+<<<<<<< HEAD
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
 >>>>>>> c9cf9e0 (Update Error Handling)
 =======
 	if bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 		return
 	}
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
 	if err != nil {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -74,6 +86,10 @@ func handleBuyerLogin(c *gin.Context) {
 =======
 		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 		return
 	}
 
@@ -81,6 +97,9 @@ func handleBuyerLogin(c *gin.Context) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 // handleBuyerSignup godoc
 // @Summary      Signs a new buyer up
 // @Description  Checks to see if a user email exists and if not creates a new account with supplied email and password
@@ -93,6 +112,7 @@ func handleBuyerLogin(c *gin.Context) {
 // @Failure      401  {object}  data.Message
 // @Failure      500  {object}  data.Message
 // @Router       /buyer/signup/ [post]
+<<<<<<< HEAD
 func handleBuyerSignUp(c *gin.Context) {
 	var signUpData data.SignUpData
 	bindErr := c.ShouldBindJSON(&signUpData)
@@ -116,6 +136,8 @@ func handleBuyerSignUp(c *gin.Context) {
 /*
 Handles error and API response for the Sign Up API for buyers
 */
+=======
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 func handleBuyerSignUp(c *gin.Context) {
 	var signUpData data.SignUpData
 	bindErr := c.ShouldBindJSON(&signUpData)
@@ -128,18 +150,24 @@ func handleBuyerSignUp(c *gin.Context) {
 	if err != nil {
 =======
 	if bindErr != nil {
+<<<<<<< HEAD
 >>>>>>> c9cf9e0 (Update Error Handling)
 =======
 	if bindErr != nil {
 >>>>>>> 3a877cd (Update Error Handling)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
+=======
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 		return
 	}
 
 	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
 
 	if err != nil {
-		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
 		return
 	}
 

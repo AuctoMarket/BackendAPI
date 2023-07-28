@@ -2,12 +2,18 @@ package main
 
 import (
 <<<<<<< HEAD
+<<<<<<< HEAD
 	_ "BackendAPI/docs"
 	"BackendAPI/store"
 
 =======
 	"BackendAPI/store"
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+	_ "BackendAPI/docs"
+	"BackendAPI/store"
+
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 	"database/sql"
 	"log"
 
@@ -28,6 +34,7 @@ var db *sql.DB
 
 // @host      localhost:8080
 // @BasePath  /api/v1
+<<<<<<< HEAD
 =======
 var Db *sql.DB
 =======
@@ -35,6 +42,8 @@ var db *sql.DB
 >>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+>>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
 func main() {
 
 	//Setup Router and Database Connection
