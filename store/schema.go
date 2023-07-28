@@ -44,10 +44,10 @@ Create the table for Buyers
 */
 func createBuyersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS buyers(
-		buid uuid DEFAULT uuid_generate_v1() NOT NULL,
+		buyer_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		PRIMARY KEY(buid));`
+		PRIMARY KEY(buyer_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err
@@ -58,10 +58,10 @@ Create the table for Sellers
 */
 func createSellersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS sellers(
-		suid uuid DEFAULT uuid_generate_v1() NOT NULL,
+		seller_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		PRIMARY KEY(suid));`
+		PRIMARY KEY(seller_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err
