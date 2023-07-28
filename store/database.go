@@ -4,9 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 <<<<<<< HEAD
+<<<<<<< HEAD
 	"log"
 =======
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+	"log"
+>>>>>>> 005bc68 (Add login and signup API)
 	"os"
 	"strconv"
 
@@ -86,7 +90,7 @@ func SetupDB() (*sql.DB, error) {
 		return db, err
 	}
 
-	fmt.Println("Established a successful connection!")
+	log.Println("Established a successful connection!")
 
 	err = CreateTables(db)
 >>>>>>> 4a39705 (Add .env file & Read .env code)
@@ -95,6 +99,7 @@ func SetupDB() (*sql.DB, error) {
 		return db, err
 	}
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 	return db, nil
 }
@@ -115,6 +120,9 @@ Function to Close the DB connection
 */
 =======
 	fmt.Println("Tables Created Successfully!")
+=======
+	log.Println("Tables Created Successfully!")
+>>>>>>> 005bc68 (Add login and signup API)
 
 	return db, nil
 }

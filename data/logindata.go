@@ -11,6 +11,11 @@ type SignUpData struct {
 }
 
 type LoginResponseData struct {
+<<<<<<< HEAD
 	Email    string `json:"email"`
 	Buyer_id string `json:"buyer_id"`
+=======
+	Email string `json:"email"`
+	BUID  string `json:"buid"`
+>>>>>>> 005bc68 (Add login and signup API)
 }

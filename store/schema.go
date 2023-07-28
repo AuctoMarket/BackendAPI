@@ -58,11 +58,14 @@ func createBuyersTable(db *sql.DB) error {
 =======
 func createBuyersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS Buyers(
-		buid uuid DEFAULT uuid_generate_v1(),
+		buid uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
+<<<<<<< HEAD
 		salt VARCHAR NOT NULL,
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> 005bc68 (Add login and signup API)
 		PRIMARY KEY(buid));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -81,11 +84,14 @@ func createSellersTable(db *sql.DB) error {
 =======
 func createSellersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS Sellers(
-		suid uuid DEFAULT uuid_generate_v1(),
+		suid uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
+<<<<<<< HEAD
 		salt VARCHAR NOT NULL,
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> 005bc68 (Add login and signup API)
 		PRIMARY KEY(suid));`
 
 	_, err := db.ExecContext(context.Background(), query)

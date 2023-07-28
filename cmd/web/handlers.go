@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+<<<<<<< HEAD
 
 // handleBuyerLogin godoc
 // @Summary      Logs a buyer into their account
@@ -28,20 +29,36 @@ func handleBuyerLogin(c *gin.Context) {
 	if bindErr != nil {
 		r := data.Message{Message: "Bad Request Body"}
 		c.JSON(http.StatusBadRequest, r)
+=======
+/*
+Handles error and API response for the Login API for buyers
+*/
+func handleBuyerLogin(c *gin.Context) {
+	var loginData data.LoginData
+	err := c.ShouldBindJSON(&loginData)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
+>>>>>>> 005bc68 (Add login and signup API)
 		return
 	}
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
 	if err != nil {
+<<<<<<< HEAD
 		r := data.Message{Message: err.Error()}
 		c.JSON(err.ErrorCode(), r)
+=======
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+>>>>>>> 005bc68 (Add login and signup API)
 		return
 	}
 
 	c.JSON(http.StatusOK, &loginResponse)
 }
 
+<<<<<<< HEAD
 // handleBuyerSignup godoc
 // @Summary      Signs a new buyer up
 // @Description  Checks to see if a user email exists and if not creates a new account with supplied email and password
@@ -73,6 +90,13 @@ func handleBuyerSignUp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, &signUpResponse)
+=======
+/*
+Handles error and API response for the Sign Up API for buyers
+*/
+func handleBuyerSignUp(c *gin.Context) {
+
+>>>>>>> 005bc68 (Add login and signup API)
 }
 
 /*

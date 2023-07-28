@@ -1,9 +1,13 @@
 package main
 
 import (
+<<<<<<< HEAD
 	_ "BackendAPI/docs"
 	"BackendAPI/store"
 
+=======
+	"BackendAPI/store"
+>>>>>>> 005bc68 (Add login and signup API)
 	"database/sql"
 	"log"
 
@@ -14,6 +18,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+<<<<<<< HEAD
 var db *sql.DB
 
 // @title           AUCTO Backend API
@@ -22,18 +27,31 @@ var db *sql.DB
 
 // @host      localhost:8080
 // @BasePath  /api/v1
+=======
+var Db *sql.DB
+
+>>>>>>> 005bc68 (Add login and signup API)
 func main() {
 
 	//Setup Router and Database Connection
 	router := gin.Default()
+<<<<<<< HEAD
 	var err error
 
 	db, err = store.SetupDB()
+=======
+	Db, err := store.SetupDB()
+>>>>>>> 005bc68 (Add login and signup API)
 
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
 	}
 
+<<<<<<< HEAD
+=======
+	defer store.CloseDB(Db)
+
+>>>>>>> 005bc68 (Add login and signup API)
 	apiGroup := router.Group("/api/v1")
 	{
 		buyerGroup := apiGroup.Group("/buyer")
@@ -55,5 +73,8 @@ func main() {
 
 	router.Run(":8080")
 
+<<<<<<< HEAD
 	defer store.CloseDB(db)
+=======
+>>>>>>> 005bc68 (Add login and signup API)
 }
