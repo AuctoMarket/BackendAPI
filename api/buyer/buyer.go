@@ -120,7 +120,7 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, e
 	}
 
 	if !buyerExists {
-		return response, errors.New("Incorrect username or password")
+		return response, errors.New("Incorrect user email or password!")
 	}
 
 	query := `SELECT email, buid, password from buyers WHERE email = $1;`
@@ -131,7 +131,7 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, e
 	}
 
 	if !utils.ComparePasswords(hashedPwd, loginData.Password) {
-		return response, errors.New("Incorrect username or password")
+		return response, errors.New("Incorrect user email or password")
 	}
 
 	return response, nil
@@ -150,7 +150,7 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 	}
 
 	if buyerExists {
-		return response, errors.New("This email is already in use")
+		return response, errors.New("Email is already in use")
 	}
 
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))

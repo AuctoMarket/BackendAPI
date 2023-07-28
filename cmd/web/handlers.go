@@ -38,8 +38,12 @@ func handleBuyerLogin(c *gin.Context) {
 	err := c.ShouldBindJSON(&loginData)
 
 	if err != nil {
+<<<<<<< HEAD
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
+>>>>>>> 0b4235d (Changer Status to 201, Update error msg)
 		return
 	}
 
@@ -102,7 +106,7 @@ func handleBuyerSignUp(c *gin.Context) {
 >>>>>>> 005bc68 (Add login and signup API)
 =======
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
@@ -113,8 +117,12 @@ func handleBuyerSignUp(c *gin.Context) {
 		return
 	}
 
+<<<<<<< HEAD
 	c.JSON(http.StatusOK, &signUpResponse)
 >>>>>>> e5d2750 (Add Tests for Login/Signup)
+=======
+	c.JSON(http.StatusCreated, &signUpResponse)
+>>>>>>> 0b4235d (Changer Status to 201, Update error msg)
 }
 
 /*
