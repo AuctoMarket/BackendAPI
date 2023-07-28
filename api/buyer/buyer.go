@@ -1,6 +1,7 @@
 package buyer
 
 import (
+<<<<<<< HEAD
 	"BackendAPI/data"
 	"BackendAPI/utils"
 	"context"
@@ -94,4 +95,15 @@ func doesBuyerEmailExist(db *sql.DB, email string) (bool, error) {
 	}
 
 	return buyerExists, nil
+=======
+	"github.com/gin-gonic/gin"
+)
+
+func HandleBuyerLogin(c *gin.Context) {
+
+}
+
+func HandleBuyerSignUp(c *gin.Context) {
+
+>>>>>>> 111aa98 (group routes, ddd buyer routes)
 }
