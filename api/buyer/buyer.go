@@ -119,7 +119,9 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 	buyerExists, err := doesBuyerEmailExist(db, loginData.Email)
 
 	if err != nil {
-		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in checking if buyer email exists")
+		return response, errResp
 	}
 
 	if !buyerExists {
@@ -130,7 +132,9 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 	err = db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BUID, &hashedPwd)
 
 	if err != nil {
-		return response, utils.LogInternalServerError("Error in Selecting Buyer rows", err)
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in Selecting Buyer rows")
+		return response, errResp
 	}
 
 	if !utils.ComparePasswords(hashedPwd, loginData.Password) {
@@ -149,7 +153,9 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 
 	buyerExists, err := doesBuyerEmailExist(db, signupData.Email)
 	if err != nil {
-		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in checking if buyer email exists")
+		return response, errResp
 	}
 
 	if buyerExists {
@@ -159,15 +165,20 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))
 
 	if err != nil {
-		return response, utils.LogInternalServerError("Error in hash function!", err)
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in hash function!")
+		return response, errResp
 	}
 
 	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buid;`
 	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BUID)
 
 	if err != nil {
-		return response, utils.LogInternalServerError("Error in Inserting Rows into Buyers table", err)
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in Inserting Rows into Buyers table")
+		return response, errResp
 	}
+
 	return response, nil
 }
 

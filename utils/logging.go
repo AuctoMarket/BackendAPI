@@ -16,6 +16,7 @@ Logs internal server errors and returns sanitized error response
 */
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 func LogError(err error, msg string) {
 	log.Println(msg)
 	log.Println(err)
@@ -31,4 +32,9 @@ func LogInternalServerError(msg string, err error) *ErrorHandler {
 	log.Println(err)
 	return InternalServerError()
 >>>>>>> c9cf9e0 (Update Error Handling)
+=======
+func LogError(err error, msg string) {
+	log.Println(msg)
+	log.Println(err)
+>>>>>>> a806d09 (Update logging)
 }
