@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ba5271f (Add Installation documentation)
 # Backend API Documentaion
 
 ### Installation and Running
@@ -9,6 +12,7 @@ This is the backend REST API for Aucto's marketplace, it is currently in `v1`. T
 
 There is a `MAKEFILE` that simplifies the build and run commands for docker to `docker-up`. The `docker-compose` file contains all the services that are run when running the API. The `Dockerfile` contains the build information of the API. The API is run on `localhost:8080` and the base path is `/api/v1`
 
+<<<<<<< HEAD
 Once run, you can run a sanity check by testing the following endpoint:
 
  `localhost:8080/api/v1/test/ping` 
@@ -32,3 +36,8 @@ This project used swagger to document the various api endpoints and the swagger 
 =======
 # Backend API
 >>>>>>> 0b4235d (Changer Status to 201, Update error msg)
+=======
+Once run, you can run a sanity check by testing the following endpoint: `localhost:8080/api/v1/test/ping`. If setup correctly you should recieve a response in the form of `"messaage":"pong"`.
+
+### API documentations
+>>>>>>> ba5271f (Add Installation documentation)
