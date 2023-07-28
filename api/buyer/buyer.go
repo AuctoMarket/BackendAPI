@@ -181,8 +181,8 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
-	query := `SELECT email, buid, password from buyers WHERE email = $1;`
-	err = db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BUID, &hashedPwd)
+	query := `SELECT email, buyer_id, password from buyers WHERE email = $1;`
+	err = db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerID, &hashedPwd)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
@@ -223,8 +223,8 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 		return response, errResp
 	}
 
-	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buid;`
-	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BUID)
+	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id;`
+	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerID)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
