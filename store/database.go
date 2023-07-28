@@ -225,10 +225,14 @@ func SetupTestDB() (*sql.DB, error) {
 	log.Println("Established a successful connection!")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	err = createTables(db)
 =======
 	err = CreateTables(db)
 >>>>>>> e5d2750 (Add Tests for Login/Signup)
+=======
+	err = createTables(db)
+>>>>>>> 6690fa6 (Add database connection tests)
 
 	if err != nil {
 		return db, err

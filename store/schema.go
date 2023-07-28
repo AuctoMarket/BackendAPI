@@ -6,13 +6,19 @@ import (
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6690fa6 (Add database connection tests)
 /*
 Install any extensions and create all tables for the database
 */
 func createTables(db *sql.DB) error {
+<<<<<<< HEAD
 =======
 func CreateTables(db *sql.DB) error {
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> 6690fa6 (Add database connection tests)
 	err := installExtensions(db)
 
 	if err != nil {
@@ -35,11 +41,17 @@ func CreateTables(db *sql.DB) error {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 /*
 Install and Postgres Extensions
 */
 =======
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+/*
+Install and Postgres Extensions
+*/
+>>>>>>> 6690fa6 (Add database connection tests)
 func installExtensions(db *sql.DB) error {
 	uuidExtensionQuery := `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`
 	_, err := db.ExecContext(context.Background(), uuidExtensionQuery)
@@ -47,6 +59,9 @@ func installExtensions(db *sql.DB) error {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6690fa6 (Add database connection tests)
 /*
 Create the table for Buyers
 */
@@ -73,6 +88,9 @@ func createBuyersTable(db *sql.DB) error {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6690fa6 (Add database connection tests)
 /*
 Create the table for Sellers
 */
