@@ -36,7 +36,7 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 	}
 
 	if !utils.ComparePasswords(hashedPwd, loginData.Password) {
-		return response, utils.UnauthorizedError("Incorrect user email or password")
+		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
 	return response, nil

@@ -47,7 +47,7 @@ func createBuyersTable(db *sql.DB) error {
 		buyer_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		PRIMARY KEY(buid));`
+		PRIMARY KEY(buyer_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err
@@ -61,7 +61,7 @@ func createSellersTable(db *sql.DB) error {
 		seller_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
-		PRIMARY KEY(suid));`
+		PRIMARY KEY(seller_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err
