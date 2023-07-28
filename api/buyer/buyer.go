@@ -27,12 +27,18 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 
 	if err != nil {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in checking if buyer email exists")
 		return response, errResp
 =======
 		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in checking if buyer email exists")
+		return response, errResp
+>>>>>>> 54bd1f1 (Update logging)
 	}
 
 	if !buyerExists {
@@ -44,12 +50,18 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 
 	if err != nil {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in Selecting Buyer rows")
 		return response, errResp
 =======
 		return response, utils.LogInternalServerError("Error in Selecting Buyer rows", err)
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in Selecting Buyer rows")
+		return response, errResp
+>>>>>>> 54bd1f1 (Update logging)
 	}
 
 	if !utils.ComparePasswords(hashedPwd, loginData.Password) {
@@ -69,12 +81,18 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 	buyerExists, err := doesBuyerEmailExist(db, signupData.Email)
 	if err != nil {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in checking if buyer email exists")
 		return response, errResp
 =======
 		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in checking if buyer email exists")
+		return response, errResp
+>>>>>>> 54bd1f1 (Update logging)
 	}
 
 	if buyerExists {
@@ -85,12 +103,18 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 
 	if err != nil {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in hash function!")
 		return response, errResp
 =======
 		return response, utils.LogInternalServerError("Error in hash function!", err)
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in hash function!")
+		return response, errResp
+>>>>>>> 54bd1f1 (Update logging)
 	}
 
 	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id;`
@@ -98,12 +122,18 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 
 	if err != nil {
 <<<<<<< HEAD
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in Inserting Rows into Buyers table")
 		return response, errResp
 =======
 		return response, utils.LogInternalServerError("Error in Inserting Rows into Buyers table", err)
 >>>>>>> 3a877cd (Update Error Handling)
+=======
+		errResp := utils.InternalServerError()
+		utils.LogError(err, "Error in Inserting Rows into Buyers table")
+		return response, errResp
+>>>>>>> 54bd1f1 (Update logging)
 	}
 
 	return response, nil
