@@ -40,4 +40,7 @@ This project used swagger to document the various api endpoints and the swagger 
 Once run, you can run a sanity check by testing the following endpoint: `localhost:8080/api/v1/test/ping`. If setup correctly you should recieve a response in the form of `"messaage":"pong"`.
 
 ### API documentations
+<<<<<<< HEAD
 >>>>>>> ba5271f (Add Installation documentation)
+=======
+>>>>>>> 04d5c6c (API Documentation)
