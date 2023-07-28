@@ -19,6 +19,7 @@ import (
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 var db *sql.DB
 
 // @title           AUCTO Backend API
@@ -29,6 +30,9 @@ var db *sql.DB
 // @BasePath  /api/v1
 =======
 var Db *sql.DB
+=======
+var db *sql.DB
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 >>>>>>> 005bc68 (Add login and signup API)
 func main() {
@@ -36,22 +40,31 @@ func main() {
 	//Setup Router and Database Connection
 	router := gin.Default()
 <<<<<<< HEAD
+<<<<<<< HEAD
 	var err error
 
 	db, err = store.SetupDB()
 =======
 	Db, err := store.SetupDB()
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+	var err error
+
+	db, err = store.SetupDB()
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 	defer store.CloseDB(Db)
 
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 	apiGroup := router.Group("/api/v1")
 	{
 		buyerGroup := apiGroup.Group("/buyer")
@@ -74,7 +87,11 @@ func main() {
 	router.Run(":8080")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	defer store.CloseDB(db)
 =======
 >>>>>>> 005bc68 (Add login and signup API)
+=======
+	defer store.CloseDB(db)
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 }

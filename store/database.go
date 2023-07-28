@@ -18,6 +18,9 @@ import (
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 /*
 Function to setup the DB connections, create all the tables and return
 the db connection
@@ -56,6 +59,7 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 	} else {
 		host, err = getDotEnv("POSTGRES_HOST", path)
 	}
+<<<<<<< HEAD
 =======
 func SetupDB() (*sql.DB, error) {
 
@@ -65,6 +69,8 @@ func SetupDB() (*sql.DB, error) {
 	password, err := getDotEnv("POSTGRES_PASSWORD")
 	dbname, err := getDotEnv("POSTGRES_DBNAME")
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		return nil, err
@@ -76,14 +82,19 @@ func SetupDB() (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", postgresqlDbInfo)
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 	if err != nil {
 		return db, err
 	}
 
 	err = db.Ping()
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 	if err != nil {
@@ -94,6 +105,8 @@ func SetupDB() (*sql.DB, error) {
 
 	err = CreateTables(db)
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		return db, err
@@ -101,6 +114,9 @@ func SetupDB() (*sql.DB, error) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 	return db, nil
 }
 
@@ -118,6 +134,7 @@ func ResetDB(db *sql.DB) {
 /*
 Function to Close the DB connection
 */
+<<<<<<< HEAD
 =======
 	fmt.Println("Tables Created Successfully!")
 =======
@@ -128,21 +145,29 @@ Function to Close the DB connection
 }
 
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 func CloseDB(db *sql.DB) {
 	db.Close()
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 /*
 Function to get environment variables from the .Env file if they are a
 string
 */
 func getDotEnv(key string, path string) (string, error) {
 	err := godotenv.Load(path)
+<<<<<<< HEAD
 =======
 func getDotEnv(key string) (string, error) {
 	err := godotenv.Load(".env")
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		return "", err
@@ -152,16 +177,22 @@ func getDotEnv(key string) (string, error) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 /*
 Function to get environment variables from the .Env file if they are a
 int
 */
 func getDotEnvInt(key string, path string) (int, error) {
 	err := godotenv.Load(path)
+<<<<<<< HEAD
 =======
 func getDotEnvInt(key string) (int, error) {
 	err := godotenv.Load(".env")
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		return 0, err
@@ -176,6 +207,9 @@ func getDotEnvInt(key string) (int, error) {
 	return int(num), nil
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 /*
 Function to setup the DB connections for tests, create all the tables and
@@ -190,7 +224,11 @@ func SetupTestDB() (*sql.DB, error) {
 
 	log.Println("Established a successful connection!")
 
+<<<<<<< HEAD
 	err = createTables(db)
+=======
+	err = CreateTables(db)
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
 
 	if err != nil {
 		return db, err
@@ -209,5 +247,8 @@ func CleaupTestDB(db *sql.DB) {
 	ResetDB(db)
 	CloseDB(db)
 }
+<<<<<<< HEAD
 =======
 >>>>>>> 4a39705 (Add .env file & Read .env code)
+=======
+>>>>>>> e5d2750 (Add Tests for Login/Signup)
