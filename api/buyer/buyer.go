@@ -11,6 +11,9 @@ import (
 	"database/sql"
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 3a877cd (Update Error Handling)
 )
 
 /*
@@ -23,9 +26,13 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 	buyerExists, err := doesBuyerEmailExist(db, loginData.Email)
 
 	if err != nil {
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in checking if buyer email exists")
 		return response, errResp
+=======
+		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
+>>>>>>> 3a877cd (Update Error Handling)
 	}
 
 	if !buyerExists {
@@ -36,9 +43,13 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 	err = db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerID, &hashedPwd)
 
 	if err != nil {
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in Selecting Buyer rows")
 		return response, errResp
+=======
+		return response, utils.LogInternalServerError("Error in Selecting Buyer rows", err)
+>>>>>>> 3a877cd (Update Error Handling)
 	}
 
 	if !utils.ComparePasswords(hashedPwd, loginData.Password) {
@@ -57,9 +68,13 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 
 	buyerExists, err := doesBuyerEmailExist(db, signupData.Email)
 	if err != nil {
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in checking if buyer email exists")
 		return response, errResp
+=======
+		return response, utils.LogInternalServerError("Error in checking if buyer email exists", err)
+>>>>>>> 3a877cd (Update Error Handling)
 	}
 
 	if buyerExists {
@@ -69,18 +84,26 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))
 
 	if err != nil {
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in hash function!")
 		return response, errResp
+=======
+		return response, utils.LogInternalServerError("Error in hash function!", err)
+>>>>>>> 3a877cd (Update Error Handling)
 	}
 
 	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id;`
 	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerID)
 
 	if err != nil {
+<<<<<<< HEAD
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in Inserting Rows into Buyers table")
 		return response, errResp
+=======
+		return response, utils.LogInternalServerError("Error in Inserting Rows into Buyers table", err)
+>>>>>>> 3a877cd (Update Error Handling)
 	}
 
 	return response, nil

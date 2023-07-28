@@ -38,6 +38,7 @@ func handleBuyerLogin(c *gin.Context) {
 	bindErr := c.ShouldBindJSON(&loginData)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if err != nil {
 <<<<<<< HEAD
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request data"})
@@ -49,17 +50,17 @@ func handleBuyerLogin(c *gin.Context) {
 	if bindErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
 >>>>>>> c9cf9e0 (Update Error Handling)
+=======
+	if bindErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request Body"})
+>>>>>>> 3a877cd (Update Error Handling)
 		return
 	}
 
 	loginResponse, err := buyer.BuyerLogin(db, loginData)
 
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-
 	if err != nil {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 		r := data.Message{Message: err.Error()}
@@ -70,6 +71,9 @@ func handleBuyerLogin(c *gin.Context) {
 =======
 		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
 >>>>>>> c9cf9e0 (Update Error Handling)
+=======
+		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
+>>>>>>> 3a877cd (Update Error Handling)
 		return
 	}
 
@@ -118,22 +122,21 @@ func handleBuyerSignUp(c *gin.Context) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 005bc68 (Add login and signup API)
 =======
 	if err != nil {
 =======
 	if bindErr != nil {
 >>>>>>> c9cf9e0 (Update Error Handling)
+=======
+	if bindErr != nil {
+>>>>>>> 3a877cd (Update Error Handling)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request body"})
 		return
 	}
 
 	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
-
-	if err != nil && err.Error() == "Something went wrong" {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
 
 	if err != nil {
 		c.JSON(err.ErrorCode(), gin.H{"message": err.Error()})
