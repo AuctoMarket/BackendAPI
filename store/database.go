@@ -64,6 +64,13 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 	}
 
 	err = db.Ping()
+	if err != nil {
+		return db, err
+	}
+
+	fmt.Println("Established a successful connection!")
+
+	err = createTables(db)
 
 	if err != nil {
 		return db, err

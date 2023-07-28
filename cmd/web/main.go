@@ -29,7 +29,6 @@ func main() {
 	var err error
 
 	db, err = store.SetupDB()
-
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
 	}
