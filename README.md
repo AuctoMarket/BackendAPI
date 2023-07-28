@@ -31,6 +31,7 @@ Aucto backend runs a Postgres Database Layer with the following ER Diagram:
 Considerations made are:
 - Reducing data dependance using Table Normalisation techniques.
 
+<<<<<<< HEAD
 ### API Documentation
 
 This project used swagger to document the various api endpoints and the swagger docs can be found at `http://localhost:8080/api/v1/swagger/index.html` when the project is run.
@@ -63,3 +64,12 @@ Aucto backend runs a Postgres Database Layer with the following ER Diagram:
 Considerations made are:
 - Reducing data dependance using Table Normalisation techniques.
 >>>>>>> d26034a (Add Swagger Documentation for API Endpoints)
+=======
+<<<<<<< HEAD
+
+=======
+### API Documentation
+
+This project used swagger to document the various api endpoints and the swagger docs can be found at `http://localhost:8080/api/v1/swagger/index.html` when the project is run.
+>>>>>>> 6ca5959 (Update Readme)
+>>>>>>> 46078e0 (Update Readme)
