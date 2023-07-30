@@ -1,16 +1,16 @@
 package data
 
-type LoginData struct {
+type BuyerLoginData struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
-type SignUpData struct {
+type BuyerSignUpData struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
-type LoginResponseData struct {
+type BuyerLoginResponseData struct {
 	Email   string `json:"email"`
-	BuyerID string `json:"buyer_id"`
+	BuyerId string `json:"buyer_id"`
 }

@@ -41,15 +41,21 @@ func main() {
 			buyerGroup.POST("/signup", handleBuyerSignUp)
 		}
 
+		productGroup := apiGroup.Group("/product")
+		{
+			productGroup.GET("/:id", handleGetProductById)
+		}
+
 		testGroup := apiGroup.Group("/test")
 		{
 			testGroup.GET("/ping", handlePing)
 		}
 
-		swaggerGroup := apiGroup.Group("/swagger")
+		docGroup := apiGroup.Group("/docs")
 		{
-			swaggerGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+			docGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
+
 	}
 
 	router.Run(":8080")

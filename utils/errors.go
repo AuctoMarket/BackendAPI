@@ -20,6 +20,10 @@ func (m *ErrorHandler) ErrorCode() int {
 Creates 400 Bad request error
 */
 func BadRequestError(msg string) *ErrorHandler {
+	if msg == "" {
+		return &ErrorHandler{Message: "Bad request", Code: 400}
+	}
+
 	return &ErrorHandler{Message: msg, Code: 400}
 }
 
@@ -34,5 +38,8 @@ func InternalServerError() *ErrorHandler {
 Creates 401 Unautorized Error
 */
 func UnauthorizedError(msg string) *ErrorHandler {
+	if msg == "" {
+		return &ErrorHandler{Message: "Unauthorized user", Code: 400}
+	}
 	return &ErrorHandler{Message: msg, Code: 401}
 }
