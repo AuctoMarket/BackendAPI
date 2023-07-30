@@ -2,6 +2,7 @@ package main
 
 import (
 	"BackendAPI/api/buyer"
+	"BackendAPI/api/product"
 	"BackendAPI/data"
 	"net/http"
 
@@ -88,8 +89,23 @@ func handleBuyerSignUp(c *gin.Context) {
 // @Failure      500  {object}  data.Message
 // @Router       /buyer/signup/ [post]
 func handleGetProductById(c *gin.Context) {
-	r := data.Message{Message: "TODO"}
-	c.JSON(http.StatusOK, r)
+	productId := c.Param("id")
+
+	if productId == "" {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	product, err := product.GetProductById(db, productId)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.JSON(http.StatusOK, &product)
 }
 
 /*

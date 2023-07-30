@@ -34,7 +34,7 @@ const (
 )
 
 func TestCreateTables(t *testing.T) {
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -61,11 +61,11 @@ func TestCreateTables(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, productsExist)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }
 
 func TestCreateBuyersTable(t *testing.T) {
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -80,12 +80,12 @@ func TestCreateBuyersTable(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, buyersExist)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 
 }
 
 func TestCreateSellersTable(t *testing.T) {
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -100,11 +100,11 @@ func TestCreateSellersTable(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, sellersExist)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }
 
 func TestCreateProductsTable(t *testing.T) {
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -124,7 +124,7 @@ func TestCreateProductsTable(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, true, productsExist)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }
 
 /*

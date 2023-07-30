@@ -12,7 +12,7 @@ Function to setup the DB connections, create all the tables and return
 the db connection
 */
 func SetupDB() (*sql.DB, error) {
-	db, err := initDB(".env")
+	db, err := initDB(".env", false)
 
 	if err != nil {
 		return db, err
@@ -34,15 +34,14 @@ func SetupDB() (*sql.DB, error) {
 /*
 Function to initiate the DB connection and returns the DB connection
 */
-func initDB(path string) (*sql.DB, error) {
+func initDB(path string, isTest bool) (*sql.DB, error) {
 	var host string
-	environment, err := utils.GetDotEnv("ENV_NAME", path)
 	port, err := utils.GetDotEnvInt("POSTGRES_PORT", path)
 	user, err := utils.GetDotEnv("POSTGRES_USER", path)
 	password, err := utils.GetDotEnv("POSTGRES_PASSWORD", path)
 	dbname, err := utils.GetDotEnv("POSTGRES_DBNAME", path)
 
-	if environment == "test" {
+	if isTest {
 		host, err = utils.GetDotEnv("POSTGRES_HOST_TEST", path)
 	} else {
 		host, err = utils.GetDotEnv("POSTGRES_HOST", path)
@@ -66,8 +65,37 @@ func initDB(path string) (*sql.DB, error) {
 		return db, err
 	}
 
-	if environment != "test" {
-		log.Println("Established a successful connection!")
+	log.Println("Established a successful connection!")
+
+	return db, nil
+}
+
+/*
+Function to initiate the DB connection and returns the DB connection
+*/
+func initTestDB(path string) (*sql.DB, error) {
+	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST", path)
+	user, err := utils.GetDotEnv("POSTGRES_USER", path)
+	password, err := utils.GetDotEnv("POSTGRES_PASSWORD", path)
+	dbname, err := utils.GetDotEnv("POSTGRES_DBNAME_TEST", path)
+	host, err := utils.GetDotEnv("POSTGRES_HOST_TEST", path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	postgresqlDbInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", postgresqlDbInfo)
+	if err != nil {
+		return db, err
+	}
+
+	err = db.Ping()
+	if err != nil {
+		return db, err
 	}
 
 	return db, nil
@@ -98,7 +126,7 @@ Function to setup the DB connections for tests, create all the tables and
 return the db connection
 */
 func SetupTestDB() (*sql.DB, error) {
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 
 	if err != nil {
 		return db, err
@@ -113,12 +141,4 @@ func SetupTestDB() (*sql.DB, error) {
 	resetDB(db)
 
 	return db, nil
-}
-
-/*
-Cleans up the test DB and clears all test data
-*/
-func CleaupTestDB(db *sql.DB) {
-	resetDB(db)
-	CloseDB(db)
 }

@@ -14,12 +14,12 @@ func TestSetupTestDB(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, db)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }
 
 func TestInitDB(t *testing.T) {
-	//Test 1: Init DB and ensure the db exists and there ius no error
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	//Test 1: Init DB and ensure the db exists and there is no error for main db
+	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env", true)
 	assert.NotEmpty(t, db)
 	assert.NoError(t, err)
 
@@ -27,5 +27,5 @@ func TestInitDB(t *testing.T) {
 	err = db.Ping()
 	assert.NoError(t, err)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }

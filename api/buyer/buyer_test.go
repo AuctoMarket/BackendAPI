@@ -41,7 +41,7 @@ func TestDoesBuyerEmailExist(t *testing.T) {
 	res = doesBuyerEmailExist(db, testEmail4)
 	assert.NotEqual(t, true, res)
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func TestBuyerLogin(t *testing.T) {
@@ -85,7 +85,7 @@ func TestBuyerLogin(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "Incorrect user email or password!")
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func TestBuyerSignUp(t *testing.T) {
@@ -109,7 +109,7 @@ func TestBuyerSignUp(t *testing.T) {
 	res, err = BuyerSignUp(db, testSignup3)
 	assert.Error(t, err)
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func addDummyAccounts(db *sql.DB) {
