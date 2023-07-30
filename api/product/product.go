@@ -28,6 +28,7 @@ func GetProductById(db *sql.DB, productId string) (data.ProductResponseData, *ut
 	if err != nil {
 		errResp := utils.InternalServerError()
 		utils.LogError(err, "Error in Selecting Product rows")
+<<<<<<< HEAD
 		return response, errResp
 	}
 
@@ -68,6 +69,12 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResp
 	response.PostedDate = postedDate.Format("2006-01-02 15:04:05")
 
 	return response, nil
+=======
+		return product, errResp
+	}
+
+	return product, nil
+>>>>>>> 5c61bab (Add get product by id API Logic)
 }
 
 /*
