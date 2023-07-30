@@ -39,7 +39,17 @@ Creates 401 Unautorized Error
 */
 func UnauthorizedError(msg string) *ErrorHandler {
 	if msg == "" {
-		return &ErrorHandler{Message: "Unauthorized user", Code: 400}
+		return &ErrorHandler{Message: "Unauthorized user", Code: 401}
 	}
 	return &ErrorHandler{Message: msg, Code: 401}
+}
+
+/*
+Creates 404 Not Found Error
+*/
+func NotFoundError(msg string) *ErrorHandler {
+	if msg == "" {
+		return &ErrorHandler{Message: "Resource not found", Code: 404}
+	}
+	return &ErrorHandler{Message: msg, Code: 404}
 }

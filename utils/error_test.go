@@ -36,3 +36,15 @@ func TestUnauthorizedError(t *testing.T) {
 	assert.Equal(t, "Unauthorized user", testUnauthorizedError2.Error())
 	assert.Equal(t, 401, testUnauthorizedError1.Code)
 }
+
+func TestNotFoundError(t *testing.T) {
+	//Test 1: Unauthorized Error created with error code 401 and message
+	testNotFoundError1 := NotFoundError("Test Error 1")
+	assert.Equal(t, "Test Error 1", testNotFoundError1.Error())
+	assert.Equal(t, 404, testNotFoundError1.Code)
+
+	//Test 1: Unauthorized Error created with error code 401 and standard message
+	testNotFoundError2 := NotFoundError("")
+	assert.Equal(t, "Resource not found", testNotFoundError2.Error())
+	assert.Equal(t, 404, testNotFoundError2.Code)
+}
