@@ -15,8 +15,8 @@ import (
 // if not returns a unauthorized error (401).
 // @Accept       json
 // @Produce      json
-// @Param 		 email body string true "email"
-// @Param 		 password body string true "password"
+// @Param 		 email body string true "Users email"
+// @Param 		 password body string true "Users password as plaintext"
 // @Success      200  {object}  data.BuyerLoginResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      401  {object}  data.Message
@@ -49,8 +49,8 @@ func handleBuyerLogin(c *gin.Context) {
 // if not returns a bad request error (400).
 // @Accept       json
 // @Produce      json
-// @Param 		 email body string true "email"
-// @Param 		 password body string true "password"
+// @Param 		 email body string true "Users email"
+// @Param 		 password body string true "Users password as plaintext"
 // @Success      200  {object}  data.BuyerLoginResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
@@ -110,16 +110,16 @@ func handleGetProductById(c *gin.Context) {
 // @Summary      Creates a new product post
 // @Description  Creates a new product post with the supplied data, if the data is not valid it throws and error
 // @Produce      json
-// @Param 		 seller_id body string true "seller_id"
-// @Param 		 title body string true "title"
-// @Param 		 description body string true "desc"
-// @Param 		 price body int true "price"
-// @Param 		 condition body int true "condition"
-// @Param 		 product_type body string true "product_type"
+// @Param 		 seller_id body string true "The Seller who posted the product's seller_id"
+// @Param 		 title body string true "Title of the product"
+// @Param 		 description body string true "Short description of the product"
+// @Param 		 price body int true "Price as an int of the product"
+// @Param 		 condition body int true "Condition of the product from a scale of 0 to 5"
+// @Param 		 product_type body string true "Type of product sale: Buy-Now or Pre-Order"
 // @Success      201  {object}  data.ProductResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /product/create  [post]
+// @Router       /product  [post]
 func handleCreateProduct(c *gin.Context) {
 	var createProduct data.ProductCreateData
 	bindErr := c.ShouldBindJSON(&createProduct)

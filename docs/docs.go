@@ -28,7 +28,7 @@ const docTemplate = `{
                 "summary": "Logs a buyer into their account",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -37,7 +37,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -86,7 +86,7 @@ const docTemplate = `{
                 "summary": "Signs a new buyer up",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -95,7 +95,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -126,7 +126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/product/create": {
+        "/product": {
             "post": {
                 "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
                 "produces": [
@@ -135,7 +135,7 @@ const docTemplate = `{
                 "summary": "Creates a new product post",
                 "parameters": [
                     {
-                        "description": "seller_id",
+                        "description": "The Seller who posted the product's seller_id",
                         "name": "seller_id",
                         "in": "body",
                         "required": true,
@@ -144,7 +144,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "title",
+                        "description": "Title of the product",
                         "name": "title",
                         "in": "body",
                         "required": true,
@@ -153,7 +153,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "desc",
+                        "description": "Short description of the product",
                         "name": "description",
                         "in": "body",
                         "required": true,
@@ -162,7 +162,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "price",
+                        "description": "Price as an int of the product",
                         "name": "price",
                         "in": "body",
                         "required": true,
@@ -171,7 +171,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "condition",
+                        "description": "Condition of the product from a scale of 0 to 5",
                         "name": "condition",
                         "in": "body",
                         "required": true,
@@ -180,7 +180,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "product_type",
+                        "description": "Type of product sale: Buy-Now or Pre-Order",
                         "name": "product_type",
                         "in": "body",
                         "required": true,

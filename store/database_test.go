@@ -10,7 +10,7 @@ import (
 func TestSetupTestDB(t *testing.T) {
 
 	//Test 1: Setup a DB connection and check if no errors
-	db, err := SetupTestDB()
+	db, err := SetupTestDB("../.env")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, db)
 
@@ -19,7 +19,7 @@ func TestSetupTestDB(t *testing.T) {
 
 func TestInitDB(t *testing.T) {
 	//Test 1: Init DB and ensure the db exists and there is no error for main db
-	db, err := initDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env", true)
+	db, err := initDB("../.env", true)
 	assert.NotEmpty(t, db)
 	assert.NoError(t, err)
 

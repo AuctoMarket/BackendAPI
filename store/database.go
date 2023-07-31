@@ -125,8 +125,8 @@ func CloseDB(db *sql.DB) {
 Function to setup the DB connections for tests, create all the tables and
 return the db connection
 */
-func SetupTestDB() (*sql.DB, error) {
-	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+func SetupTestDB(path string) (*sql.DB, error) {
+	db, err := initTestDB(path)
 
 	if err != nil {
 		return db, err

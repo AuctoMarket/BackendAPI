@@ -44,7 +44,7 @@ func main() {
 		productGroup := apiGroup.Group("/product")
 		{
 			productGroup.GET("/:id", handleGetProductById)
-			productGroup.POST("/create", handleCreateProduct)
+			productGroup.POST("", handleCreateProduct)
 		}
 
 		testGroup := apiGroup.Group("/test")

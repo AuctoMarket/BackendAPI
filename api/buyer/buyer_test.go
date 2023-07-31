@@ -14,7 +14,7 @@ import (
 
 func TestDoesBuyerEmailExist(t *testing.T) {
 
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 	assert.NoError(t, err)
 
 	addDummyAccounts(db)
@@ -45,7 +45,7 @@ func TestDoesBuyerEmailExist(t *testing.T) {
 }
 
 func TestBuyerLogin(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 	addDummyAccounts(db)
 
 	testLogin1 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test1234"}
@@ -89,7 +89,7 @@ func TestBuyerLogin(t *testing.T) {
 }
 
 func TestBuyerSignUp(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 
 	testSignup1 := data.BuyerSignUpData{Email: "test@gmail.com", Password: "Test1234"}
 	testSignup2 := data.BuyerSignUpData{Email: "test2@gmail.com", Password: "Test1234"}

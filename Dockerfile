@@ -10,6 +10,8 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
+COPY .env ./
+
 COPY . .
 
 RUN go build -tags=jsoniter -o bin/app cmd/web/*.go 

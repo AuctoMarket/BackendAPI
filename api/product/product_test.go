@@ -73,7 +73,7 @@ func TestValidateCreateProduct(t *testing.T) {
 }
 
 func TestDoesProductExist(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 	assert.NoError(t, err)
 
 	productIds := createDummyProducts(db)
@@ -102,7 +102,7 @@ func TestDoesProductExist(t *testing.T) {
 }
 
 func TestGetProductById(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 	assert.NoError(t, err)
 
 	productIds := createDummyProducts(db)
@@ -141,7 +141,7 @@ func TestGetProductById(t *testing.T) {
 }
 
 func TestCreateProduct(t *testing.T) {
-	db, startupErr := store.SetupTestDB()
+	db, startupErr := store.SetupTestDB("../../.env")
 	assert.NoError(t, startupErr)
 
 	sellerId := createDummySeller(db)

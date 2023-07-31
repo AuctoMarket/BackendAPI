@@ -34,7 +34,7 @@ const (
 )
 
 func TestCreateTables(t *testing.T) {
-	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("../.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -66,7 +66,7 @@ func TestCreateTables(t *testing.T) {
 
 func TestCreateBuyersTable(t *testing.T) {
 	var buyersExist bool
-	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("../.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -86,7 +86,7 @@ func TestCreateBuyersTable(t *testing.T) {
 }
 
 func TestCreateSellersTable(t *testing.T) {
-	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("../.env")
 	assert.NoError(t, err)
 
 	//Test 1: No errors in creating sellers table
@@ -103,7 +103,7 @@ func TestCreateSellersTable(t *testing.T) {
 }
 
 func TestCreateProductsTable(t *testing.T) {
-	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
+	db, err := initTestDB("../.env")
 	assert.NoError(t, err)
 
 	dropDB(db)

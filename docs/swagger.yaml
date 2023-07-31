@@ -55,13 +55,13 @@ paths:
       description: Checks to see if a user email exists and if supplied password matches
         the stored password
       parameters:
-      - description: email
+      - description: Users email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: password
+      - description: Users password as plaintext
         in: body
         name: password
         required: true
@@ -94,13 +94,13 @@ paths:
       description: Checks to see if a user email exists and if not creates a new account
         with supplied email and password
       parameters:
-      - description: email
+      - description: Users email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: password
+      - description: Users password as plaintext
         in: body
         name: password
         required: true
@@ -122,6 +122,63 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Signs a new buyer up
+  /product:
+    post:
+      description: Creates a new product post with the supplied data, if the data
+        is not valid it throws and error
+      parameters:
+      - description: The Seller who posted the product's seller_id
+        in: body
+        name: seller_id
+        required: true
+        schema:
+          type: string
+      - description: Title of the product
+        in: body
+        name: title
+        required: true
+        schema:
+          type: string
+      - description: Short description of the product
+        in: body
+        name: description
+        required: true
+        schema:
+          type: string
+      - description: Price as an int of the product
+        in: body
+        name: price
+        required: true
+        schema:
+          type: integer
+      - description: Condition of the product from a scale of 0 to 5
+        in: body
+        name: condition
+        required: true
+        schema:
+          type: integer
+      - description: 'Type of product sale: Buy-Now or Pre-Order'
+        in: body
+        name: product_type
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.ProductResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Creates a new product post
   /product/{id}:
     get:
       description: Checks to see if a product with a given id exists and returns its
@@ -146,61 +203,4 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Gets a Product by its Product ID
-  /product/create:
-    post:
-      description: Creates a new product post with the supplied data, if the data
-        is not valid it throws and error
-      parameters:
-      - description: seller_id
-        in: body
-        name: seller_id
-        required: true
-        schema:
-          type: string
-      - description: title
-        in: body
-        name: title
-        required: true
-        schema:
-          type: string
-      - description: desc
-        in: body
-        name: description
-        required: true
-        schema:
-          type: string
-      - description: price
-        in: body
-        name: price
-        required: true
-        schema:
-          type: integer
-      - description: condition
-        in: body
-        name: condition
-        required: true
-        schema:
-          type: integer
-      - description: product_type
-        in: body
-        name: product_type
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/data.ProductResponseData'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/data.Message'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/data.Message'
-      summary: Creates a new product post
 swagger: "2.0"
