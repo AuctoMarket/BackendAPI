@@ -50,7 +50,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -108,7 +108,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -117,8 +117,122 @@ const docTemplate = `{
                             "$ref": "#/definitions/data.Message"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/create": {
+            "post": {
+                "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new product post",
+                "parameters": [
+                    {
+                        "description": "seller_id",
+                        "name": "seller_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "title",
+                        "name": "title",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "desc",
+                        "name": "description",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "price",
+                        "name": "price",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "condition",
+                        "name": "condition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "product_type",
+                        "name": "product_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/{id}": {
+            "get": {
+                "description": "Checks to see if a product with a given id exists and returns its product information if it does.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a Product by its Product ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -134,10 +248,10 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "data.LoginResponseData": {
+        "data.BuyerLoginResponseData": {
             "type": "object",
             "properties": {
-                "buid": {
+                "buyer_id": {
                     "type": "string"
                 },
                 "email": {
@@ -152,18 +266,57 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "data.ProductResponseData": {
+            "type": "object",
+            "required": [
+                "condition",
+                "desc",
+                "posted_date",
+                "price",
+                "product_id",
+                "product_type",
+                "seller_id",
+                "title"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "posted_date": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "AUCTO Backend API",
+	Description:      "This is the backend REST API for Aucto's marketplace, it is currently in v1.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

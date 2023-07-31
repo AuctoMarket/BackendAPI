@@ -65,17 +65,18 @@ func TestCreateTables(t *testing.T) {
 }
 
 func TestCreateBuyersTable(t *testing.T) {
+	var buyersExist bool
 	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
 
 	dropDB(db)
-
 	//Test 1: No errors in creating buyers table
+	err = db.QueryRowContext(context.Background(), queryCheckTableBuyers).Scan(&buyersExist)
+	assert.Equal(t, false, buyersExist)
 	err = createBuyersTable(db)
 	assert.NoError(t, err)
 
 	//Test 2: Check if neccessary buyers tables exists
-	var buyersExist bool
 	err = db.QueryRowContext(context.Background(), queryCheckTableBuyers).Scan(&buyersExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, buyersExist)
@@ -87,8 +88,6 @@ func TestCreateBuyersTable(t *testing.T) {
 func TestCreateSellersTable(t *testing.T) {
 	db, err := initTestDB("/Users/ekam/Desktop/AuctoCode/BackendAPI/.env")
 	assert.NoError(t, err)
-
-	dropDB(db)
 
 	//Test 1: No errors in creating sellers table
 	err = createSellersTable(db)

@@ -1,7 +1,8 @@
+basePath: /api/v1
 definitions:
-  data.LoginResponseData:
+  data.BuyerLoginResponseData:
     properties:
-      buid:
+      buyer_id:
         type: string
       email:
         type: string
@@ -11,8 +12,41 @@ definitions:
       message:
         type: string
     type: object
+  data.ProductResponseData:
+    properties:
+      condition:
+        type: integer
+      desc:
+        type: string
+      posted_date:
+        type: string
+      price:
+        type: integer
+      product_id:
+        type: string
+      product_type:
+        type: string
+      seller_id:
+        type: string
+      title:
+        type: string
+    required:
+    - condition
+    - desc
+    - posted_date
+    - price
+    - product_id
+    - product_type
+    - seller_id
+    - title
+    type: object
+host: localhost:8080
 info:
   contact: {}
+  description: This is the backend REST API for Aucto's marketplace, it is currently
+    in v1.
+  title: AUCTO Backend API
+  version: "1.0"
 paths:
   /buyer/login/:
     post:
@@ -39,7 +73,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.LoginResponseData'
+            $ref: '#/definitions/data.BuyerLoginResponseData'
         "400":
           description: Bad Request
           schema:
@@ -78,13 +112,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.LoginResponseData'
+            $ref: '#/definitions/data.BuyerLoginResponseData'
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/data.Message'
-        "401":
-          description: Unauthorized
           schema:
             $ref: '#/definitions/data.Message'
         "500":
@@ -92,4 +122,85 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Signs a new buyer up
+  /product/{id}:
+    get:
+      description: Checks to see if a product with a given id exists and returns its
+        product information if it does.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.ProductResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Gets a Product by its Product ID
+  /product/create:
+    post:
+      description: Creates a new product post with the supplied data, if the data
+        is not valid it throws and error
+      parameters:
+      - description: seller_id
+        in: body
+        name: seller_id
+        required: true
+        schema:
+          type: string
+      - description: title
+        in: body
+        name: title
+        required: true
+        schema:
+          type: string
+      - description: desc
+        in: body
+        name: description
+        required: true
+        schema:
+          type: string
+      - description: price
+        in: body
+        name: price
+        required: true
+        schema:
+          type: integer
+      - description: condition
+        in: body
+        name: condition
+        required: true
+        schema:
+          type: integer
+      - description: product_type
+        in: body
+        name: product_type
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.ProductResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Creates a new product post
 swagger: "2.0"
