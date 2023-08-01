@@ -98,12 +98,14 @@ func TestBuyerSignUp(t *testing.T) {
 	//Test 1: Positive Test case, where signup is successful
 	res, err := BuyerSignUp(db, testSignup1)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup1.Email)
+	assert.NotEmpty(t, res.BuyerId)
+	assert.Equal(t, testSignup1.Email, res.Email)
 
 	//Test 2: Positive Test case, where signup is successful
 	res, err = BuyerSignUp(db, testSignup2)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup2.Email)
+	assert.NotEmpty(t, res.BuyerId)
+	assert.Equal(t, testSignup2.Email, res.Email)
 
 	//Test 3: Negative Test case, where email already exists
 	res, err = BuyerSignUp(db, testSignup3)

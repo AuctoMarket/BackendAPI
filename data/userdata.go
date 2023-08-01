@@ -25,4 +25,5 @@ type SellerResponseData struct {
 	Email      string `json:"email" binding:"required"`
 	SellerId   string `json:"seller_id" binding:"required"`
 	SellerName string `json:"seller_name" binding:"required"`
+	Followers  int    `json:"followers" binding:"required"`
 }

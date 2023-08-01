@@ -74,6 +74,7 @@ func createSellersTable(db *sql.DB) error {
 		email VARCHAR NOT NULL UNIQUE, 
 		password VARCHAR NOT NULL,
 		seller_name VARCHAR NOT NULL UNIQUE,
+		followers INT DEFAULT 0 NOT NULL,
 		PRIMARY KEY(seller_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

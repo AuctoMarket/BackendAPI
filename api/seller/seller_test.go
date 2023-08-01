@@ -115,11 +115,13 @@ func TestSellerLogin(t *testing.T) {
 	res, err := SellerLogin(db, testLogin1)
 	assert.Empty(t, err)
 	assert.Equal(t, res.Email, testLogin1.Email)
+	assert.Equal(t, testLogin1.Email, res.Email)
 
 	//Test 2: Positive Test where username and password are both correct
 	res, err = SellerLogin(db, testLogin2)
 	assert.Empty(t, err)
 	assert.Equal(t, res.Email, testLogin2.Email)
+	assert.Equal(t, testLogin2.Email, res.Email)
 
 	//Test 3: Negative Test where username is correct but password is incorrect
 	res, err = SellerLogin(db, testLogin3)
@@ -155,12 +157,18 @@ func TestSellerSignUp(t *testing.T) {
 	//Test 1: Positive Test case, where signup is successful
 	res, err := SellerSignUp(db, testSignup1)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup1.Email)
+	assert.NotEmpty(t, res.SellerId)
+	assert.Equal(t, testSignup1.Email, res.Email)
+	assert.Equal(t, 0, res.Followers)
+	assert.Equal(t, testSignup1.SellerName, res.SellerName)
 
 	//Test 2: Positive Test case, where signup is successful
 	res, err = SellerSignUp(db, testSignup2)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup2.Email)
+	assert.NotEmpty(t, res.SellerId)
+	assert.Equal(t, testSignup2.Email, res.Email)
+	assert.Equal(t, 0, res.Followers)
+	assert.Equal(t, testSignup2.SellerName, res.SellerName)
 
 	//Test 3: Negative Test case, where email already exists
 	res, err = SellerSignUp(db, testSignup3)

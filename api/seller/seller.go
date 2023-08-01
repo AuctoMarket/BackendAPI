@@ -20,9 +20,9 @@ func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerResponseD
 		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
-	query := `SELECT email, seller_id, seller_name, password from sellers WHERE email = $1;`
+	query := `SELECT email, seller_id, seller_name, password, followers from sellers WHERE email = $1;`
 	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(
-		&response.Email, &response.SellerId, &response.SellerName, &hashedPwd)
+		&response.Email, &response.SellerId, &response.SellerName, &hashedPwd, &response.Followers)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
@@ -64,10 +64,10 @@ func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResp
 		return response, errResp
 	}
 
-	query := `INSERT INTO sellers(email, password, seller_name) VALUES ($1,$2,$3) RETURNING email, seller_id, seller_name;`
+	query := `INSERT INTO sellers(email, password, seller_name) VALUES ($1,$2,$3) RETURNING email, seller_id, seller_name, followers;`
 	err = db.QueryRowContext(context.Background(), query,
 		signupData.Email, hashPassword, signupData.SellerName).Scan(
-		&response.Email, &response.SellerId, &response.SellerName)
+		&response.Email, &response.SellerId, &response.SellerName, &response.Followers)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
