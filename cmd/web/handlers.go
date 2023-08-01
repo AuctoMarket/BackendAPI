@@ -21,7 +21,7 @@ import (
 // @Failure      400  {object}  data.Message
 // @Failure      401  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /buyer/login/ [post]
+// @Router       /buyers/login/ [post]
 func handleBuyerLogin(c *gin.Context) {
 	var loginData data.BuyerLoginData
 	bindErr := c.ShouldBindJSON(&loginData)
@@ -54,7 +54,7 @@ func handleBuyerLogin(c *gin.Context) {
 // @Success      200  {object}  data.BuyerLoginResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /buyer/signup/ [post]
+// @Router       /buyers/signup/ [post]
 func handleBuyerSignUp(c *gin.Context) {
 	var signUpData data.BuyerSignUpData
 	bindErr := c.ShouldBindJSON(&signUpData)
@@ -85,7 +85,7 @@ func handleBuyerSignUp(c *gin.Context) {
 // @Failure      400  {object}  data.Message
 // @Failure      404  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /product/{id}  [get]
+// @Router       /products/{id}  [get]
 func handleGetProductById(c *gin.Context) {
 	productId := c.Param("id")
 
@@ -119,7 +119,7 @@ func handleGetProductById(c *gin.Context) {
 // @Success      201  {object}  data.ProductResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /product  [post]
+// @Router       /products  [post]
 func handleCreateProduct(c *gin.Context) {
 	var createProduct data.ProductCreateData
 	bindErr := c.ShouldBindJSON(&createProduct)

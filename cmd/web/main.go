@@ -35,19 +35,19 @@ func main() {
 
 	apiGroup := router.Group("/api/v1")
 	{
-		buyerGroup := apiGroup.Group("/buyer")
+		buyerGroup := apiGroup.Group("/buyers")
 		{
 			buyerGroup.POST("/login", handleBuyerLogin)
 			buyerGroup.POST("/signup", handleBuyerSignUp)
 		}
 
-		productGroup := apiGroup.Group("/product")
+		productGroup := apiGroup.Group("/products")
 		{
 			productGroup.GET("/:id", handleGetProductById)
 			productGroup.POST("", handleCreateProduct)
 		}
 
-		testGroup := apiGroup.Group("/test")
+		testGroup := apiGroup.Group("/tests")
 		{
 			testGroup.GET("/ping", handlePing)
 		}

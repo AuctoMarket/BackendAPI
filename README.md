@@ -10,7 +10,7 @@ There is a `MAKEFILE` that simplifies the build and run commands for docker to `
 
 Once run, you can run a sanity check by testing the following endpoint:
 
- `localhost:8080/api/v1/test/ping` 
+ `localhost:8080/api/v1/tests/ping` 
  
  If setup correctly you should recieve a response in the form of:
  
