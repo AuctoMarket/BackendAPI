@@ -467,7 +467,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "AUCTO Backend API",
-	Description:      "This is the backend REST API for Aucto's marketplace, it is currently in v1.",
+	Description:      "This is the REST API for Aucto's marketplace, it is currently in v1.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

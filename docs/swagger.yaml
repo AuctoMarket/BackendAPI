@@ -59,8 +59,7 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: This is the backend REST API for Aucto's marketplace, it is currently
-    in v1.
+  description: This is the REST API for Aucto's marketplace, it is currently in v1.
   title: AUCTO Backend API
   version: "1.0"
 paths:
