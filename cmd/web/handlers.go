@@ -16,7 +16,7 @@ import (
 // if not returns a bad request error (400).
 // @Accept       json
 // @Produce      json
-// @Param 		 email body string true "Buyers email"
+// @Param 		 email body string true "Buyers email [UNIQUE]"
 // @Param 		 password body string true "Buyers password as plaintext"
 // @Success      200  {object}  data.BuyerLoginResponseData
 // @Failure      400  {object}  data.Message
@@ -150,9 +150,9 @@ func handleCreateProduct(c *gin.Context) {
 // if not returns a bad request error (400).
 // @Accept       json
 // @Produce      json
-// @Param 		 email body string true "Sellers email"
+// @Param 		 email body string true "Sellers email [UNIQUE]"
 // @Param 		 password body string true "Sellers password as plaintext"
-// @Param 		 seller_name body string true "Sellers seller alias that is displayed as their seller name"
+// @Param 		 seller_name body string true "Sellers seller alias that is displayed as their seller name [UNIQUE]"
 // @Success      200  {object}  data.SellerResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message

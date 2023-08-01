@@ -20,7 +20,7 @@ func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerResponseD
 		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
-	query := `SELECT email, buyer_id, seller_name, password from sellers WHERE email = $1;`
+	query := `SELECT email, seller_id, seller_name, password from sellers WHERE email = $1;`
 	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(
 		&response.Email, &response.SellerId, &response.SellerName, &hashedPwd)
 
@@ -44,10 +44,16 @@ Returned response is similar to as if the seller logged in.
 func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResponseData, *utils.ErrorHandler) {
 	var response data.SellerResponseData
 
-	buyerExists := doesSellerEmailExist(db, signupData.Email)
+	sellerEmailExists := doesSellerEmailExist(db, signupData.Email)
 
-	if buyerExists {
+	if sellerEmailExists {
 		return response, utils.BadRequestError("Email is already in use")
+	}
+
+	sellerNameExists := doesSellerNameExist(db, signupData.SellerName)
+
+	if sellerNameExists {
+		return response, utils.BadRequestError("Seller name is already in use")
 	}
 
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))
@@ -80,6 +86,22 @@ func doesSellerEmailExist(db *sql.DB, email string) bool {
 	var sellersExists bool
 	query := `SELECT EXISTS(SELECT * FROM sellers WHERE email = $1);`
 	err := db.QueryRowContext(context.Background(), query, email).Scan(&sellersExists)
+
+	if err != nil {
+		return false
+	}
+
+	return sellersExists
+}
+
+/*
+Checks wether a seller with a given name already exists in the database
+and returns true if it does false otherwise.
+*/
+func doesSellerNameExist(db *sql.DB, sellerName string) bool {
+	var sellersExists bool
+	query := `SELECT EXISTS(SELECT * FROM sellers WHERE seller_name = $1);`
+	err := db.QueryRowContext(context.Background(), query, sellerName).Scan(&sellersExists)
 
 	if err != nil {
 		return false

@@ -57,7 +57,7 @@ Create the table for Buyers
 func createBuyersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS buyers(
 		buyer_id uuid DEFAULT uuid_generate_v1() NOT NULL,
-		email VARCHAR NOT NULL, 
+		email VARCHAR NOT NULL UNIQUE, 
 		password VARCHAR NOT NULL,
 		PRIMARY KEY(buyer_id));`
 
@@ -71,9 +71,9 @@ Create the table for Sellers
 func createSellersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS sellers(
 		seller_id uuid DEFAULT uuid_generate_v1() NOT NULL,
-		email VARCHAR NOT NULL, 
+		email VARCHAR NOT NULL UNIQUE, 
 		password VARCHAR NOT NULL,
-		seller_name VARCHAR NOT NULL,
+		seller_name VARCHAR NOT NULL UNIQUE,
 		PRIMARY KEY(seller_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -106,7 +106,7 @@ func createProductImagesTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS product_images(
 		product_image_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		product_id uuid REFERENCES products(product_id), 
-		path VARCHAR NOT NULL,
+		path VARCHAR NOT NULL UNIQUE,
 		PRIMARY KEY(product_image_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

@@ -112,13 +112,18 @@ func TestBuyerSignUp(t *testing.T) {
 	store.CloseDB(db)
 }
 
-func addDummyAccounts(db *sql.DB) {
+func addDummyAccounts(db *sql.DB) []string {
 	var dummyAccounts []data.BuyerSignUpData = []data.BuyerSignUpData{{Email: "test@gmail.com", Password: "Test1234"},
 		{Email: "test2@gmail.com", Password: "Test1234"}, {Email: "test3@gmail.com", Password: "Test1234"}}
 
+	var buyerIds []string
 	for i := 0; i < len(dummyAccounts); i++ {
-		query := `INSERT INTO buyers(email, password) VALUES ($1,$2);`
+		var buyerId string
+		query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING buyer_id;`
 		hashedPwd, _ := utils.HashAndSalt([]byte(dummyAccounts[i].Password))
-		db.ExecContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd)
+		db.QueryRowContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd).Scan(&buyerId)
+		buyerIds = append(buyerIds, buyerId)
 	}
+
+	return buyerIds
 }
