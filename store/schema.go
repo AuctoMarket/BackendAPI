@@ -73,6 +73,7 @@ func createSellersTable(db *sql.DB) error {
 		seller_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL, 
 		password VARCHAR NOT NULL,
+		seller_name VARCHAR NOT NULL,
 		PRIMARY KEY(seller_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

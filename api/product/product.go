@@ -1,6 +1,7 @@
 package product
 
 import (
+	"BackendAPI/api/seller"
 	"BackendAPI/data"
 	"BackendAPI/utils"
 	"context"
@@ -43,7 +44,7 @@ Creates a product given product information. If there is an issue with the input
 func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResponseData, *utils.ErrorHandler) {
 	var response data.ProductResponseData
 
-	validationErr := validateCreateProduct(product)
+	validationErr := validateCreateProduct(db, product)
 	if validationErr != nil {
 		return response, validationErr
 	}
@@ -65,7 +66,7 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResp
 	}
 
 	product.CreateResponseFromRequest(&response)
-	response.PostedDate = postedDate.Format("2006-01-02 15:04:05")
+	response.PostedDate = postedDate.String()
 
 	return response, nil
 }
@@ -90,7 +91,7 @@ func doesProductExist(db *sql.DB, productId string) bool {
 Validates the various fields in the create product request body to ensure they are valid.
 Returns error if request body is not valid
 */
-func validateCreateProduct(product data.ProductCreateData) *utils.ErrorHandler {
+func validateCreateProduct(db *sql.DB, product data.ProductCreateData) *utils.ErrorHandler {
 	if product.Condition < 0 || product.Condition > 5 {
 		utils.LogMessage("Condition is less than 0 or greater than 5")
 		return utils.BadRequestError("Bad condition data")
@@ -104,6 +105,11 @@ func validateCreateProduct(product data.ProductCreateData) *utils.ErrorHandler {
 	if product.ProductType != "Buy-Now" && product.ProductType != "Pre-Order" {
 		utils.LogMessage("Product type is not recognised")
 		return utils.BadRequestError("Bad product_type data")
+	}
+
+	if !seller.DoesSellerExist(db, product.SellerId) {
+		utils.LogMessage("Seller Id provided does not exist")
+		return utils.BadRequestError("Bad seller_id data")
 	}
 
 	return nil

@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "BackendAPI/docs"
 	"BackendAPI/store"
 
 	"database/sql"
@@ -45,6 +44,12 @@ func main() {
 		{
 			productGroup.GET("/:id", handleGetProductById)
 			productGroup.POST("", handleCreateProduct)
+		}
+
+		sellerGroup := apiGroup.Group("/sellers")
+		{
+			sellerGroup.POST("/signup", handleSellerSignUp)
+			sellerGroup.POST("/login", handleSellerLogin)
 		}
 
 		testGroup := apiGroup.Group("/tests")

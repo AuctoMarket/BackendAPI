@@ -48,12 +48,12 @@ func TestBuyerLogin(t *testing.T) {
 	db, err := store.SetupTestDB("../../.env")
 	addDummyAccounts(db)
 
-	testLogin1 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test1234"}
-	testLogin2 := data.BuyerLoginData{Email: "test2@gmail.com", Password: "Test1234"}
-	testLogin3 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test12345"}
-	testLogin4 := data.BuyerLoginData{Email: "test8@gmail.com", Password: "Test1234"}
-	testLogin5 := data.BuyerLoginData{Email: "", Password: "Test1234"}
-	testLogin6 := data.BuyerLoginData{Email: "test@gmail.com", Password: ""}
+	testLogin1 := data.UserLoginData{Email: "test@gmail.com", Password: "Test1234"}
+	testLogin2 := data.UserLoginData{Email: "test2@gmail.com", Password: "Test1234"}
+	testLogin3 := data.UserLoginData{Email: "test@gmail.com", Password: "Test12345"}
+	testLogin4 := data.UserLoginData{Email: "test8@gmail.com", Password: "Test1234"}
+	testLogin5 := data.UserLoginData{Email: "", Password: "Test1234"}
+	testLogin6 := data.UserLoginData{Email: "test@gmail.com", Password: ""}
 
 	//Test 1: Positive Test where username and password are both correct
 	res, err := BuyerLogin(db, testLogin1)
