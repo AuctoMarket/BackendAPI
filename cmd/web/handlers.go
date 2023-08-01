@@ -9,6 +9,39 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// handleBuyerSignup godoc
+// @Summary      Signs a new buyer up
+// @Description  Checks to see if a user email exists and if not creates a new account with supplied email and password
+// if not returns a bad request error (400).
+// @Accept       json
+// @Produce      json
+// @Param 		 email body string true "Users email"
+// @Param 		 password body string true "Users password as plaintext"
+// @Success      200  {object}  data.BuyerLoginResponseData
+// @Failure      400  {object}  data.Message
+// @Failure      500  {object}  data.Message
+// @Router       /buyers/signup/ [post]
+func handleBuyerSignUp(c *gin.Context) {
+	var signUpData data.BuyerSignUpData
+	bindErr := c.ShouldBindJSON(&signUpData)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.JSON(http.StatusCreated, &signUpResponse)
+}
+
 // handleBuyerLogin godoc
 // @Summary      Logs a buyer into their account
 // @Description  Checks to see if a user email exists and if supplied password matches the stored password
@@ -139,6 +172,14 @@ func handleCreateProduct(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, &product)
+}
+
+func handleSellerSignUp(c *gin.Context) {
+
+}
+
+func handleSellerLogin(c *gin.Context) {
+
 }
 
 /*
