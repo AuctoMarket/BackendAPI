@@ -1,8 +1,13 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "This is the backend REST API for Aucto's marketplace, it is currently in v1.",
+        "title": "AUCTO Backend API",
+        "contact": {},
+        "version": "1.0"
     },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
     "paths": {
         "/buyer/login/": {
             "post": {
@@ -16,7 +21,7 @@
                 "summary": "Logs a buyer into their account",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -25,7 +30,7 @@
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -38,7 +43,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -74,7 +79,7 @@
                 "summary": "Signs a new buyer up",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -83,7 +88,7 @@
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -96,7 +101,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -105,8 +110,122 @@
                             "$ref": "#/definitions/data.Message"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product": {
+            "post": {
+                "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new product post",
+                "parameters": [
+                    {
+                        "description": "The Seller who posted the product's seller_id",
+                        "name": "seller_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Title of the product",
+                        "name": "title",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Short description of the product",
+                        "name": "description",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Price as an int of the product",
+                        "name": "price",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Condition of the product from a scale of 0 to 5",
+                        "name": "condition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Type of product sale: Buy-Now or Pre-Order",
+                        "name": "product_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/{id}": {
+            "get": {
+                "description": "Checks to see if a product with a given id exists and returns its product information if it does.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a Product by its Product ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -122,10 +241,10 @@
         }
     },
     "definitions": {
-        "data.LoginResponseData": {
+        "data.BuyerLoginResponseData": {
             "type": "object",
             "properties": {
-                "buid": {
+                "buyer_id": {
                     "type": "string"
                 },
                 "email": {
@@ -137,6 +256,45 @@
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.ProductResponseData": {
+            "type": "object",
+            "required": [
+                "condition",
+                "desc",
+                "posted_date",
+                "price",
+                "product_id",
+                "product_type",
+                "seller_id",
+                "title"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "posted_date": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

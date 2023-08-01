@@ -1,7 +1,6 @@
 package store
 
 import (
-	"context"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -9,52 +8,24 @@ import (
 )
 
 func TestSetupTestDB(t *testing.T) {
-	queryCheckTableBuyers := `SELECT EXISTS(
-		SELECT * 
-		FROM information_schema.tables 
-		WHERE 
-		  table_schema = 'public' AND 
-		  table_name = 'buyers'
-	);`
-	queryCheckTableSellers := `SELECT EXISTS(
-		SELECT * 
-		FROM information_schema.tables 
-		WHERE 
-		  table_schema = 'public' AND 
-		  table_name = 'sellers'
-	);`
 
-	queryCheckTableImaginary := `SELECT EXISTS(
-		SELECT * 
-		FROM information_schema.tables 
-		WHERE 
-		  table_schema = 'public' AND 
-		  table_name = 'imaginary'
-	);`
-
-	//Test 1: Setup a DB connection
-	db, err := SetupTestDB()
+	//Test 1: Setup a DB connection and check if no errors
+	db, err := SetupTestDB("../.env")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, db)
 
-	//Test 2: Check if neccessary buyers tables exists
-	var buyersExist bool
-	err = db.QueryRowContext(context.Background(), queryCheckTableBuyers).Scan(&buyersExist)
-	assert.NoError(t, err)
-	assert.Equal(t, buyersExist, true)
+	CloseDB(db)
+}
 
-	//Test 3: Check if neccessary sellers tables exists
-	var sellersExist bool
-	err = db.QueryRowContext(context.Background(), queryCheckTableSellers).Scan(&sellersExist)
-	assert.NoError(t, err)
-	assert.Equal(t, sellersExist, true)
-
-	//Test 3: Check no uneccessary tables exist
-	var imaginaryExist bool
-	db.QueryRowContext(context.Background(), queryCheckTableImaginary).Scan(&imaginaryExist)
+func TestInitDB(t *testing.T) {
+	//Test 1: Init DB and ensure the db exists and there is no error for main db
+	db, err := initDB("../.env", true)
+	assert.NotEmpty(t, db)
 	assert.NoError(t, err)
 
-	assert.Equal(t, imaginaryExist, false)
+	//Test 2: Ping the db and ensure the connection exists
+	err = db.Ping()
+	assert.NoError(t, err)
 
-	CleaupTestDB(db)
+	CloseDB(db)
 }

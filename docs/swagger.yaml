@@ -1,7 +1,8 @@
+basePath: /api/v1
 definitions:
-  data.LoginResponseData:
+  data.BuyerLoginResponseData:
     properties:
-      buid:
+      buyer_id:
         type: string
       email:
         type: string
@@ -11,8 +12,41 @@ definitions:
       message:
         type: string
     type: object
+  data.ProductResponseData:
+    properties:
+      condition:
+        type: integer
+      desc:
+        type: string
+      posted_date:
+        type: string
+      price:
+        type: integer
+      product_id:
+        type: string
+      product_type:
+        type: string
+      seller_id:
+        type: string
+      title:
+        type: string
+    required:
+    - condition
+    - desc
+    - posted_date
+    - price
+    - product_id
+    - product_type
+    - seller_id
+    - title
+    type: object
+host: localhost:8080
 info:
   contact: {}
+  description: This is the backend REST API for Aucto's marketplace, it is currently
+    in v1.
+  title: AUCTO Backend API
+  version: "1.0"
 paths:
   /buyer/login/:
     post:
@@ -21,13 +55,13 @@ paths:
       description: Checks to see if a user email exists and if supplied password matches
         the stored password
       parameters:
-      - description: email
+      - description: Users email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: password
+      - description: Users password as plaintext
         in: body
         name: password
         required: true
@@ -39,7 +73,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.LoginResponseData'
+            $ref: '#/definitions/data.BuyerLoginResponseData'
         "400":
           description: Bad Request
           schema:
@@ -60,13 +94,13 @@ paths:
       description: Checks to see if a user email exists and if not creates a new account
         with supplied email and password
       parameters:
-      - description: email
+      - description: Users email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: password
+      - description: Users password as plaintext
         in: body
         name: password
         required: true
@@ -78,13 +112,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.LoginResponseData'
+            $ref: '#/definitions/data.BuyerLoginResponseData'
         "400":
           description: Bad Request
-          schema:
-            $ref: '#/definitions/data.Message'
-        "401":
-          description: Unauthorized
           schema:
             $ref: '#/definitions/data.Message'
         "500":
@@ -92,4 +122,85 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Signs a new buyer up
+  /product:
+    post:
+      description: Creates a new product post with the supplied data, if the data
+        is not valid it throws and error
+      parameters:
+      - description: The Seller who posted the product's seller_id
+        in: body
+        name: seller_id
+        required: true
+        schema:
+          type: string
+      - description: Title of the product
+        in: body
+        name: title
+        required: true
+        schema:
+          type: string
+      - description: Short description of the product
+        in: body
+        name: description
+        required: true
+        schema:
+          type: string
+      - description: Price as an int of the product
+        in: body
+        name: price
+        required: true
+        schema:
+          type: integer
+      - description: Condition of the product from a scale of 0 to 5
+        in: body
+        name: condition
+        required: true
+        schema:
+          type: integer
+      - description: 'Type of product sale: Buy-Now or Pre-Order'
+        in: body
+        name: product_type
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.ProductResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Creates a new product post
+  /product/{id}:
+    get:
+      description: Checks to see if a product with a given id exists and returns its
+        product information if it does.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.ProductResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Gets a Product by its Product ID
 swagger: "2.0"

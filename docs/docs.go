@@ -28,7 +28,7 @@ const docTemplate = `{
                 "summary": "Logs a buyer into their account",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -37,7 +37,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -50,7 +50,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -86,7 +86,7 @@ const docTemplate = `{
                 "summary": "Signs a new buyer up",
                 "parameters": [
                     {
-                        "description": "email",
+                        "description": "Users email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -95,7 +95,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "password",
+                        "description": "Users password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -108,7 +108,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.LoginResponseData"
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
                         }
                     },
                     "400": {
@@ -117,8 +117,122 @@ const docTemplate = `{
                             "$ref": "#/definitions/data.Message"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product": {
+            "post": {
+                "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new product post",
+                "parameters": [
+                    {
+                        "description": "The Seller who posted the product's seller_id",
+                        "name": "seller_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Title of the product",
+                        "name": "title",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Short description of the product",
+                        "name": "description",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Price as an int of the product",
+                        "name": "price",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Condition of the product from a scale of 0 to 5",
+                        "name": "condition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Type of product sale: Buy-Now or Pre-Order",
+                        "name": "product_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/product/{id}": {
+            "get": {
+                "description": "Checks to see if a product with a given id exists and returns its product information if it does.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets a Product by its Product ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -134,10 +248,10 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "data.LoginResponseData": {
+        "data.BuyerLoginResponseData": {
             "type": "object",
             "properties": {
-                "buid": {
+                "buyer_id": {
                     "type": "string"
                 },
                 "email": {
@@ -152,18 +266,57 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "data.ProductResponseData": {
+            "type": "object",
+            "required": [
+                "condition",
+                "desc",
+                "posted_date",
+                "price",
+                "product_id",
+                "product_type",
+                "seller_id",
+                "title"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "posted_date": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "AUCTO Backend API",
+	Description:      "This is the backend REST API for Aucto's marketplace, it is currently in v1.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

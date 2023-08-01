@@ -14,7 +14,9 @@ import (
 
 func TestDoesBuyerEmailExist(t *testing.T) {
 
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+
 	addDummyAccounts(db)
 
 	testEmail := "test@gmail.com"
@@ -23,39 +25,35 @@ func TestDoesBuyerEmailExist(t *testing.T) {
 	testEmail4 := ""
 
 	//Test 1: Positive result when email exists in the database
-	res, err := doesBuyerEmailExist(db, testEmail)
-	assert.NoError(t, err)
+	res := doesBuyerEmailExist(db, testEmail)
 	assert.Equal(t, true, res)
 
 	//Test 2: Positive result when email exists in the database
-	res, err = doesBuyerEmailExist(db, testEmail2)
-	assert.NoError(t, err)
+	res = doesBuyerEmailExist(db, testEmail2)
 	assert.Equal(t, true, res)
 
 	//Test 3: Negative result when email is similar to one in the email but
 	//is not the same
-	res, err = doesBuyerEmailExist(db, testEmail3)
-	assert.NoError(t, err)
+	res = doesBuyerEmailExist(db, testEmail3)
 	assert.Equal(t, false, res)
 
 	//Test 4: Negative result when test email is an empty string
-	res, err = doesBuyerEmailExist(db, testEmail4)
-	assert.NoError(t, err)
+	res = doesBuyerEmailExist(db, testEmail4)
 	assert.NotEqual(t, true, res)
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func TestBuyerLogin(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 	addDummyAccounts(db)
 
-	testLogin1 := data.LoginData{Email: "test@gmail.com", Password: "Test1234"}
-	testLogin2 := data.LoginData{Email: "test2@gmail.com", Password: "Test1234"}
-	testLogin3 := data.LoginData{Email: "test@gmail.com", Password: "Test12345"}
-	testLogin4 := data.LoginData{Email: "test8@gmail.com", Password: "Test1234"}
-	testLogin5 := data.LoginData{Email: "", Password: "Test1234"}
-	testLogin6 := data.LoginData{Email: "test@gmail.com", Password: ""}
+	testLogin1 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test1234"}
+	testLogin2 := data.BuyerLoginData{Email: "test2@gmail.com", Password: "Test1234"}
+	testLogin3 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test12345"}
+	testLogin4 := data.BuyerLoginData{Email: "test8@gmail.com", Password: "Test1234"}
+	testLogin5 := data.BuyerLoginData{Email: "", Password: "Test1234"}
+	testLogin6 := data.BuyerLoginData{Email: "test@gmail.com", Password: ""}
 
 	//Test 1: Positive Test where username and password are both correct
 	res, err := BuyerLogin(db, testLogin1)
@@ -87,15 +85,15 @@ func TestBuyerLogin(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, err.Error(), "Incorrect user email or password!")
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func TestBuyerSignUp(t *testing.T) {
-	db, err := store.SetupTestDB()
+	db, err := store.SetupTestDB("../../.env")
 
-	testSignup1 := data.SignUpData{Email: "test@gmail.com", Password: "Test1234"}
-	testSignup2 := data.SignUpData{Email: "test2@gmail.com", Password: "Test1234"}
-	testSignup3 := data.SignUpData{Email: "test@gmail.com", Password: "Test1234"}
+	testSignup1 := data.BuyerSignUpData{Email: "test@gmail.com", Password: "Test1234"}
+	testSignup2 := data.BuyerSignUpData{Email: "test2@gmail.com", Password: "Test1234"}
+	testSignup3 := data.BuyerSignUpData{Email: "test@gmail.com", Password: "Test1234"}
 
 	//Test 1: Positive Test case, where signup is successful
 	res, err := BuyerSignUp(db, testSignup1)
@@ -111,11 +109,11 @@ func TestBuyerSignUp(t *testing.T) {
 	res, err = BuyerSignUp(db, testSignup3)
 	assert.Error(t, err)
 
-	store.CleaupTestDB(db)
+	store.CloseDB(db)
 }
 
 func addDummyAccounts(db *sql.DB) {
-	var dummyAccounts []data.SignUpData = []data.SignUpData{{Email: "test@gmail.com", Password: "Test1234"},
+	var dummyAccounts []data.BuyerSignUpData = []data.BuyerSignUpData{{Email: "test@gmail.com", Password: "Test1234"},
 		{Email: "test2@gmail.com", Password: "Test1234"}, {Email: "test3@gmail.com", Password: "Test1234"}}
 
 	for i := 0; i < len(dummyAccounts); i++ {

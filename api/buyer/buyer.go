@@ -11,23 +11,17 @@ import (
 Logic for Buyer login, checks if the user exists in the database and checks if the stored
 password matches the plaintext password.
 */
-func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *utils.ErrorHandler) {
-	var response data.LoginResponseData
+func BuyerLogin(db *sql.DB, loginData data.BuyerLoginData) (data.BuyerLoginResponseData, *utils.ErrorHandler) {
+	var response data.BuyerLoginResponseData
 	var hashedPwd string
-	buyerExists, err := doesBuyerEmailExist(db, loginData.Email)
-
-	if err != nil {
-		errResp := utils.InternalServerError()
-		utils.LogError(err, "Error in checking if buyer email exists")
-		return response, errResp
-	}
+	buyerExists := doesBuyerEmailExist(db, loginData.Email)
 
 	if !buyerExists {
 		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
 	query := `SELECT email, buyer_id, password from buyers WHERE email = $1;`
-	err = db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerID, &hashedPwd)
+	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerId, &hashedPwd)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
@@ -46,15 +40,10 @@ func BuyerLogin(db *sql.DB, loginData data.LoginData) (data.LoginResponseData, *
 Logic for Buyer signup, adds the new user to the database if the email is not already in use.
 Returned response is similar to as if the user logged in.
 */
-func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData, *utils.ErrorHandler) {
-	var response data.LoginResponseData
+func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginResponseData, *utils.ErrorHandler) {
+	var response data.BuyerLoginResponseData
 
-	buyerExists, err := doesBuyerEmailExist(db, signupData.Email)
-	if err != nil {
-		errResp := utils.InternalServerError()
-		utils.LogError(err, "Error in checking if buyer email exists")
-		return response, errResp
-	}
+	buyerExists := doesBuyerEmailExist(db, signupData.Email)
 
 	if buyerExists {
 		return response, utils.BadRequestError("Email is already in use")
@@ -69,7 +58,7 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 	}
 
 	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id;`
-	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerID)
+	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerId)
 
 	if err != nil {
 		errResp := utils.InternalServerError()
@@ -84,14 +73,14 @@ func BuyerSignUp(db *sql.DB, signupData data.SignUpData) (data.LoginResponseData
 Checks wether a Buyer with a given email address already exists in the database
 and returns true if it does false otherwise.
 */
-func doesBuyerEmailExist(db *sql.DB, email string) (bool, error) {
+func doesBuyerEmailExist(db *sql.DB, email string) bool {
 	var buyerExists bool
 	query := `SELECT EXISTS(SELECT * FROM buyers WHERE email = $1);`
 	err := db.QueryRowContext(context.Background(), query, email).Scan(&buyerExists)
 
 	if err != nil {
-		return false, err
+		return false
 	}
 
-	return buyerExists, nil
+	return buyerExists
 }
