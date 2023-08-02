@@ -14,6 +14,10 @@ string
 func GetDotEnv(key string, path string) (string, error) {
 	err := godotenv.Load(path)
 
+	if os.Getenv("API_ENV") == "lambda" {
+		return os.Getenv(key), nil
+	}
+
 	if err != nil {
 		return "", err
 	}
@@ -27,6 +31,11 @@ int
 */
 func GetDotEnvInt(key string, path string) (int, error) {
 	err := godotenv.Load(path)
+
+	if os.Getenv("API_ENV") == "lambda" {
+		num, err := strconv.ParseInt(os.Getenv(key), 10, 32)
+		return int(num), err
+	}
 
 	if err != nil {
 		return 0, err

@@ -3,10 +3,14 @@ package main
 import (
 	_ "BackendAPI/docs"
 	"BackendAPI/store"
+	"context"
 
 	"database/sql"
 	"log"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -14,6 +18,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var ginLambda *ginadapter.GinLambda
 var db *sql.DB
 
 // @title           AUCTO Backend API
@@ -65,7 +70,23 @@ func main() {
 
 	}
 
-	router.Run(":8080")
+	ginLambda = ginadapter.New(router)
+	lambda.Start(Handler)
+
+	// 	lambda.Start(Handler)
+	// env := os.Getenv("API_ENV")
+
+	// if env == "lambda" {
+	// 	ginLambda = ginadapter.New(router)
+
+	// 	lambda.Start(Handler)
+	// } else {
+	// 	router.Run(":8080")
+	// }
 
 	defer store.CloseDB(db)
+}
+
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return ginLambda.ProxyWithContext(ctx, request)
 }
