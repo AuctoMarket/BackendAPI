@@ -11,7 +11,7 @@ import (
 Logic for Buyer login, checks if the user exists in the database and checks if the stored
 password matches the plaintext password.
 */
-func BuyerLogin(db *sql.DB, loginData data.BuyerLoginData) (data.BuyerLoginResponseData, *utils.ErrorHandler) {
+func BuyerLogin(db *sql.DB, loginData data.UserLoginData) (data.BuyerLoginResponseData, *utils.ErrorHandler) {
 	var response data.BuyerLoginResponseData
 	var hashedPwd string
 	buyerExists := doesBuyerEmailExist(db, loginData.Email)

@@ -48,12 +48,12 @@ func TestBuyerLogin(t *testing.T) {
 	db, err := store.SetupTestDB("../../.env")
 	addDummyAccounts(db)
 
-	testLogin1 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test1234"}
-	testLogin2 := data.BuyerLoginData{Email: "test2@gmail.com", Password: "Test1234"}
-	testLogin3 := data.BuyerLoginData{Email: "test@gmail.com", Password: "Test12345"}
-	testLogin4 := data.BuyerLoginData{Email: "test8@gmail.com", Password: "Test1234"}
-	testLogin5 := data.BuyerLoginData{Email: "", Password: "Test1234"}
-	testLogin6 := data.BuyerLoginData{Email: "test@gmail.com", Password: ""}
+	testLogin1 := data.UserLoginData{Email: "test@gmail.com", Password: "Test1234"}
+	testLogin2 := data.UserLoginData{Email: "test2@gmail.com", Password: "Test1234"}
+	testLogin3 := data.UserLoginData{Email: "test@gmail.com", Password: "Test12345"}
+	testLogin4 := data.UserLoginData{Email: "test8@gmail.com", Password: "Test1234"}
+	testLogin5 := data.UserLoginData{Email: "", Password: "Test1234"}
+	testLogin6 := data.UserLoginData{Email: "test@gmail.com", Password: ""}
 
 	//Test 1: Positive Test where username and password are both correct
 	res, err := BuyerLogin(db, testLogin1)
@@ -98,12 +98,14 @@ func TestBuyerSignUp(t *testing.T) {
 	//Test 1: Positive Test case, where signup is successful
 	res, err := BuyerSignUp(db, testSignup1)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup1.Email)
+	assert.NotEmpty(t, res.BuyerId)
+	assert.Equal(t, testSignup1.Email, res.Email)
 
 	//Test 2: Positive Test case, where signup is successful
 	res, err = BuyerSignUp(db, testSignup2)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testSignup2.Email)
+	assert.NotEmpty(t, res.BuyerId)
+	assert.Equal(t, testSignup2.Email, res.Email)
 
 	//Test 3: Negative Test case, where email already exists
 	res, err = BuyerSignUp(db, testSignup3)
@@ -112,13 +114,18 @@ func TestBuyerSignUp(t *testing.T) {
 	store.CloseDB(db)
 }
 
-func addDummyAccounts(db *sql.DB) {
+func addDummyAccounts(db *sql.DB) []string {
 	var dummyAccounts []data.BuyerSignUpData = []data.BuyerSignUpData{{Email: "test@gmail.com", Password: "Test1234"},
 		{Email: "test2@gmail.com", Password: "Test1234"}, {Email: "test3@gmail.com", Password: "Test1234"}}
 
+	var buyerIds []string
 	for i := 0; i < len(dummyAccounts); i++ {
-		query := `INSERT INTO buyers(email, password) VALUES ($1,$2);`
+		var buyerId string
+		query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING buyer_id;`
 		hashedPwd, _ := utils.HashAndSalt([]byte(dummyAccounts[i].Password))
-		db.ExecContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd)
+		db.QueryRowContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd).Scan(&buyerId)
+		buyerIds = append(buyerIds, buyerId)
 	}
+
+	return buyerIds
 }

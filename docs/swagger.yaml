@@ -6,6 +6,9 @@ definitions:
         type: string
       email:
         type: string
+    required:
+    - buyer_id
+    - email
     type: object
   data.Message:
     properties:
@@ -40,28 +43,40 @@ definitions:
     - seller_id
     - title
     type: object
+  data.SellerResponseData:
+    properties:
+      email:
+        type: string
+      seller_id:
+        type: string
+      seller_name:
+        type: string
+    required:
+    - email
+    - seller_id
+    - seller_name
+    type: object
 host: localhost:8080
 info:
   contact: {}
-  description: This is the backend REST API for Aucto's marketplace, it is currently
-    in v1.
+  description: This is the REST API for Aucto's marketplace, it is currently in v1.
   title: AUCTO Backend API
   version: "1.0"
 paths:
-  /buyer/login/:
+  /buyers/login:
     post:
       consumes:
       - application/json
-      description: Checks to see if a user email exists and if supplied password matches
-        the stored password
+      description: Checks to see if a buyer email exists and if supplied password
+        matches the stored password
       parameters:
-      - description: Users email
+      - description: Buyers email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: Users password as plaintext
+      - description: Buyers password as plaintext
         in: body
         name: password
         required: true
@@ -87,20 +102,20 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Logs a buyer into their account
-  /buyer/signup/:
+  /buyers/signup:
     post:
       consumes:
       - application/json
-      description: Checks to see if a user email exists and if not creates a new account
-        with supplied email and password
+      description: Checks to see if a buyer email exists and if not creates a new
+        account with supplied email and password
       parameters:
-      - description: Users email
+      - description: Buyers email
         in: body
         name: email
         required: true
         schema:
           type: string
-      - description: Users password as plaintext
+      - description: Buyers password as plaintext
         in: body
         name: password
         required: true
@@ -122,7 +137,7 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Signs a new buyer up
-  /product:
+  /products:
     post:
       description: Creates a new product post with the supplied data, if the data
         is not valid it throws and error
@@ -179,10 +194,16 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Creates a new product post
-  /product/{id}:
+  /products/{id}:
     get:
       description: Checks to see if a product with a given id exists and returns its
         product information if it does.
+      parameters:
+      - description: product_id
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -203,4 +224,84 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Gets a Product by its Product ID
+  /sellers/login:
+    post:
+      consumes:
+      - application/json
+      description: Checks to see if a sellers email exists and if supplied password
+        matches the stored password
+      parameters:
+      - description: Sellers email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: Sellers password as plaintext
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.SellerResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Logs a seller into their account
+  /sellers/signup:
+    post:
+      consumes:
+      - application/json
+      description: Checks to see if a seller email does not already exists if so creates
+        a new
+      parameters:
+      - description: Sellers email
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: Sellers password as plaintext
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: Sellers seller alias that is displayed as their seller name
+        in: body
+        name: seller_name
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.SellerResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Signs a new seller up
 swagger: "2.0"

@@ -16,9 +16,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/buyer/login/": {
+        "/buyers/login": {
             "post": {
-                "description": "Checks to see if a user email exists and if supplied password matches the stored password",
+                "description": "Checks to see if a buyer email exists and if supplied password matches the stored password",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,7 +28,7 @@ const docTemplate = `{
                 "summary": "Logs a buyer into their account",
                 "parameters": [
                     {
-                        "description": "Users email",
+                        "description": "Buyers email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -37,7 +37,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Users password as plaintext",
+                        "description": "Buyers password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -74,9 +74,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/buyer/signup/": {
+        "/buyers/signup": {
             "post": {
-                "description": "Checks to see if a user email exists and if not creates a new account with supplied email and password",
+                "description": "Checks to see if a buyer email exists and if not creates a new account with supplied email and password",
                 "consumes": [
                     "application/json"
                 ],
@@ -86,7 +86,7 @@ const docTemplate = `{
                 "summary": "Signs a new buyer up",
                 "parameters": [
                     {
-                        "description": "Users email",
+                        "description": "Buyers email",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -95,7 +95,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Users password as plaintext",
+                        "description": "Buyers password as plaintext",
                         "name": "password",
                         "in": "body",
                         "required": true,
@@ -126,7 +126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/product": {
+        "/products": {
             "post": {
                 "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
                 "produces": [
@@ -211,13 +211,22 @@ const docTemplate = `{
                 }
             }
         },
-        "/product/{id}": {
+        "/products/{id}": {
             "get": {
                 "description": "Checks to see if a product with a given id exists and returns its product information if it does.",
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Gets a Product by its Product ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "product_id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -245,11 +254,134 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/sellers/login": {
+            "post": {
+                "description": "Checks to see if a sellers email exists and if supplied password matches the stored password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Logs a seller into their account",
+                "parameters": [
+                    {
+                        "description": "Sellers email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sellers password as plaintext",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.SellerResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/sellers/signup": {
+            "post": {
+                "description": "Checks to see if a seller email does not already exists if so creates a new",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Signs a new seller up",
+                "parameters": [
+                    {
+                        "description": "Sellers email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sellers password as plaintext",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Sellers seller alias that is displayed as their seller name",
+                        "name": "seller_name",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.SellerResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "data.BuyerLoginResponseData": {
             "type": "object",
+            "required": [
+                "buyer_id",
+                "email"
+            ],
             "properties": {
                 "buyer_id": {
                     "type": "string"
@@ -305,6 +437,25 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "data.SellerResponseData": {
+            "type": "object",
+            "required": [
+                "email",
+                "seller_id",
+                "seller_name"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "seller_name": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
@@ -316,7 +467,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "AUCTO Backend API",
-	Description:      "This is the backend REST API for Aucto's marketplace, it is currently in v1.",
+	Description:      "This is the REST API for Aucto's marketplace, it is currently in v1.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
