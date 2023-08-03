@@ -27,4 +27,10 @@ Considerations made are:
 
 ### API Documentation
 
-This project used swagger to document the various api endpoints and the swagger docs can be found at `http://localhost:8080/api/v1/docs/index.html` when the project is run.
+This project used swagger to document the various api endpoints and the swagger docs can be found at `https://uaw1x43etb.execute-api.ap-southeast-1.amazonaws.com/api/v1/docs/index.html#/`. These API represent the API available in latest stable build.
+
+### Reporting Bugs
+If a bug is found in the API, create an issue and tag it as a bug. Make sure to add instructions on how to recreate the bug as well as the expected output and the actual output.
+
+### Availability for dev testing
+The API has been hosted as a lambda function with a API gateway that allows users to use a http method to invoke the API. The base URL to do so is `https://uaw1x43etb.execute-api.ap-southeast-1.amazonaws.com/api/v1/docs`

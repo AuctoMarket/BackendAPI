@@ -6,7 +6,7 @@ type ProductResponseData struct {
 	Title       string `json:"title" binding:"required"`
 	Description string `json:"desc" binding:"required"`
 	ProductType string `json:"product_type" binding:"required"`
-	PostedDate  string `json:"posted_date" binding:"required"`
+	PostedDate  string `json:"posted_date" binding:"required" example:"2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"`
 	Price       int    `json:"price" binding:"required"`
 	Condition   int8   `json:"condition" binding:"required"`
 }

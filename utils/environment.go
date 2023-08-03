@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -8,30 +9,23 @@ import (
 )
 
 /*
-Function to get environment variables from the .Env file if they are a
-string
+Function to load a .env file into the OS environment
 */
-func GetDotEnv(key string, path string) (string, error) {
+func LoadDotEnv(path string) error {
 	err := godotenv.Load(path)
-
 	if err != nil {
-		return "", err
+		wd, _ := os.Getwd()
+		LogError(err, fmt.Sprintf("Could not load env file stated in path, PWD:%s", wd))
 	}
 
-	return os.Getenv(key), nil
+	return err
 }
 
 /*
 Function to get environment variables from the .Env file if they are a
 int
 */
-func GetDotEnvInt(key string, path string) (int, error) {
-	err := godotenv.Load(path)
-
-	if err != nil {
-		return 0, err
-	}
-
+func GetDotEnvInt(key string) (int, error) {
 	num, err := strconv.ParseInt(os.Getenv(key), 10, 32)
 
 	if err != nil {

@@ -2,11 +2,18 @@ package main
 
 import (
 	_ "BackendAPI/docs"
+	"BackendAPI/http"
 	"BackendAPI/store"
+	"BackendAPI/utils"
+	"context"
+	"os"
 
 	"database/sql"
 	"log"
 
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -14,6 +21,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var ginLambda *ginadapter.GinLambda
 var db *sql.DB
 
 // @title           AUCTO Backend API
@@ -27,6 +35,9 @@ func main() {
 	//Setup Router and Database Connection
 	router := gin.Default()
 	var err error
+
+	//Setup router middleware
+	http.UseMiddleware(router)
 
 	db, err = store.SetupDB()
 	if err != nil {
@@ -62,10 +73,26 @@ func main() {
 		{
 			docGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
-
 	}
 
-	router.Run(":8080")
+	loadErr := utils.LoadDotEnv(".env")
+	env := os.Getenv("API_ENV")
+
+	if loadErr != nil {
+		utils.LogError(loadErr, "Cannot fetch .env, no .env file")
+	}
+
+	if env == "lambda" {
+		ginLambda = ginadapter.New(router)
+
+		lambda.Start(Handler)
+	} else {
+		router.Run(":8080")
+	}
 
 	defer store.CloseDB(db)
+}
+
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return ginLambda.ProxyWithContext(ctx, request)
 }

@@ -25,7 +25,7 @@ func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerResponseD
 		&response.Email, &response.SellerId, &response.SellerName, &hashedPwd, &response.Followers)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Selecting Seller rows")
 		return response, errResp
 	}
@@ -59,7 +59,7 @@ func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResp
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in hash function!")
 		return response, errResp
 	}
@@ -70,7 +70,7 @@ func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResp
 		&response.Email, &response.SellerId, &response.SellerName, &response.Followers)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Inserting Rows into Sellers table")
 		return response, errResp
 	}

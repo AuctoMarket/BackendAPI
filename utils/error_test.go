@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestBadRequestError(t *testing.T) {
 
 func TestInternalServerError(t *testing.T) {
 	//Test 1: Internal Server Error created with error code 500 and standard message
-	testInternalServerError1 := InternalServerError()
+	testInternalServerError1 := InternalServerError(errors.New("Test"))
 	assert.Equal(t, "Something went wrong", testInternalServerError1.Error())
 	assert.Equal(t, 500, testInternalServerError1.Code)
 }

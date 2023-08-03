@@ -6,3 +6,9 @@ docker-up:
 docker-down: ## Stop docker containers and clear artefacts.
 	docker-compose -f docker-compose.yaml down
 	docker system prune 
+
+.PHONY: build-up
+build-up:
+	GOARCH=amd64 GOOS=linux go build -tags=jsoniter -o ./build/main cmd/web/*.go 
+	
+

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 )
 
 /*
@@ -35,16 +36,40 @@ func SetupDB() (*sql.DB, error) {
 Function to initiate the DB connection and returns the DB connection
 */
 func initDB(path string, isTest bool) (*sql.DB, error) {
-	var host string
-	port, err := utils.GetDotEnvInt("POSTGRES_PORT", path)
-	user, err := utils.GetDotEnv("POSTGRES_USER", path)
-	password, err := utils.GetDotEnv("POSTGRES_PASSWORD", path)
-	dbname, err := utils.GetDotEnv("POSTGRES_DBNAME", path)
+	var (
+		host     string
+		port     int
+		user     string
+		password string
+		dbname   string
+		sslmode  string
+	)
 
-	if isTest {
-		host, err = utils.GetDotEnv("POSTGRES_HOST_TEST", path)
+	err := utils.LoadDotEnv(path)
+	env := os.Getenv("DB_ENV")
+
+	if err != nil && env == "" {
+		return nil, err
+	}
+
+	if env == "rds" {
+		port, err = utils.GetDotEnvInt("POSTGRES_PORT_RDS")
+		user = os.Getenv("POSTGRES_USER_RDS")
+		password = os.Getenv("POSTGRES_PASSWORD_RDS")
+		dbname = os.Getenv("POSTGRES_DBNAME_RDS")
+		host = os.Getenv("POSTGRES_HOST_RDS")
+		sslmode = "require"
 	} else {
-		host, err = utils.GetDotEnv("POSTGRES_HOST", path)
+		port, err = utils.GetDotEnvInt("POSTGRES_PORT_LOCAL")
+		user = os.Getenv("POSTGRES_USER_LOCAL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
+		dbname = os.Getenv("POSTGRES_DBNAME_LOCAL")
+		host = os.Getenv("POSTGRES_HOST_LOCAL")
+		sslmode = "disable"
+
+		if isTest {
+			host = os.Getenv("POSTGRES_HOST_TEST")
+		}
 	}
 
 	if err != nil {
@@ -52,8 +77,8 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 	}
 
 	postgresqlDbInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		"password=%s dbname=%s sslmode=%s",
+		host, port, user, password, dbname, sslmode)
 
 	db, err := sql.Open("postgres", postgresqlDbInfo)
 	if err != nil {
@@ -74,11 +99,17 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 Function to initiate the DB connection and returns the DB connection
 */
 func initTestDB(path string) (*sql.DB, error) {
-	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST", path)
-	user, err := utils.GetDotEnv("POSTGRES_USER", path)
-	password, err := utils.GetDotEnv("POSTGRES_PASSWORD", path)
-	dbname, err := utils.GetDotEnv("POSTGRES_DBNAME_TEST", path)
-	host, err := utils.GetDotEnv("POSTGRES_HOST_TEST", path)
+	err := utils.LoadDotEnv(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST")
+	user := os.Getenv("POSTGRES_USER_TEST")
+	password := os.Getenv("POSTGRES_PASSWORD_TEST")
+	dbname := os.Getenv("POSTGRES_DBNAME_TEST")
+	host := os.Getenv("POSTGRES_HOST_TEST")
 
 	if err != nil {
 		return nil, err
