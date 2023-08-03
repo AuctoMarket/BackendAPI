@@ -11,3 +11,4 @@ docker-down: ## Stop docker containers and clear artefacts.
 build-up:
 	GOARCH=amd64 GOOS=linux go build -tags=jsoniter -o ./build/main cmd/web/*.go 
 	
+
