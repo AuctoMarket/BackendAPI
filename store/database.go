@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 )
 
 /*
@@ -42,27 +43,32 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 		password string
 		dbname   string
 		sslmode  string
-		err      error
 	)
-	env, err := utils.GetDotEnv("DB_ENV", path)
+
+	err := utils.LoadDotEnv(path)
+	env := os.Getenv("DB_ENV")
+
+	if err != nil && env == "" {
+		return nil, err
+	}
+
 	if env == "rds" {
-		port, err = utils.GetDotEnvInt("POSTGRES_PORT_RDS", path)
-		user, err = utils.GetDotEnv("POSTGRES_USER_RDS", path)
-		password, err = utils.GetDotEnv("POSTGRES_PASSWORD_RDS", path)
-		dbname, err = utils.GetDotEnv("POSTGRES_DBNAME_RDS", path)
-		host, err = utils.GetDotEnv("POSTGRES_HOST_RDS", path)
+		port, err = utils.GetDotEnvInt("POSTGRES_PORT_RDS")
+		user = os.Getenv("POSTGRES_USER_RDS")
+		password = os.Getenv("POSTGRES_PASSWORD_RDS")
+		dbname = os.Getenv("POSTGRES_DBNAME_RDS")
+		host = os.Getenv("POSTGRES_HOST_RDS")
 		sslmode = "require"
 	} else {
-		port, err = utils.GetDotEnvInt("POSTGRES_PORT_LOCAL", path)
-		user, err = utils.GetDotEnv("POSTGRES_USER_LOCAL", path)
-		password, err = utils.GetDotEnv("POSTGRES_PASSWORD_LOCAL", path)
-		dbname, err = utils.GetDotEnv("POSTGRES_DBNAME_LOCAL", path)
+		port, err = utils.GetDotEnvInt("POSTGRES_PORT_LOCAL")
+		user = os.Getenv("POSTGRES_USER_LOCAL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
+		dbname = os.Getenv("POSTGRES_DBNAME_LOCAL")
+		host = os.Getenv("POSTGRES_HOST_LOCAL")
 		sslmode = "disable"
 
 		if isTest {
-			host, err = utils.GetDotEnv("POSTGRES_HOST_TEST", path)
-		} else {
-			host, err = utils.GetDotEnv("POSTGRES_HOST_LOCAL", path)
+			host = os.Getenv("POSTGRES_HOST_TEST")
 		}
 	}
 
@@ -93,11 +99,17 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 Function to initiate the DB connection and returns the DB connection
 */
 func initTestDB(path string) (*sql.DB, error) {
-	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST", path)
-	user, err := utils.GetDotEnv("POSTGRES_USER_TEST", path)
-	password, err := utils.GetDotEnv("POSTGRES_PASSWORD_TEST", path)
-	dbname, err := utils.GetDotEnv("POSTGRES_DBNAME_TEST", path)
-	host, err := utils.GetDotEnv("POSTGRES_HOST_TEST", path)
+	err := utils.LoadDotEnv(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST")
+	user := os.Getenv("POSTGRES_USER_TEST")
+	password := os.Getenv("POSTGRES_PASSWORD_TEST")
+	dbname := os.Getenv("POSTGRES_DBNAME_TEST")
+	host := os.Getenv("POSTGRES_HOST_TEST")
 
 	if err != nil {
 		return nil, err

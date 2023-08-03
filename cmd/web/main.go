@@ -5,7 +5,7 @@ import (
 	"BackendAPI/store"
 	"BackendAPI/utils"
 	"context"
-	"fmt"
+	"os"
 
 	"database/sql"
 	"log"
@@ -69,14 +69,13 @@ func main() {
 		{
 			docGroup.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		}
-
 	}
-	env, err := utils.GetDotEnv("API_ENV", ".env")
-	fmt.Printf("Environment is:%s", env)
 
-	if err != nil {
-		utils.LogError(err, "Cannot fetch .env")
-		env = "lambda"
+	loadErr := utils.LoadDotEnv(".env")
+	env := os.Getenv("API_ENV")
+
+	if loadErr != nil {
+		utils.LogError(loadErr, "Cannot fetch .env, no .env file")
 	}
 
 	if env == "lambda" {

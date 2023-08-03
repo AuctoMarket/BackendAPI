@@ -24,7 +24,7 @@ func BuyerLogin(db *sql.DB, loginData data.UserLoginData) (data.BuyerLoginRespon
 	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerId, &hashedPwd)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Selecting Buyer rows")
 		return response, errResp
 	}
@@ -52,7 +52,7 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 	hashPassword, err := utils.HashAndSalt([]byte(signupData.Password))
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in hash function!")
 		return response, errResp
 	}
@@ -61,7 +61,7 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerId)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Inserting Rows into Buyers table")
 		return response, errResp
 	}

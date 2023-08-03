@@ -27,7 +27,7 @@ func GetProductById(db *sql.DB, productId string) (data.ProductResponseData, *ut
 		&response.Condition, &response.Price, &response.ProductType, &response.PostedDate)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Selecting Product rows")
 		return response, errResp
 	}
@@ -60,7 +60,7 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResp
 		product.ProductType, postedDate, product.Price, product.Condition).Scan(&response.ProductId)
 
 	if err != nil {
-		errResp := utils.InternalServerError()
+		errResp := utils.InternalServerError(err)
 		utils.LogError(err, "Error in Inserting Product rows")
 		return response, errResp
 	}

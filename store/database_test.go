@@ -15,6 +15,11 @@ func TestSetupTestDB(t *testing.T) {
 	assert.NotEmpty(t, db)
 
 	CloseDB(db)
+
+	//Test 2: Setup a DB connection with invalid env path
+	db, err = SetupTestDB(".env")
+	assert.Error(t, err)
+
 }
 
 func TestInitDB(t *testing.T) {
@@ -28,4 +33,9 @@ func TestInitDB(t *testing.T) {
 	assert.NoError(t, err)
 
 	CloseDB(db)
+
+	//Test 2: Setup a DB connection with invalid env path
+	db, err = initDB(".env", true)
+	assert.Error(t, err)
+
 }

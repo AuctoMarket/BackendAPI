@@ -1,5 +1,7 @@
 package utils
 
+import "fmt"
+
 /*
 Error handler for response errors
 */
@@ -30,8 +32,8 @@ func BadRequestError(msg string) *ErrorHandler {
 /*
 Creates 500 Internal Server Error
 */
-func InternalServerError() *ErrorHandler {
-	return &ErrorHandler{Message: "Something went wrong", Code: 500}
+func InternalServerError(err error) *ErrorHandler {
+	return &ErrorHandler{Message: fmt.Sprintf("Something went wrong:%s", err.Error()), Code: 500}
 }
 
 /*
