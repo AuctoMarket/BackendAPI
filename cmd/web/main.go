@@ -3,7 +3,9 @@ package main
 import (
 	_ "BackendAPI/docs"
 	"BackendAPI/store"
+	"BackendAPI/utils"
 	"context"
+	"fmt"
 
 	"database/sql"
 	"log"
@@ -69,20 +71,21 @@ func main() {
 		}
 
 	}
+	env, err := utils.GetDotEnv("API_ENV", ".env")
+	fmt.Printf("Environment is:%s", env)
 
-	ginLambda = ginadapter.New(router)
-	lambda.Start(Handler)
+	if err != nil {
+		utils.LogError(err, "Cannot fetch .env")
+		env = "lambda"
+	}
 
-	// 	lambda.Start(Handler)
-	// env := os.Getenv("API_ENV")
+	if env == "lambda" {
+		ginLambda = ginadapter.New(router)
 
-	// if env == "lambda" {
-	// 	ginLambda = ginadapter.New(router)
-
-	// 	lambda.Start(Handler)
-	// } else {
-	// 	router.Run(":8080")
-	// }
+		lambda.Start(Handler)
+	} else {
+		router.Run(":8080")
+	}
 
 	defer store.CloseDB(db)
 }
