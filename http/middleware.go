@@ -28,7 +28,7 @@ func (m *Middleware) setCors() {
 Use middleware in the router engine
 */
 func UseMiddleware(r *gin.Engine) {
-	var middleware *Middleware
+	var middleware *Middleware = &Middleware{}
 
 	middleware.setupMiddleware()
 	r.Use(middleware.Cors)
