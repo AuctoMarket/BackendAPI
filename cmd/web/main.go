@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "BackendAPI/docs"
+	"BackendAPI/http"
 	"BackendAPI/store"
 	"BackendAPI/utils"
 	"context"
@@ -34,6 +35,9 @@ func main() {
 	//Setup Router and Database Connection
 	router := gin.Default()
 	var err error
+
+	//Setup router middleware
+	http.UseMiddleware(router)
 
 	db, err = store.SetupDB()
 	if err != nil {
