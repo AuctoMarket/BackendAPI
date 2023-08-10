@@ -67,6 +67,16 @@ func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images
 		return response, errResp
 	}
 
+	query = `UPDATE products
+	SET image_count = $1 WHERE product_id = $2`
+
+	_, err = db.ExecContext(context.Background(), query, len(images), productId)
+
+	if err != nil {
+		errResp := utils.InternalServerError(err)
+		return response, errResp
+	}
+
 	response.ProductId = productId
 	return response, nil
 }

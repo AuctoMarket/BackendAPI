@@ -30,7 +30,7 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
 	query := `SELECT seller_id, title, description, condition, price, 
-		product_type, posted_date, product_quantity, sold_quantity, product_image_id, image_no 
+		product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
 		FROM products NATURAL JOIN product_images WHERE product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()

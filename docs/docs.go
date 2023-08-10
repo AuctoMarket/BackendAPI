@@ -193,7 +193,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/data.ProductResponseData"
+                            "$ref": "#/definitions/data.ProductCreateResponseData"
                         }
                     },
                     "400": {
@@ -231,7 +231,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.ProductResponseData"
+                            "$ref": "#/definitions/data.GetProductResponseData"
                         }
                     },
                     "400": {
@@ -283,17 +283,17 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/data.ProductResponseData"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported Media Type",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -443,6 +443,61 @@ const docTemplate = `{
                 }
             }
         },
+        "data.GetProductResponseData": {
+            "type": "object",
+            "required": [
+                "condition",
+                "desc",
+                "images",
+                "posted_date",
+                "price",
+                "product_id",
+                "product_quantity",
+                "product_type",
+                "seller_id",
+                "sold_quantity",
+                "title"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.ProductImageData"
+                    }
+                },
+                "posted_date": {
+                    "type": "string",
+                    "example": "2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_quantity": {
+                    "type": "integer"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "sold_quantity": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "data.Message": {
             "type": "object",
             "properties": {
@@ -451,7 +506,7 @@ const docTemplate = `{
                 }
             }
         },
-        "data.ProductResponseData": {
+        "data.ProductCreateResponseData": {
             "type": "object",
             "required": [
                 "condition",
@@ -459,8 +514,10 @@ const docTemplate = `{
                 "posted_date",
                 "price",
                 "product_id",
+                "product_quantity",
                 "product_type",
                 "seller_id",
+                "sold_quantity",
                 "title"
             ],
             "properties": {
@@ -480,13 +537,34 @@ const docTemplate = `{
                 "product_id": {
                     "type": "string"
                 },
+                "product_quantity": {
+                    "type": "integer"
+                },
                 "product_type": {
                     "type": "string"
                 },
                 "seller_id": {
                     "type": "string"
                 },
+                "sold_quantity": {
+                    "type": "integer"
+                },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.ProductImageData": {
+            "type": "object",
+            "required": [
+                "image_no",
+                "image_path"
+            ],
+            "properties": {
+                "image_no": {
+                    "type": "integer"
+                },
+                "image_path": {
                     "type": "string"
                 }
             }

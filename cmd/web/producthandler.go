@@ -15,7 +15,7 @@ import (
 // If not it returns a not found error (404)
 // @Produce      json
 // @Param id path string true "product_id"
-// @Success      200  {object}  data.ProductResponseData
+// @Success      200  {object}  data.GetProductResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      404  {object}  data.Message
 // @Failure      500  {object}  data.Message
@@ -50,7 +50,7 @@ func handleGetProductById(c *gin.Context) {
 // @Param 		 price body int true "Price as an int of the product"
 // @Param 		 condition body int true "Condition of the product from a scale of 0 to 5"
 // @Param 		 product_type body string true "Type of product sale: Buy-Now or Pre-Order"
-// @Success      201  {object}  data.ProductResponseData
+// @Success      201  {object}  data.ProductCreateResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
 // @Router       /products  [post]

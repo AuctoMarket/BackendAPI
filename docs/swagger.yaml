@@ -10,12 +10,52 @@ definitions:
     - buyer_id
     - email
     type: object
+  data.GetProductResponseData:
+    properties:
+      condition:
+        type: integer
+      desc:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/data.ProductImageData'
+        type: array
+      posted_date:
+        example: 2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936
+        type: string
+      price:
+        type: integer
+      product_id:
+        type: string
+      product_quantity:
+        type: integer
+      product_type:
+        type: string
+      seller_id:
+        type: string
+      sold_quantity:
+        type: integer
+      title:
+        type: string
+    required:
+    - condition
+    - desc
+    - images
+    - posted_date
+    - price
+    - product_id
+    - product_quantity
+    - product_type
+    - seller_id
+    - sold_quantity
+    - title
+    type: object
   data.Message:
     properties:
       message:
         type: string
     type: object
-  data.ProductResponseData:
+  data.ProductCreateResponseData:
     properties:
       condition:
         type: integer
@@ -28,10 +68,14 @@ definitions:
         type: integer
       product_id:
         type: string
+      product_quantity:
+        type: integer
       product_type:
         type: string
       seller_id:
         type: string
+      sold_quantity:
+        type: integer
       title:
         type: string
     required:
@@ -40,9 +84,21 @@ definitions:
     - posted_date
     - price
     - product_id
+    - product_quantity
     - product_type
     - seller_id
+    - sold_quantity
     - title
+    type: object
+  data.ProductImageData:
+    properties:
+      image_no:
+        type: integer
+      image_path:
+        type: string
+    required:
+    - image_no
+    - image_path
     type: object
   data.SellerResponseData:
     properties:
@@ -188,7 +244,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/data.ProductResponseData'
+            $ref: '#/definitions/data.ProductCreateResponseData'
         "400":
           description: Bad Request
           schema:
@@ -214,7 +270,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.ProductResponseData'
+            $ref: '#/definitions/data.GetProductResponseData'
         "400":
           description: Bad Request
           schema:
@@ -250,13 +306,13 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/data.ProductResponseData'
-        "400":
-          description: Bad Request
-          schema:
             $ref: '#/definitions/data.Message'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "415":
+          description: Unsupported Media Type
           schema:
             $ref: '#/definitions/data.Message'
         "500":
