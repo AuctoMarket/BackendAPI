@@ -90,10 +90,13 @@ func createProductsTable(db *sql.DB) error {
 		seller_id uuid REFERENCES sellers(seller_id), 
 		title TEXT NOT NULL,
 		description TEXT NOT NULL,
+		image_count INT NOT NULL DEFAULT 0,
 		condition INT NOT NULL CONSTRAINT isOutOfFive CHECK (condition >= 0 AND condition <= 5),
 		price INT NOT NULL CONSTRAINT isPositive CHECK (price >= 0),
 		product_type VARCHAR NOT NULL,
 		posted_date TIMESTAMPTZ NOT NULL,
+		product_quantity INT NOT NULL,
+		sold_quantity INT DEFAULT 0 NOT NULL,
 		PRIMARY KEY(product_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -106,8 +109,8 @@ Create the table for Product Images
 func createProductImagesTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS product_images(
 		product_image_id uuid DEFAULT uuid_generate_v1() NOT NULL,
-		product_id uuid REFERENCES products(product_id), 
-		path VARCHAR NOT NULL UNIQUE,
+		product_id uuid REFERENCES products(product_id),
+		image_no INT NOT NULL,
 		PRIMARY KEY(product_image_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

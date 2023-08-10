@@ -3,6 +3,7 @@ package store
 import (
 	"BackendAPI/utils"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -37,20 +38,17 @@ Function to initiate the DB connection and returns the DB connection
 */
 func initDB(path string, isTest bool) (*sql.DB, error) {
 	var (
+		env      string
 		host     string
 		port     int
 		user     string
 		password string
 		dbname   string
 		sslmode  string
+		err      error
 	)
 
-	err := utils.LoadDotEnv(path)
-	env := os.Getenv("DB_ENV")
-
-	if err != nil && env == "" {
-		return nil, err
-	}
+	env = os.Getenv("DB_ENV")
 
 	if env == "rds" {
 		port, err = utils.GetDotEnvInt("POSTGRES_PORT_RDS")
@@ -73,7 +71,7 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("The .env environments could not be loaded:" + err.Error())
 	}
 
 	postgresqlDbInfo := fmt.Sprintf("host=%s port=%d user=%s "+
@@ -82,12 +80,12 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", postgresqlDbInfo)
 	if err != nil {
-		return db, err
+		return db, errors.New("The database connection could not be reated:" + err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return db, err
+		return db, errors.New("Could not ping the database:" + err.Error())
 	}
 
 	log.Println("Established a successful connection!")
@@ -98,13 +96,7 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 /*
 Function to initiate the DB connection and returns the DB connection
 */
-func initTestDB(path string) (*sql.DB, error) {
-	err := utils.LoadDotEnv(path)
-
-	if err != nil {
-		return nil, err
-	}
-
+func initTestDB() (*sql.DB, error) {
 	port, err := utils.GetDotEnvInt("POSTGRES_PORT_TEST")
 	user := os.Getenv("POSTGRES_USER_TEST")
 	password := os.Getenv("POSTGRES_PASSWORD_TEST")
@@ -112,7 +104,7 @@ func initTestDB(path string) (*sql.DB, error) {
 	host := os.Getenv("POSTGRES_HOST_TEST")
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("The .env environments could not be loaded:" + err.Error())
 	}
 
 	postgresqlDbInfo := fmt.Sprintf("host=%s port=%d user=%s "+
@@ -121,12 +113,12 @@ func initTestDB(path string) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", postgresqlDbInfo)
 	if err != nil {
-		return db, err
+		return db, errors.New("The database connection could not be reated:" + err.Error())
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return db, err
+		return db, errors.New("Could not ping the database:" + err.Error())
 	}
 
 	return db, nil
@@ -157,7 +149,15 @@ Function to setup the DB connections for tests, create all the tables and
 return the db connection
 */
 func SetupTestDB(path string) (*sql.DB, error) {
-	db, err := initTestDB(path)
+
+	loadErr := utils.LoadDotEnv(path)
+
+	if loadErr != nil {
+		utils.LogError(loadErr, "Cannot fetch .env, no .env file")
+		return nil, loadErr
+	}
+
+	db, err := initTestDB()
 
 	if err != nil {
 		return db, err

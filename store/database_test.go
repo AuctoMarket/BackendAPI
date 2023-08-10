@@ -1,6 +1,7 @@
 package store
 
 import (
+	"BackendAPI/utils"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -23,6 +24,9 @@ func TestSetupTestDB(t *testing.T) {
 }
 
 func TestInitDB(t *testing.T) {
+	loadErr := utils.LoadDotEnv("../.env")
+	assert.NoError(t, loadErr)
+
 	//Test 1: Init DB and ensure the db exists and there is no error for main db
 	db, err := initDB("../.env", true)
 	assert.NotEmpty(t, db)
@@ -33,9 +37,4 @@ func TestInitDB(t *testing.T) {
 	assert.NoError(t, err)
 
 	CloseDB(db)
-
-	//Test 2: Setup a DB connection with invalid env path
-	db, err = initDB(".env", true)
-	assert.Error(t, err)
-
 }

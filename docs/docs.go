@@ -86,7 +86,7 @@ const docTemplate = `{
                 "summary": "Signs a new buyer up",
                 "parameters": [
                     {
-                        "description": "Buyers email",
+                        "description": "Buyers email [UNIQUE]",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -253,6 +253,58 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Adds images to an existing product with supplied product id. If product with product id does not exist returns a",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Adds images to products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "product_id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Array of image files to add to the product post",
+                        "name": "images",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.ProductResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
             }
         },
         "/sellers/login": {
@@ -325,7 +377,7 @@ const docTemplate = `{
                 "summary": "Signs a new seller up",
                 "parameters": [
                     {
-                        "description": "Sellers email",
+                        "description": "Sellers email [UNIQUE]",
                         "name": "email",
                         "in": "body",
                         "required": true,
@@ -343,7 +395,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Sellers seller alias that is displayed as their seller name",
+                        "description": "Sellers seller alias that is displayed as their seller name [UNIQUE]",
                         "name": "seller_name",
                         "in": "body",
                         "required": true,
@@ -419,7 +471,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "posted_date": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"
                 },
                 "price": {
                     "type": "integer"
@@ -442,12 +495,16 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
+                "followers",
                 "seller_id",
                 "seller_name"
             ],
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "followers": {
+                    "type": "integer"
                 },
                 "seller_id": {
                     "type": "string"
@@ -463,7 +520,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "*",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "AUCTO Backend API",
