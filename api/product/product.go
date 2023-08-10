@@ -30,17 +30,18 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
 	query := `SELECT seller_id, title, description, condition, price, 
-		product_type, posted_date, product_quantity, sold_quantity, product_image_id 
+		product_type, posted_date, product_quantity, sold_quantity, product_image_id, image_no 
 		FROM products NATURAL JOIN product_images WHERE product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()
 
 	for rows.Next() {
 		var image string
+		var imageNo int
 		rows.Scan(
 			&response.SellerId, &response.Title, &response.Description,
 			&response.Condition, &response.Price, &response.ProductType, &response.PostedDate,
-			&response.Quantity, &response.SoldQuantity, &image)
+			&response.Quantity, &response.SoldQuantity, &image, &imageNo)
 
 		if api_env == "local" {
 			image = os.Getenv("S3_LOCAL_URL") + "/products/images/" + image
@@ -48,7 +49,7 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 			image = os.Getenv("S3_DEV_URL") + "/products/images/" + image
 		}
 
-		response.ProductImages = append(response.ProductImages, image)
+		response.ProductImages = append(response.ProductImages, data.ProductImageData{ProductImagePath: image, ProductImageNo: imageNo})
 	}
 
 	if err != nil {
