@@ -72,6 +72,7 @@ func main() {
 			productGroup.GET("/:id", handleGetProductById)
 			productGroup.POST("", handleCreateProduct)
 			productGroup.POST("/:id/images", handleCreateProductImages)
+			productGroup.GET("/recent", handleGetRecentlyAddedProducts)
 		}
 
 		sellerGroup := apiGroup.Group("/sellers")
@@ -93,7 +94,7 @@ func main() {
 
 	env := os.Getenv("API_ENV")
 
-	if env == "lambda" {
+	if env != "local" {
 		ginLambda = ginadapter.New(router)
 
 		lambda.Start(Handler)

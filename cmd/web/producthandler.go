@@ -124,3 +124,7 @@ func handleCreateProductImages(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 
 }
+
+func handleGetRecentlyAddedProducts(c *gin.Context) {
+
+}
