@@ -187,6 +187,15 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "description": "Quantity of product to be put for sale",
+                        "name": "product_quantity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
                     }
                 ],
                 "responses": {
@@ -253,7 +262,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/products/{id}/images": {
             "post": {
                 "description": "Adds images to an existing product with supplied product id. If product with product id does not exist returns a",
                 "consumes": [

@@ -50,6 +50,7 @@ func handleGetProductById(c *gin.Context) {
 // @Param 		 price body int true "Price as an int of the product"
 // @Param 		 condition body int true "Condition of the product from a scale of 0 to 5"
 // @Param 		 product_type body string true "Type of product sale: Buy-Now or Pre-Order"
+// @Param        product_quantity body int true "Quantity of product to be put for sale"
 // @Success      201  {object}  data.ProductCreateResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
@@ -87,7 +88,7 @@ func handleCreateProduct(c *gin.Context) {
 // @Failure      415  {object}  data.Message
 // @Failure      404  {object}  data.Message
 // @Failure      500  {object}  data.Message
-// @Router       /products/{id}  [post]
+// @Router       /products/{id}/images  [post]
 func handleCreateProductImages(c *gin.Context) {
 	form, formErr := c.MultipartForm()
 	productId := c.Param("id")

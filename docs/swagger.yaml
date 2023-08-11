@@ -238,6 +238,12 @@ paths:
         required: true
         schema:
           type: string
+      - description: Quantity of product to be put for sale
+        in: body
+        name: product_quantity
+        required: true
+        schema:
+          type: integer
       produces:
       - application/json
       responses:
@@ -284,6 +290,7 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Gets a Product by its Product ID
+  /products/{id}/images:
     post:
       consumes:
       - multipart/form-data

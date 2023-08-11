@@ -131,10 +131,12 @@ func resetDB(db *sql.DB) {
 	queryResetBuyers := `TRUNCATE buyers CASCADE;`
 	queryResetSellers := `TRUNCATE sellers CASCADE;`
 	queryResetProducts := `TRUNCATE products CASCADE;`
+	queryResetProductImages := `TRUNCATE product_images CASCADE;`
 
 	db.Exec(queryResetBuyers)
 	db.Exec(queryResetSellers)
 	db.Exec(queryResetProducts)
+	db.Exec(queryResetProductImages)
 }
 
 /*

@@ -20,16 +20,10 @@ Stores the image in the s3 bucket and returns a array of the urls to access the 
 func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images []io.Reader) (data.ProductImageCreateData, *utils.ErrorHandler) {
 	var response data.ProductImageCreateData
 
-	if !doesProductExist(db, productId) {
-		return response, utils.BadRequestError("Product with given id does not exist")
-	}
+	validateErr := validateCreateProductImages(db, productId, images)
 
-	if len(images) > 5 {
-		return response, utils.BadRequestError("Too many images uploaded, at most 5 images per post")
-	}
-
-	if len(images) == 0 {
-		return response, utils.BadRequestError("No images attached, at least 1 image per post")
+	if validateErr != nil {
+		return response, validateErr
 	}
 
 	query := `INSERT INTO product_images(product_id, image_no) VALUES `
@@ -79,4 +73,42 @@ func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images
 
 	response.ProductId = productId
 	return response, nil
+}
+
+/*
+Validates the insertion of new product images for a product
+*/
+func validateCreateProductImages(db *sql.DB, productId string, images []io.Reader) *utils.ErrorHandler {
+	if !doesProductExist(db, productId) {
+		return utils.BadRequestError("Product with given id does not exist")
+	}
+
+	if doProductImagesExist(db, productId) {
+		return utils.BadRequestError("Product with given id already has images")
+	}
+
+	if len(images) > 5 {
+		return utils.BadRequestError("Too many images uploaded, at most 5 images per post")
+	}
+
+	if len(images) == 0 {
+		return utils.BadRequestError("No images attached, at least 1 image per post")
+	}
+
+	return nil
+}
+
+/*
+Checks to see if a product has images already attached to it
+*/
+func doProductImagesExist(db *sql.DB, productId string) bool {
+	var productImageExists bool
+	query := `SELECT EXISTS(SELECT * FROM product_images WHERE product_id = $1);`
+	err := db.QueryRowContext(context.Background(), query, productId).Scan(&productImageExists)
+
+	if err != nil {
+		return false
+	}
+
+	return productImageExists
 }
