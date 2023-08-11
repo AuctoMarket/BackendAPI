@@ -45,8 +45,10 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 
 		if api_env == "local" {
 			image = os.Getenv("S3_LOCAL_URL") + "/products/images/" + image
-		} else {
+		} else if api_env == "dev" {
 			image = os.Getenv("S3_DEV_URL") + "/products/images/" + image
+		} else {
+			image = os.Getenv("S3_PROD_URL") + "/products/images/" + image
 		}
 
 		response.ProductImages = append(response.ProductImages, data.ProductImageData{ProductImagePath: image, ProductImageNo: imageNo})

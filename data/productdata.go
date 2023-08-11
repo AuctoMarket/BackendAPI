@@ -37,9 +37,9 @@ type ProductCreateData struct {
 	SellerId    string `json:"seller_id" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	ProductType string `json:"product_type" binding:"required"`
-	Price       int    `json:"price" binding:"required"`
-	Condition   int8   `json:"condition" binding:"required"`
-	Quantity    int    `json:"product_quantity" binding:"required"`
+	Price       int    `json:"price"`
+	Condition   int8   `json:"condition" `
+	Quantity    int    `json:"product_quantity"`
 }
 
 type ProductImageCreateData struct {

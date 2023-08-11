@@ -28,7 +28,7 @@ func TestInitDB(t *testing.T) {
 	assert.NoError(t, loadErr)
 
 	//Test 1: Init DB and ensure the db exists and there is no error for main db
-	db, err := initDB("../.env", true)
+	db, err := initDB(true)
 	assert.NotEmpty(t, db)
 	assert.NoError(t, err)
 

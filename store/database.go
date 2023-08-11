@@ -14,7 +14,7 @@ Function to setup the DB connections, create all the tables and return
 the db connection
 */
 func SetupDB() (*sql.DB, error) {
-	db, err := initDB(".env", false)
+	db, err := initDB(false)
 
 	if err != nil {
 		return db, err
@@ -36,7 +36,7 @@ func SetupDB() (*sql.DB, error) {
 /*
 Function to initiate the DB connection and returns the DB connection
 */
-func initDB(path string, isTest bool) (*sql.DB, error) {
+func initDB(isTest bool) (*sql.DB, error) {
 	var (
 		env      string
 		host     string
@@ -50,7 +50,7 @@ func initDB(path string, isTest bool) (*sql.DB, error) {
 
 	env = os.Getenv("DB_ENV")
 
-	if env == "rds" {
+	if env != "local" {
 		port, err = utils.GetDotEnvInt("POSTGRES_PORT_RDS")
 		user = os.Getenv("POSTGRES_USER_RDS")
 		password = os.Getenv("POSTGRES_PASSWORD_RDS")

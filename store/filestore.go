@@ -21,8 +21,8 @@ func CreateNewS3() (*s3.Client, error) {
 
 	var (
 		region, hasRegion = os.LookupEnv("AWS_REGION")
-		secret, hasSecret = os.LookupEnv("AWS_SECRET_ACCESS_KEY")
-		key, hasKey       = os.LookupEnv("AWS_ACCESS_KEY")
+		secret, hasSecret = os.LookupEnv("AWS_SECRET")
+		key, hasKey       = os.LookupEnv("AWS_KEY")
 		token             = ""
 	)
 
@@ -46,7 +46,19 @@ func CreateNewS3() (*s3.Client, error) {
 Upload a list of images to the S3 Bucket specified by the environment variables
 */
 func UploadImages(client *s3.Client, keys []string, files []io.Reader) error {
-	bucket, hasBucket := os.LookupEnv("S3_BUCKET_NAME_PRODUCT_IMAGES_LOCAL")
+	var bucket string
+	var hasBucket bool
+	apiEnv, envExists := os.LookupEnv("API_ENV")
+
+	if !envExists {
+		return errors.New("Error in loading environment variables, Bucket name does not exist:")
+	}
+
+	if apiEnv == "local" {
+		bucket, hasBucket = os.LookupEnv("S3_BUCKET_NAME_PRODUCT_IMAGES_LOCAL")
+	} else {
+		bucket, hasBucket = os.LookupEnv("S3_BUCKET_NAME_PRODUCT_IMAGES_DEV")
+	}
 	fileType := "image/png"
 
 	if !hasBucket {
