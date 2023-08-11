@@ -24,6 +24,7 @@ Aucto backend runs a Postgres Database Layer with the following ER Diagram:
 
 Considerations made are:
 - Reducing data dependance using Table Normalisation techniques.
+- Considering future feature requests and accomodating certain fields that initially are not used but will be added in future iterations.
 
 ### API Documentation
 
@@ -33,4 +34,4 @@ This project used swagger to document the various api endpoints and the swagger 
 If a bug is found in the API, create an issue and tag it as a bug. Make sure to add instructions on how to recreate the bug as well as the expected output and the actual output.
 
 ### Availability for dev testing
-The API has been hosted as a lambda function with a API gateway that allows users to use a http method to invoke the API. The base URL to do so is `https://uaw1x43etb.execute-api.ap-southeast-1.amazonaws.com/api/v1/docs`
+The API has been hosted as a lambda function with a API gateway that allows users to use a http method to invoke the API. The base URL to do so is `https://uaw1x43etb.execute-api.ap-southeast-1.amazonaws.com`. This is the dev environment that the frontend can call in order to test features.

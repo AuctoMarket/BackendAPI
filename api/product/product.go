@@ -6,6 +6,8 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
+	"errors"
+	"os"
 	"time"
 )
 
@@ -13,18 +15,42 @@ import (
 Gets a new product by its product id. If the product with the given product id does not exist, a
 404 Not found error is returned
 */
-func GetProductById(db *sql.DB, productId string) (data.ProductResponseData, *utils.ErrorHandler) {
-	var response data.ProductResponseData
+func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, *utils.ErrorHandler) {
+	var response data.GetProductResponseData
+	api_env, envExists := os.LookupEnv("API_ENV")
+
+	if !envExists {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(errors.New("Error in loading. env"), "Error in getting product by id")
+		return response, errResp
+	}
 
 	productExists := doesProductExist(db, productId)
 	if !productExists {
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
 	query := `SELECT seller_id, title, description, condition, price, 
-		product_type, posted_date from products WHERE product_id = $1;`
-	err := db.QueryRowContext(context.Background(), query, productId).Scan(
-		&response.SellerId, &response.Title, &response.Description,
-		&response.Condition, &response.Price, &response.ProductType, &response.PostedDate)
+		product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
+		FROM products NATURAL JOIN product_images WHERE product_id = $1;`
+	rows, err := db.QueryContext(context.Background(), query, productId)
+	defer rows.Close()
+
+	for rows.Next() {
+		var image string
+		var imageNo int
+		rows.Scan(
+			&response.SellerId, &response.Title, &response.Description,
+			&response.Condition, &response.Price, &response.ProductType, &response.PostedDate,
+			&response.Quantity, &response.SoldQuantity, &image, &imageNo)
+
+		if api_env == "local" {
+			image = os.Getenv("S3_LOCAL_URL") + "/products/images/" + image
+		} else {
+			image = os.Getenv("S3_DEV_URL") + "/products/images/" + image
+		}
+
+		response.ProductImages = append(response.ProductImages, data.ProductImageData{ProductImagePath: image, ProductImageNo: imageNo})
+	}
 
 	if err != nil {
 		errResp := utils.InternalServerError(err)
@@ -41,8 +67,8 @@ func GetProductById(db *sql.DB, productId string) (data.ProductResponseData, *ut
 Creates a product given product information. If there is an issue with the inputed data, it returns a
 400 bad request.
 */
-func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResponseData, *utils.ErrorHandler) {
-	var response data.ProductResponseData
+func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductCreateResponseData, *utils.ErrorHandler) {
+	var response data.ProductCreateResponseData
 
 	validationErr := validateCreateProduct(db, product)
 	if validationErr != nil {
@@ -51,13 +77,13 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductResp
 
 	postedDate := time.Now()
 	query := `INSERT INTO products(
-			title, seller_id, description, product_type, posted_date, price, condition) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING product_id;`
+			title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
 		product.Title, product.SellerId, product.Description,
-		product.ProductType, postedDate, product.Price, product.Condition).Scan(&response.ProductId)
+		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(err)
@@ -110,6 +136,11 @@ func validateCreateProduct(db *sql.DB, product data.ProductCreateData) *utils.Er
 	if !seller.DoesSellerExist(db, product.SellerId) {
 		utils.LogMessage("Seller Id provided does not exist")
 		return utils.BadRequestError("Bad seller_id data")
+	}
+
+	if product.Quantity <= 0 {
+		utils.LogMessage("Quantity cannot be less than 1")
+		return utils.BadRequestError("Bad quantity data")
 	}
 
 	return nil

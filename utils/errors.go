@@ -33,7 +33,11 @@ func BadRequestError(msg string) *ErrorHandler {
 Creates 500 Internal Server Error
 */
 func InternalServerError(err error) *ErrorHandler {
-	return &ErrorHandler{Message: fmt.Sprintf("Something went wrong:%s", err.Error()), Code: 500}
+	if err != nil {
+		return &ErrorHandler{Message: fmt.Sprintf("Something went wrong:%s", err.Error()), Code: 500}
+	}
+
+	return &ErrorHandler{Message: fmt.Sprintf("Something went wrong"), Code: 500}
 }
 
 /*

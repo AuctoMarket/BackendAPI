@@ -13,6 +13,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
@@ -23,12 +24,13 @@ import (
 
 var ginLambda *ginadapter.GinLambda
 var db *sql.DB
+var s3Client *s3.Client
 
 // @title           AUCTO Backend API
 // @version         1.0
 // @description     This is the REST API for Aucto's marketplace, it is currently in v1.
 
-// @host      localhost:8080
+// @host      *
 // @BasePath  /api/v1
 func main() {
 
@@ -36,12 +38,25 @@ func main() {
 	router := gin.Default()
 	var err error
 
+	// Load .env variables from environment file
+	loadErr := utils.LoadDotEnv(".env")
+
+	if loadErr != nil {
+		utils.LogError(loadErr, "Cannot fetch .env, no .env file")
+		return
+	}
+
 	//Setup router middleware
 	http.UseMiddleware(router)
 
 	db, err = store.SetupDB()
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
+	}
+
+	s3Client, err = store.CreateNewS3()
+	if err != nil {
+		log.Println("Could not connect to the S3 Instance:", err)
 	}
 
 	apiGroup := router.Group("/api/v1")
@@ -56,6 +71,7 @@ func main() {
 		{
 			productGroup.GET("/:id", handleGetProductById)
 			productGroup.POST("", handleCreateProduct)
+			productGroup.POST("/:id/images", handleCreateProductImages)
 		}
 
 		sellerGroup := apiGroup.Group("/sellers")
@@ -75,12 +91,7 @@ func main() {
 		}
 	}
 
-	loadErr := utils.LoadDotEnv(".env")
 	env := os.Getenv("API_ENV")
-
-	if loadErr != nil {
-		utils.LogError(loadErr, "Cannot fetch .env, no .env file")
-	}
 
 	if env == "lambda" {
 		ginLambda = ginadapter.New(router)

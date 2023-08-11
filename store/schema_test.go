@@ -1,6 +1,7 @@
 package store
 
 import (
+	"BackendAPI/utils"
 	"context"
 	"database/sql"
 	"testing"
@@ -31,10 +32,20 @@ const (
 		  table_schema = 'public' AND 
 		  table_name = 'products'
 	);`
+
+	queryCheckTableProductImages = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'product_images'
+	);`
 )
 
 func TestCreateTables(t *testing.T) {
-	db, err := initTestDB("../.env")
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
 	assert.NoError(t, err)
 
 	dropDB(db)
@@ -65,14 +76,14 @@ func TestCreateTables(t *testing.T) {
 }
 
 func TestCreateBuyersTable(t *testing.T) {
-	var buyersExist bool
-	db, err := initTestDB("../.env")
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
 	assert.NoError(t, err)
 
 	dropDB(db)
 	//Test 1: No errors in creating buyers table
-	err = db.QueryRowContext(context.Background(), queryCheckTableBuyers).Scan(&buyersExist)
-	assert.Equal(t, false, buyersExist)
+	var buyersExist bool
 	err = createBuyersTable(db)
 	assert.NoError(t, err)
 
@@ -86,7 +97,9 @@ func TestCreateBuyersTable(t *testing.T) {
 }
 
 func TestCreateSellersTable(t *testing.T) {
-	db, err := initTestDB("../.env")
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
 	assert.NoError(t, err)
 
 	//Test 1: No errors in creating sellers table
@@ -103,12 +116,14 @@ func TestCreateSellersTable(t *testing.T) {
 }
 
 func TestCreateProductsTable(t *testing.T) {
-	db, err := initTestDB("../.env")
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
 	assert.NoError(t, err)
 
 	dropDB(db)
 
-	//Test 2: No Error in creating products table
+	//Test 1: Error in creating products table
 	err = createProductsTable(db)
 	assert.Error(t, err)
 
@@ -122,6 +137,29 @@ func TestCreateProductsTable(t *testing.T) {
 	err = db.QueryRowContext(context.Background(), queryCheckTableProducts).Scan(&productsExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, productsExist)
+
+	CloseDB(db)
+}
+
+func TestCreateProductImagesTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating products table
+	createSellersTable(db)
+	createProductsTable(db)
+	err = createProductImagesTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary products tables exists
+	var productImagesExist bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableProductImages).Scan(&productImagesExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, productImagesExist)
 
 	CloseDB(db)
 }

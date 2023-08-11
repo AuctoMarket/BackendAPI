@@ -20,9 +20,14 @@ func TestBadRequestError(t *testing.T) {
 }
 
 func TestInternalServerError(t *testing.T) {
-	//Test 1: Internal Server Error created with error code 500 and standard message
+	//Test 1: Internal Server Error created with error code 500 and user defined message
 	testInternalServerError1 := InternalServerError(errors.New("Test"))
-	assert.Equal(t, "Something went wrong", testInternalServerError1.Error())
+	assert.Equal(t, "Something went wrong:Test", testInternalServerError1.Error())
+	assert.Equal(t, 500, testInternalServerError1.Code)
+
+	//Test 1: Internal Server Error created with error code 500 and user defined message
+	testInternalServerError2 := InternalServerError(nil)
+	assert.Equal(t, "Something went wrong", testInternalServerError2.Error())
 	assert.Equal(t, 500, testInternalServerError1.Code)
 }
 
