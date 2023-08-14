@@ -21,8 +21,14 @@ type SellerSignUpData struct {
 	SellerName string `json:"seller_name" binding:"required"`
 }
 
-type SellerResponseData struct {
+type SellerLoginResponseData struct {
 	Email      string `json:"email" binding:"required"`
+	SellerId   string `json:"seller_id" binding:"required"`
+	SellerName string `json:"seller_name" binding:"required"`
+	Followers  int    `json:"followers" binding:"required"`
+}
+
+type GetSellerByIdResponseData struct {
 	SellerId   string `json:"seller_id" binding:"required"`
 	SellerName string `json:"seller_name" binding:"required"`
 	Followers  int    `json:"followers" binding:"required"`
