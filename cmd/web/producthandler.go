@@ -120,6 +120,6 @@ func handleCreateProductImages(c *gin.Context) {
 }
 
 // TODO
-func handleGetRecentlyAddedProducts(c *gin.Context) {
+func handleGetProducts(c *gin.Context) {
 
 }
