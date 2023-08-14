@@ -352,7 +352,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.SellerResponseData"
+                            "$ref": "#/definitions/data.SellerLoginResponseData"
                         }
                     },
                     "400": {
@@ -419,11 +419,52 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/data.SellerResponseData"
+                            "$ref": "#/definitions/data.SellerLoginResponseData"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/sellers/{id}": {
+            "get": {
+                "description": "Checks to see if a sellers id exists and if it does returns the specified sellers public information,",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets seller info based on seller id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "seller_id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.GetSellerByIdResponseData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -509,6 +550,25 @@ const docTemplate = `{
                 }
             }
         },
+        "data.GetSellerByIdResponseData": {
+            "type": "object",
+            "required": [
+                "followers",
+                "seller_id",
+                "seller_name"
+            ],
+            "properties": {
+                "followers": {
+                    "type": "integer"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "seller_name": {
+                    "type": "string"
+                }
+            }
+        },
         "data.Message": {
             "type": "object",
             "properties": {
@@ -580,7 +640,7 @@ const docTemplate = `{
                 }
             }
         },
-        "data.SellerResponseData": {
+        "data.SellerLoginResponseData": {
             "type": "object",
             "required": [
                 "email",

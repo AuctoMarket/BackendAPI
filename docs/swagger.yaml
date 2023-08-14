@@ -50,6 +50,19 @@ definitions:
     - sold_quantity
     - title
     type: object
+  data.GetSellerByIdResponseData:
+    properties:
+      followers:
+        type: integer
+      seller_id:
+        type: string
+      seller_name:
+        type: string
+    required:
+    - followers
+    - seller_id
+    - seller_name
+    type: object
   data.Message:
     properties:
       message:
@@ -100,7 +113,7 @@ definitions:
     - image_no
     - image_path
     type: object
-  data.SellerResponseData:
+  data.SellerLoginResponseData:
     properties:
       email:
         type: string
@@ -327,6 +340,34 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Adds images to products
+  /sellers/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Checks to see if a sellers id exists and if it does returns the
+        specified sellers public information,
+      parameters:
+      - description: seller_id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.GetSellerByIdResponseData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Gets seller info based on seller id
   /sellers/login:
     post:
       consumes:
@@ -352,7 +393,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.SellerResponseData'
+            $ref: '#/definitions/data.SellerLoginResponseData'
         "400":
           description: Bad Request
           schema:
@@ -397,7 +438,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/data.SellerResponseData'
+            $ref: '#/definitions/data.SellerLoginResponseData'
         "400":
           description: Bad Request
           schema:
