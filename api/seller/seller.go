@@ -11,8 +11,8 @@ import (
 Logic for Seller login, checks if the user exists in the database and checks if the stored
 password matches the plaintext password.
 */
-func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerResponseData, *utils.ErrorHandler) {
-	var response data.SellerResponseData
+func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerLoginResponseData, *utils.ErrorHandler) {
+	var response data.SellerLoginResponseData
 	var hashedPwd string
 	sellerExists := doesSellerEmailExist(db, loginData.Email)
 
@@ -41,8 +41,8 @@ func SellerLogin(db *sql.DB, loginData data.UserLoginData) (data.SellerResponseD
 Logic for Seller signup, adds the new seller to the database if the email is not already in use.
 Returned response is similar to as if the seller logged in.
 */
-func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResponseData, *utils.ErrorHandler) {
-	var response data.SellerResponseData
+func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerLoginResponseData, *utils.ErrorHandler) {
+	var response data.SellerLoginResponseData
 
 	sellerEmailExists := doesSellerEmailExist(db, signupData.Email)
 
@@ -74,6 +74,31 @@ func SellerSignUp(db *sql.DB, signupData data.SellerSignUpData) (data.SellerResp
 		utils.LogError(err, "Error in Inserting Rows into Sellers table")
 		return response, errResp
 	}
+
+	return response, nil
+}
+
+/*
+Checks wether a seller with a given Id exists and if so returns the sellers information
+If they do not exist it returns a not found error.
+*/
+func GetSellerById(db *sql.DB, sellerId string) (data.GetSellerByIdResponseData, *utils.ErrorHandler) {
+	var response data.GetSellerByIdResponseData
+
+	if !DoesSellerExist(db, sellerId) {
+		return response, utils.NotFoundError("Seller with given Seller Id does not exist")
+	}
+
+	query := `SELECT seller_name, followers FROM sellers WHERE seller_id = $1;`
+	err := db.QueryRowContext(context.Background(), query, sellerId).Scan(&response.SellerName, &response.Followers)
+
+	if err != nil {
+		errResp := utils.InternalServerError(err)
+		utils.LogError(err, "Error in Selecting rows from Sellers table")
+		return response, errResp
+	}
+
+	response.SellerId = sellerId
 
 	return response, nil
 }

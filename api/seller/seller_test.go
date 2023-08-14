@@ -102,6 +102,8 @@ func TestDoesSellerExist(t *testing.T) {
 
 func TestSellerLogin(t *testing.T) {
 	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+
 	addDummyAccounts(db)
 
 	testLogin1 := data.UserLoginData{Email: "test@gmail.com", Password: "Test1234"}
@@ -148,6 +150,7 @@ func TestSellerLogin(t *testing.T) {
 
 func TestSellerSignUp(t *testing.T) {
 	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
 
 	testSignup1 := data.SellerSignUpData{Email: "test@gmail.com", Password: "Test1234", SellerName: "Test1"}
 	testSignup2 := data.SellerSignUpData{Email: "test2@gmail.com", Password: "Test1234", SellerName: "Test2"}
@@ -179,6 +182,33 @@ func TestSellerSignUp(t *testing.T) {
 	assert.Error(t, err)
 
 	store.CloseDB(db)
+}
+
+func TestGetSellerById(t *testing.T) {
+	db, dbErr := store.SetupTestDB("../../.env")
+	assert.NoError(t, dbErr)
+
+	sellerIds := addDummyAccounts(db)
+
+	//Test 1: Seller Id Exists
+	res, err := GetSellerById(db, sellerIds[0])
+	assert.Empty(t, err)
+	assert.Equal(t, "Test1", res.SellerName)
+	assert.Equal(t, 0, res.Followers)
+	assert.Equal(t, sellerIds[0], res.SellerId)
+
+	//Test 2: Seller Id Exists
+	res, err = GetSellerById(db, sellerIds[1])
+	assert.Empty(t, err)
+	assert.Equal(t, "Test2", res.SellerName)
+	assert.Equal(t, 0, res.Followers)
+	assert.Equal(t, sellerIds[1], res.SellerId)
+
+	//Test 3: No such Seller Id
+	res, err = GetSellerById(db, "wrong id")
+	assert.NotEmpty(t, err)
+	assert.Equal(t, 404, err.ErrorCode())
+	assert.Equal(t, "Seller with given Seller Id does not exist", err.Error())
 }
 
 func addDummyAccounts(db *sql.DB) []string {

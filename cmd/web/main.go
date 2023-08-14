@@ -79,6 +79,8 @@ func main() {
 		{
 			sellerGroup.POST("/signup", handleSellerSignUp)
 			sellerGroup.POST("/login", handleSellerLogin)
+			sellerGroup.GET("/:id", handleGetSellerById)
+
 		}
 
 		testGroup := apiGroup.Group("/tests")

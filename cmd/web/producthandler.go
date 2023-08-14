@@ -23,12 +23,6 @@ import (
 func handleGetProductById(c *gin.Context) {
 	productId := c.Param("id")
 
-	if productId == "" {
-		r := data.Message{Message: "Bad Request Body"}
-		c.JSON(http.StatusBadRequest, r)
-		return
-	}
-
 	product, err := product.GetProductById(db, productId)
 
 	if err != nil {
@@ -125,6 +119,7 @@ func handleCreateProductImages(c *gin.Context) {
 
 }
 
+// TODO
 func handleGetRecentlyAddedProducts(c *gin.Context) {
 
 }
