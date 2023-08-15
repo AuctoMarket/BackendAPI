@@ -6,8 +6,6 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
-	"errors"
-	"os"
 	"time"
 )
 
@@ -17,21 +15,19 @@ Gets a new product by its product id. If the product with the given product id d
 */
 func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, *utils.ErrorHandler) {
 	var response data.GetProductResponseData
-	api_env, envExists := os.LookupEnv("API_ENV")
-
-	if !envExists {
-		errResp := utils.InternalServerError(nil)
-		utils.LogError(errors.New("Error in loading. env"), "Error in getting product by id")
-		return response, errResp
-	}
 
 	productExists := doesProductExist(db, productId)
 	if !productExists {
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
-	query := `SELECT seller_id, title, description, condition, price, 
+	query := `SELECT products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
 		product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
-		FROM products NATURAL JOIN product_images WHERE product_id = $1;`
+		FROM (
+			(products INNER JOIN product_images
+				 ON products.product_id = product_images.product_id)
+			INNER JOIN sellers
+				ON products.seller_id = sellers.seller_id) 
+		WHERE products.product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()
 
@@ -39,16 +35,14 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		var image string
 		var imageNo int
 		rows.Scan(
-			&response.SellerId, &response.Title, &response.Description,
-			&response.Condition, &response.Price, &response.ProductType, &response.PostedDate,
-			&response.Quantity, &response.SoldQuantity, &image, &imageNo)
+			&response.SellerInfo.SellerId, &response.SellerInfo.SellerName, &response.SellerInfo.Followers,
+			&response.Title, &response.Description, &response.Condition, &response.Price,
+			&response.ProductType, &response.PostedDate, &response.Quantity, &response.SoldQuantity,
+			&image, &imageNo)
 
-		if api_env == "local" {
-			image = os.Getenv("S3_LOCAL_URL") + "/products/images/" + image
-		} else if api_env == "dev" {
-			image = os.Getenv("S3_DEV_URL") + "/products/images/" + image
-		} else {
-			image = os.Getenv("S3_PROD_URL") + "/products/images/" + image
+		image, pathErr := makeImagePath(image)
+		if err != nil {
+			return response, pathErr
 		}
 
 		response.ProductImages = append(response.ProductImages, data.ProductImageData{ProductImagePath: image, ProductImageNo: imageNo})
@@ -88,7 +82,7 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductCrea
 		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId)
 
 	if err != nil {
-		errResp := utils.InternalServerError(err)
+		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in Inserting Product rows")
 		return response, errResp
 	}
@@ -97,6 +91,91 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductCrea
 	response.PostedDate = postedDate.String()
 
 	return response, nil
+}
+
+/*
+Gets a list of products specified by the parameters. If no such products exist returns an empty list and if params are incorrect,
+returns a 400 bad request
+*/
+
+func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProductResponseData, *utils.ErrorHandler) {
+	var products []data.GetProductResponseData
+	productMap := make(map[string]data.GetProductResponseData)
+
+	validErr := validateGetProductList(db, sellerId, sortBy)
+
+	if validErr != nil {
+		return products, validErr
+	}
+
+	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
+	product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
+	FROM (
+		(products INNER JOIN product_images
+			 ON products.product_id = product_images.product_id)
+		INNER JOIN sellers
+			ON products.seller_id = sellers.seller_id)`
+
+	//Add query params to the query
+	if sellerId != "None" {
+		query = query + ` WHERE sellers.seller_id = '` + sellerId + `'`
+	}
+
+	if sortBy == "None" {
+		query = query + ` ORDER BY posted_date DESC`
+	}
+
+	query = query + `;`
+
+	rows, err := db.QueryContext(context.Background(), query)
+
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in selecting product rows")
+		return products, errResp
+	}
+
+	for rows.Next() {
+		var product data.GetProductResponseData
+		var imagePath string
+		var imageNo int
+		// scan the product
+		err = rows.Scan(&product.ProductId, &product.SellerInfo.SellerId, &product.SellerInfo.SellerName,
+			&product.SellerInfo.Followers, &product.Title, &product.Description, &product.Condition,
+			&product.Price, &product.ProductType, &product.PostedDate, &product.Quantity, &product.SoldQuantity,
+			&imagePath, &imageNo)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in selecting product rows")
+			return products, errResp
+		}
+
+		//Convert image id to path
+		imagePath, pathErr := makeImagePath(imagePath)
+		if err != nil {
+			return products, pathErr
+		}
+
+		// Add the product to the map, if it exists add just the image to the product images array
+		if productMap[product.ProductId].ProductId == "" {
+			product.ProductImages = append(product.ProductImages, data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
+		} else {
+			product = productMap[product.ProductId]
+			product.ProductImages = append(product.ProductImages, data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
+		}
+
+		productMap[product.ProductId] = product
+	}
+
+	// iterate through map and return the list of unique products
+	for _, v := range productMap {
+		products = append(products, v)
+	}
+
+	return products, nil
 }
 
 /*
@@ -143,6 +222,24 @@ func validateCreateProduct(db *sql.DB, product data.ProductCreateData) *utils.Er
 	if product.Quantity <= 0 {
 		utils.LogMessage("Quantity cannot be less than 1")
 		return utils.BadRequestError("Bad quantity data")
+	}
+
+	return nil
+}
+
+/*
+Validates the various query params in the get products request and returns an error if they are
+invalid.
+*/
+func validateGetProductList(db *sql.DB, sellerId string, sortBy string) *utils.ErrorHandler {
+	if sortBy != "None" && sortBy != "posted_date" {
+		utils.LogMessage("Field to sort by does not exist")
+		return utils.BadRequestError("Bad sort_by param")
+	}
+
+	if sellerId != "None" && !seller.DoesSellerExist(db, sellerId) {
+		utils.LogMessage("Seller Id Does not exist")
+		return utils.BadRequestError("Bad seller_id param")
 	}
 
 	return nil

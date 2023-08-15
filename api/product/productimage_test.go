@@ -173,6 +173,40 @@ func TestValidateCreateProductImages(t *testing.T) {
 	assert.Equal(t, 400, testErr.ErrorCode())
 }
 
+func TestMakeImagePath(t *testing.T) {
+	//Test 1: No env variables decalred
+	os.Clearenv()
+	_, err := makeImagePath("Test")
+	assert.NotEmpty(t, err)
+
+	utils.LoadDotEnv("../../.env")
+
+	//Test 2: Environment variables present and image path is local
+	res, err := makeImagePath("Test")
+	assert.Empty(t, err)
+	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com/products/images/Test", res)
+
+	//Test 3: Empty String
+	res, err = makeImagePath("")
+	assert.NotEmpty(t, err)
+	assert.Equal(t, 500, err.ErrorCode())
+
+	os.Setenv("API_ENV", "dev")
+	//Test 4: Environment variables present and image path is dev
+	res, err = makeImagePath("Test")
+	assert.Empty(t, err)
+	assert.Equal(t, "https://aucto-s3-dev.s3.ap-southeast-1.amazonaws.com/products/images/Test", res)
+
+	os.Setenv("API_ENV", "prod")
+	//Test 5: Environment variables present and image path is prod
+	res, err = makeImagePath("Test")
+	assert.Empty(t, err)
+	assert.Equal(t, "https://aucto-s3-prod.s3.ap-southeast-1.amazonaws.com/products/images/Test", res)
+
+	os.Clearenv()
+	utils.LoadDotEnv("../../.env")
+}
+
 func createDummyProductImage(db *sql.DB, productId string, imageNo int) (string, error) {
 	var productImageId string
 
