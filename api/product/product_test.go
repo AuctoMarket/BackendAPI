@@ -3,6 +3,7 @@ package product
 import (
 	"BackendAPI/data"
 	"BackendAPI/store"
+	"BackendAPI/utils"
 	"context"
 	"database/sql"
 	"testing"
@@ -242,6 +243,39 @@ func TestCreateProduct(t *testing.T) {
 	assert.Equal(t, 400, err.ErrorCode())
 
 	store.CloseDB(db)
+}
+
+func TestGetProductList(t *testing.T) {
+	utils.LoadDotEnv("../../.env")
+	db, startupErr := store.SetupTestDB("../../.env")
+	assert.NoError(t, startupErr)
+
+	sellerid, sellerErr := createDummySeller(db)
+	assert.NoError(t, sellerErr)
+	productIds, productErr := createDummyProducts(db, sellerid)
+	assert.NoError(t, productErr)
+	_, productImageErr := createDummyProductImages(db, productIds)
+	assert.NoError(t, productImageErr)
+
+	//Test 1: Get Product List default options
+	res, err := GetProductList(db, "None", "None")
+	assert.Empty(t, err)
+	assert.Equal(t, 3, len(res))
+
+	//Test 2: Get Product List seller Id does not exist
+	res, err = GetProductList(db, "wrong id", "None")
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "Bad seller_id param", err.Error())
+	assert.Equal(t, 400, err.ErrorCode())
+
+	//Test 3: Get Product List sort by is incorrect
+	res, err = GetProductList(db, "None", "wrong")
+	assert.NotEmpty(t, err)
+	assert.Equal(t, "Bad sort_by param", err.Error())
+	assert.Equal(t, 400, err.ErrorCode())
+
+	store.CloseDB(db)
+
 }
 
 func createDummySeller(db *sql.DB) (string, error) {

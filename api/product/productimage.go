@@ -6,8 +6,10 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -111,4 +113,33 @@ func doProductImagesExist(db *sql.DB, productId string) bool {
 	}
 
 	return productImageExists
+}
+
+/*
+Transforms an image to an image path
+*/
+func makeImagePath(imageId string) (string, *utils.ErrorHandler) {
+	api_env, envExists := os.LookupEnv("API_ENV")
+
+	if !envExists {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(errors.New("Error in loading. env"), "Error in getting product by id")
+		return "", errResp
+	}
+
+	if imageId == "" {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(errors.New("Error in creating image path: no image id"), "Error in creating image path: no image id")
+		return "", errResp
+	}
+
+	if api_env == "local" {
+		imageId = os.Getenv("S3_LOCAL_URL") + "/products/images/" + imageId
+	} else if api_env == "dev" {
+		imageId = os.Getenv("S3_DEV_URL") + "/products/images/" + imageId
+	} else {
+		imageId = os.Getenv("S3_PROD_URL") + "/products/images/" + imageId
+	}
+
+	return imageId, nil
 }

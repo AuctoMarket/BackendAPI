@@ -124,10 +124,22 @@ func handleCreateProductImages(c *gin.Context) {
 // @Description  Gets product information of products given query parameters provided in the Request
 // @Accept       json
 // @Produce      json
-// @Param        sellerId query string false  "Get products from a specific seller Id"
+// @Param        seller_id query string false  "Get products from a specific seller Id. Default is without any seller_id specified."
 // @Param        sort_by query string false  "Sort By a specific attribute of the product. Default is posted_date"
-// @Success      200  {object}  data.Message
+// @Success      200  {object}  []data.GetProductResponseData
 // @Failure      500  {object}  data.Message
 // @Router       /products  [get]
-func handleGetProducts(c *gin.Context) {
+func handleGetProductList(c *gin.Context) {
+	sellerId := c.DefaultQuery("seller_id", "None")
+	sortby := c.DefaultQuery("sort_by", "None")
+
+	products, err := product.GetProductList(db, sellerId, sortby)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.JSON(http.StatusOK, products)
 }

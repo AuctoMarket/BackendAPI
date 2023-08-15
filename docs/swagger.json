@@ -120,6 +120,47 @@
             }
         },
         "/products": {
+            "get": {
+                "description": "Gets product information of products given query parameters provided in the Request",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets Products with given query parameters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Get products from a specific seller Id. Default is without any seller_id specified.",
+                        "name": "seller_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort By a specific attribute of the product. Default is posted_date",
+                        "name": "sort_by",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/data.GetProductResponseData"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a new product post with the supplied data, if the data is not valid it throws and error",
                 "produces": [
@@ -499,7 +540,7 @@
                 "product_id",
                 "product_quantity",
                 "product_type",
-                "seller_id",
+                "seller_info",
                 "sold_quantity",
                 "title"
             ],
@@ -532,8 +573,8 @@
                 "product_type": {
                     "type": "string"
                 },
-                "seller_id": {
-                    "type": "string"
+                "seller_info": {
+                    "$ref": "#/definitions/data.GetSellerByIdResponseData"
                 },
                 "sold_quantity": {
                     "type": "integer"

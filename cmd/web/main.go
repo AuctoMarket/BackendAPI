@@ -72,7 +72,7 @@ func main() {
 			productGroup.GET("/:id", handleGetProductById)
 			productGroup.POST("", handleCreateProduct)
 			productGroup.POST("/:id/images", handleCreateProductImages)
-			productGroup.GET("", handleGetProducts)
+			productGroup.GET("", handleGetProductList)
 		}
 
 		sellerGroup := apiGroup.Group("/sellers")
