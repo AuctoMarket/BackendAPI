@@ -274,6 +274,16 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Bad sort_by param", err.Error())
 	assert.Equal(t, 400, err.ErrorCode())
 
+	//Test 4: Get Product List from a specific seller id
+	res, err = GetProductList(db, sellerid, "None")
+	assert.Empty(t, err)
+	assert.Equal(t, 3, len(res))
+
+	//Test 5: Get Product List sorted by posted date
+	res, err = GetProductList(db, "None", "posted_date")
+	assert.Empty(t, err)
+	assert.Equal(t, 3, len(res))
+
 	store.CloseDB(db)
 
 }

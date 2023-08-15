@@ -118,7 +118,7 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 
 	//Add query params to the query
 	if sellerId != "None" {
-		query = query + ` WHERE sellers.seller_id = ` + sellerId
+		query = query + ` WHERE sellers.seller_id = '` + sellerId + `'`
 	}
 
 	if sortBy == "None" {
