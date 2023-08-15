@@ -119,7 +119,15 @@ func handleCreateProductImages(c *gin.Context) {
 
 }
 
-// TODO
+// handleGetProducts godoc
+// @Summary      Gets Products with given query parameters
+// @Description  Gets product information of products given query parameters provided in the Request
+// @Accept       json
+// @Produce      json
+// @Param        sellerId query string false  "Get products from a specific seller Id"
+// @Param        sort_by query string false  "Sort By a specific attribute of the product. Default is posted_date"
+// @Success      200  {object}  data.Message
+// @Failure      500  {object}  data.Message
+// @Router       /products  [get]
 func handleGetProducts(c *gin.Context) {
-
 }
