@@ -39,6 +39,24 @@ func createTables(db *sql.DB) error {
 		return err
 	}
 
+	err = createDeliveryAddressesTable(db)
+
+	if err != nil {
+		return err
+	}
+
+	err = createOrdersTable(db)
+
+	if err != nil {
+		return err
+	}
+
+	err = createGuestOrdersTable(db)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
