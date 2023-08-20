@@ -87,7 +87,7 @@ func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductCrea
 		return response, errResp
 	}
 
-	product.CreateResponseFromRequest(&response)
+	product.CreateProductResponseFromRequest(&response)
 	response.PostedDate = postedDate.String()
 
 	return response, nil

@@ -116,3 +116,63 @@ func createProductImagesTable(db *sql.DB) error {
 	_, err := db.ExecContext(context.Background(), query)
 	return err
 }
+
+/*
+Create the table for Delivery Addresses
+*/
+func createDeliveryAddressesTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS delivery_addresses(
+		delivery_address_id uuid DEFAULT uuid_generate_v1() NOT NULL,
+		buyer_id uuid REFERENCES buyers(buyer_id) NOT NULL,
+		address_line1 VARCHAR NOT NULL,
+		address_line2 VARCHAR,
+		postal_code VARCHAR NOT NULL,
+		PRIMARY KEY(delivery_address_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create the table for Orders
+*/
+func createOrdersTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS orders(
+		order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		buyer_id uuid REFERENCES buyers(buyer_id) NOT NULL,
+		delivery_address_id uuid REFERENCES delivery_addresses(delivery_address_id) NOT NULL,
+		delivery_type VARCHAR NOT NULL,
+		order_quantity INT NOT NULL, 
+		payment_type VARCHAR NOT NULL,
+		payment_status VARCHAR NOT NULL,
+		phone_number VARCHAR NOT NULL,
+		order_date TIMESTAMPTZ NOT NULL,
+		PRIMARY KEY(order_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create the table for Guest Orders
+*/
+func createGuestOrdersTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS guest_orders(
+		guest_order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		delivery_type VARCHAR NOT NULL,
+		order_quantity INT NOT NULL, 
+		payment_type VARCHAR NOT NULL,
+		payment_status VARCHAR NOT NULL,
+		phone_number VARCHAR NOT NULL,
+		email VARCHAR NOT NULL,
+		order_date TIMESTAMPTZ NOT NULL,
+		address_line1 VARCHAR NOT NULL,
+		address_line2 VARCHAR,
+		postal_code VARCHAR NOT NULL,
+		PRIMARY KEY(guest_order_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
