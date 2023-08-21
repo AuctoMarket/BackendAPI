@@ -12,7 +12,7 @@ type Middleware struct {
 /*
 Setup various middleware tools
 */
-func (m *Middleware) setupMiddleware() {
+func (m Middleware) setupMiddleware() {
 	//setup various middleware
 	m.setCors()
 }
@@ -20,7 +20,7 @@ func (m *Middleware) setupMiddleware() {
 /*
 Setup CORS middleware
 */
-func (m *Middleware) setCors() {
+func (m Middleware) setCors() {
 	m.Cors = cors.Default()
 }
 
@@ -28,7 +28,7 @@ func (m *Middleware) setCors() {
 Use middleware in the router engine
 */
 func UseMiddleware(r *gin.Engine) {
-	var middleware *Middleware = &Middleware{}
+	var middleware Middleware = Middleware{}
 
 	middleware.setupMiddleware()
 	r.Use(middleware.Cors)
