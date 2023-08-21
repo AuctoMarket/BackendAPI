@@ -84,3 +84,19 @@ func doesBuyerEmailExist(db *sql.DB, email string) bool {
 
 	return buyerExists
 }
+
+/*
+Checks wether a Buyer with a given email address already exists in the database
+and returns true if it does false otherwise.
+*/
+func DoesBuyerExist(db *sql.DB, id string) bool {
+	var buyerExists bool
+	query := `SELECT EXISTS(SELECT * FROM buyers WHERE buyer_id = $1);`
+	err := db.QueryRowContext(context.Background(), query, id).Scan(&buyerExists)
+
+	if err != nil {
+		return false
+	}
+
+	return buyerExists
+}

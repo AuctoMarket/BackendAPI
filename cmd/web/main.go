@@ -83,6 +83,11 @@ func main() {
 
 		}
 
+		orderGroup := apiGroup.Group("/orders")
+		{
+			orderGroup.POST("", handleCreateOrder)
+		}
+
 		testGroup := apiGroup.Group("/tests")
 		{
 			testGroup.GET("/ping", handlePing)

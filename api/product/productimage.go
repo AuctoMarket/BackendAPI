@@ -81,7 +81,7 @@ func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images
 Validates the insertion of new product images for a product
 */
 func validateCreateProductImages(db *sql.DB, productId string, images []io.Reader) *utils.ErrorHandler {
-	if !doesProductExist(db, productId) {
+	if !DoesProductExist(db, productId) {
 		return utils.BadRequestError("Product with given id does not exist")
 	}
 

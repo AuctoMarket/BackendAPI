@@ -16,7 +16,7 @@ Gets a new product by its product id. If the product with the given product id d
 func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, *utils.ErrorHandler) {
 	var response data.GetProductResponseData
 
-	productExists := doesProductExist(db, productId)
+	productExists := DoesProductExist(db, productId)
 	if !productExists {
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
@@ -99,13 +99,13 @@ returns a 400 bad request
 */
 
 func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProductResponseData, *utils.ErrorHandler) {
-	var products []data.GetProductResponseData
+	var response []data.GetProductResponseData
 	productMap := make(map[string]data.GetProductResponseData)
 
 	validErr := validateGetProductList(db, sellerId, sortBy)
 
 	if validErr != nil {
-		return products, validErr
+		return response, validErr
 	}
 
 	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
@@ -134,7 +134,7 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in selecting product rows")
-		return products, errResp
+		return response, errResp
 	}
 
 	for rows.Next() {
@@ -150,13 +150,13 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 		if err != nil {
 			errResp := utils.InternalServerError(nil)
 			utils.LogError(err, "Error in selecting product rows")
-			return products, errResp
+			return response, errResp
 		}
 
 		//Convert image id to path
 		imagePath, pathErr := makeImagePath(imagePath)
 		if err != nil {
-			return products, pathErr
+			return response, pathErr
 		}
 
 		// Add the product to the map, if it exists add just the image to the product images array
@@ -172,17 +172,17 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 
 	// iterate through map and return the list of unique products
 	for _, v := range productMap {
-		products = append(products, v)
+		response = append(response, v)
 	}
 
-	return products, nil
+	return response, nil
 }
 
 /*
 Checks wether a Product with a given product id already exists in the database
 and returns true if it does false otherwise.
 */
-func doesProductExist(db *sql.DB, productId string) bool {
+func DoesProductExist(db *sql.DB, productId string) bool {
 	var productExists bool
 	query := `SELECT EXISTS(SELECT * FROM products WHERE product_id = $1);`
 	err := db.QueryRowContext(context.Background(), query, productId).Scan(&productExists)
