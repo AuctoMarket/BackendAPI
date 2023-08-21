@@ -12,7 +12,7 @@ type Middleware struct {
 /*
 Setup various middleware tools
 */
-func (m Middleware) setupMiddleware() {
+func (m *Middleware) setupMiddleware() {
 	//setup various middleware
 	m.setCors()
 }
@@ -20,7 +20,7 @@ func (m Middleware) setupMiddleware() {
 /*
 Setup CORS middleware
 */
-func (m Middleware) setCors() {
+func (m *Middleware) setCors() {
 	m.Cors = cors.Default()
 }
 
