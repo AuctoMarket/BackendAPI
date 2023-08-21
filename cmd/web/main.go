@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "BackendAPI/docs"
-	"BackendAPI/http"
 	"BackendAPI/store"
 	"BackendAPI/utils"
 	"context"
@@ -15,6 +14,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -34,8 +34,10 @@ var s3Client *s3.Client
 // @BasePath  /api/v1
 func main() {
 
-	//Setup Router and Database Connection
+	//Setup Router
 	router := gin.Default()
+	//Setup CORS Middlware
+	router.Use(cors.Default())
 	var err error
 
 	// Load .env variables from environment file
@@ -46,14 +48,12 @@ func main() {
 		return
 	}
 
-	//Setup router middleware
-	http.UseMiddleware(router)
-
+	//Setup DB connection
 	db, err = store.SetupDB()
 	if err != nil {
 		log.Println("Could not connect to the database:", err)
 	}
-
+	//Setup S3 connection
 	s3Client, err = store.CreateNewS3()
 	if err != nil {
 		log.Println("Could not connect to the S3 Instance:", err)
