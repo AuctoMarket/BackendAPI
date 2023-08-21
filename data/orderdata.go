@@ -25,3 +25,8 @@ type CreateGuestOrderDataRequest struct {
 	PostalCode    string `json:"postal_code" binding:"required"`
 	Amount        int    `json:"amount" binding:"required"`
 }
+
+type CreateOrderDataResponse struct {
+	OrderId     string `json:"order_id" binding:"required"`
+	RedirectUrl string `json:"redirect_url" binding:"required"`
+}

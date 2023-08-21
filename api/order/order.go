@@ -15,8 +15,8 @@ import (
 Create a order for a specific product by a specific buyer from the order request and store it in the database. If the
 buyer or product do not exist, return a BadRequestError (400).
 */
-func CreateOrder(db *sql.DB, request data.CreateOrderDataRequest) (data.Message, *utils.ErrorHandler) {
-	var response data.Message
+func CreateOrder(db *sql.DB, request data.CreateOrderDataRequest) (data.CreateOrderDataResponse, *utils.ErrorHandler) {
+	var response data.CreateOrderDataResponse
 
 	//validate input
 	validErr := validateCreateOrderRequest(db, request)
@@ -35,7 +35,6 @@ func CreateOrder(db *sql.DB, request data.CreateOrderDataRequest) (data.Message,
 	query := `INSERT INTO orders(` + cols + `) VALUES (` + vals + `) RETURNING order_id;`
 	orderDate := time.Now()
 	paymentStatus := `pending`
-	var orderId string
 	var err error
 
 	if request.AddressLine2 != "" {
@@ -43,13 +42,13 @@ func CreateOrder(db *sql.DB, request data.CreateOrderDataRequest) (data.Message,
 			context.Background(), query,
 			request.ProductId, request.BuyerId, request.DeliveryType, request.OrderQuantity,
 			request.PaymentType, paymentStatus, request.PhoneNumber, orderDate, request.AddressLine1,
-			request.PostalCode, request.AddressLine2).Scan(&orderId)
+			request.PostalCode, request.AddressLine2).Scan(&response.OrderId)
 	} else {
 		err = db.QueryRowContext(
 			context.Background(), query,
 			request.ProductId, request.BuyerId, request.DeliveryType, request.OrderQuantity,
 			request.PaymentType, paymentStatus, request.PhoneNumber, orderDate, request.AddressLine1,
-			request.PostalCode).Scan(&orderId)
+			request.PostalCode).Scan(&response.OrderId)
 	}
 
 	if err != nil {
