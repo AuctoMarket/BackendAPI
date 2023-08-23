@@ -10,6 +10,98 @@ definitions:
     - buyer_id
     - email
     type: object
+  data.CreateGuestOrderResponseData:
+    properties:
+      guest_order_id:
+        type: string
+      redirect_url:
+        type: string
+    required:
+    - guest_order_id
+    - redirect_url
+    type: object
+  data.CreateOrderResponseData:
+    properties:
+      order_id:
+        type: string
+      redirect_url:
+        type: string
+    required:
+    - order_id
+    - redirect_url
+    type: object
+  data.GetGuestOrderByIdResponseData:
+    properties:
+      address_line_1:
+        type: string
+      address_line_2:
+        type: string
+      amount:
+        type: integer
+      delivery_type:
+        type: string
+      email:
+        type: string
+      guest_order_id:
+        type: string
+      order_quantity:
+        type: integer
+      payment_type:
+        type: string
+      phone_number:
+        type: string
+      postal_code:
+        type: string
+      product_id:
+        type: string
+    required:
+    - address_line_1
+    - amount
+    - delivery_type
+    - email
+    - guest_order_id
+    - order_quantity
+    - payment_type
+    - phone_number
+    - postal_code
+    - product_id
+    type: object
+  data.GetOrderByIdResponseData:
+    properties:
+      address_line_1:
+        type: string
+      address_line_2:
+        type: string
+      amount:
+        type: integer
+      buyer_id:
+        type: string
+      delivery_type:
+        type: string
+      order_id:
+        type: string
+      order_quantity:
+        type: integer
+      payment_type:
+        type: string
+      phone_number:
+        type: string
+      postal_code:
+        type: string
+      product_id:
+        type: string
+    required:
+    - address_line_1
+    - amount
+    - buyer_id
+    - delivery_type
+    - order_id
+    - order_quantity
+    - payment_type
+    - phone_number
+    - postal_code
+    - product_id
+    type: object
   data.GetProductResponseData:
     properties:
       condition:
@@ -210,6 +302,213 @@ paths:
           schema:
             $ref: '#/definitions/data.Message'
       summary: Signs a new buyer up
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new order for a specific product. This order is created
+        by an existing buyer with an account.
+      parameters:
+      - description: The product for which we are creating an order
+        in: body
+        name: product_id
+        required: true
+        schema:
+          type: string
+      - description: The id of the buyer who is creating the order
+        in: body
+        name: buyer_id
+        required: true
+        schema:
+          type: string
+      - description: Quantity of the product being ordered
+        in: body
+        name: order_quantity
+        required: true
+        schema:
+          type: integer
+      - description: Payment method chosen for this order, can only be 'card' or 'paynow_online'
+        in: body
+        name: payment_type
+        required: true
+        schema:
+          type: string
+      - description: Type of delivery method, can only be 'self_collection' or 'standard_delivery'
+        in: body
+        name: delivery_type
+        required: true
+        schema:
+          type: string
+      - description: Phone number of buyer
+        in: body
+        name: phone_number
+        required: true
+        schema:
+          type: string
+      - description: Delivery Address
+        in: body
+        name: address_line_1
+        required: true
+        schema:
+          type: string
+      - description: Delivery Address 2
+        in: body
+        name: address_line_2
+        schema:
+          type: string
+      - description: Postal code of address
+        in: body
+        name: postal_code
+        schema:
+          type: string
+      - description: Amount to be paid for the order in cents
+        in: body
+        name: amount
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.CreateOrderResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Creates a new order
+  /orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Returns the order details of an order with a given order id. If
+        the order id does not exists, returns a 404 error.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.GetOrderByIdResponseData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Fetched order details for an order with a specific order id
+  /orders/{id}/guest:
+    get:
+      consumes:
+      - application/json
+      description: Returns the order details of an guest order with a given guest
+        order id. If the order id does not exists, returns a 404 error.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.GetGuestOrderByIdResponseData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Fetched order details for an guest order with a specific guest order
+        id
+  /orders/guest:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new order for a specific product. This order is created
+        by a guest user.
+      parameters:
+      - description: The product for which we are creating an order
+        in: body
+        name: product_id
+        required: true
+        schema:
+          type: string
+      - description: The email of the guest user
+        in: body
+        name: email
+        required: true
+        schema:
+          type: string
+      - description: Quantity of the product being ordered
+        in: body
+        name: order_quantity
+        required: true
+        schema:
+          type: integer
+      - description: Payment method chosen for this order, can only be 'card' or 'paynow_online'
+        in: body
+        name: payment_type
+        required: true
+        schema:
+          type: string
+      - description: Type of delivery method, can only be 'self_collection' or 'standard_delivery'
+        in: body
+        name: delivery_type
+        required: true
+        schema:
+          type: string
+      - description: Phone number of buyer
+        in: body
+        name: phone_number
+        required: true
+        schema:
+          type: string
+      - description: Delivery Address
+        in: body
+        name: address_line_1
+        required: true
+        schema:
+          type: string
+      - description: Delivery Address 2
+        in: body
+        name: address_line_2
+        schema:
+          type: string
+      - description: Postal code of address
+        in: body
+        name: postal_code
+        schema:
+          type: string
+      - description: Amount to be paid for the order in cents
+        in: body
+        name: amount
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.CreateGuestOrderResponseData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/data.Message'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/data.Message'
+      summary: Creates a new guest order
   /products:
     get:
       consumes:
