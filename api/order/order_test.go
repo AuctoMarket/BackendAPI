@@ -21,7 +21,7 @@ func TestDoesOrderExist(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0], 10000)
+	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
 	assert.NoError(t, err)
 
 	//Test 1: OrderId exists
@@ -46,7 +46,7 @@ func TestDoesGuestOrderExist(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	orderIds, err := createDummyGuestOrders(db, productIds[0], "Test@gmail.com", 10000)
+	orderIds, err := createDummyGuestOrders(db, productIds[0], "Test@gmail.com")
 	assert.NoError(t, err)
 
 	//Test 1: OrderId exists
@@ -66,26 +66,40 @@ func TestDoesGuestOrderExist(t *testing.T) {
 
 func TestCalculatePaymentAmount(t *testing.T) {
 	//Test 1: No additional fees
-	amount := calculatePaymentAmount(10000, 2, "paynow_online", "self-collection")
-	assert.Equal(t, 20000, amount)
+	var fees data.OrderFees = data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+		PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, TotalPaid: 20000, ProductPrice: 10000}
+	err := validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 2: Minimum order fee only
-	amount = calculatePaymentAmount(1000, 2, "paynow_online", "self-collection")
-	assert.Equal(t, 2100, amount)
+	fees = data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+		PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 100, TotalPaid: 2100, ProductPrice: 1000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 3: Delivery fee only
-	amount = calculatePaymentAmount(10000, 2, "paynow_online", "standard_delivery")
-	assert.Equal(t, 20400, amount)
+	fees = data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+		PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, TotalPaid: 20400, ProductPrice: 10000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 4: Delivery fee and minumum order fee
-	amount = calculatePaymentAmount(1000, 2, "paynow_online", "standard_delivery")
-	assert.Equal(t, 2500, amount)
+	fees = data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+		PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 100, TotalPaid: 2500, ProductPrice: 1000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 5: Card fee only
-	amount = calculatePaymentAmount(10000, 2, "card", "self_collection")
-	assert.Equal(t, 20400, amount)
+	fees = data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+		PaymentFee: 400, DeliveryFee: 0, SmallOrderFee: 0, TotalPaid: 20400, ProductPrice: 10000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 5: Card fee and delivery fee
-	amount = calculatePaymentAmount(10000, 2, "card", "standard_delivery")
-	assert.Equal(t, 20808, amount)
+	fees = data.OrderFees{PaymentType: "card", DeliveryType: "standard_delivery",
+		DeliveryFee: 400, PaymentFee: 408, TotalPaid: 20808, ProductPrice: 10000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 	//Test 5: Card fee and delivery fee and minimum order fee
-	amount = calculatePaymentAmount(1000, 2, "card", "standard_delivery")
-	assert.Equal(t, 2550, amount)
+	fees = data.OrderFees{PaymentType: "card", DeliveryType: "standard_delivery",
+		DeliveryFee: 400, SmallOrderFee: 100, PaymentFee: 50, TotalPaid: 2550, ProductPrice: 1000}
+	err = validatePaymentAmount(2, fees)
+	assert.Empty(t, err)
 }
 
 func TestValidateCreateGuestOrderRequest(t *testing.T) {
@@ -98,37 +112,37 @@ func TestValidateCreateGuestOrderRequest(t *testing.T) {
 
 	dummyGuestOrderRequests := []data.CreateGuestOrderRequestData{
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[1], Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10400},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+				TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: 10,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 100400},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 100400, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: -1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 0},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 0, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: "wrong_id", Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "card", DeliveryType: "self-collect", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "card_payment", DeliveryType: "self-collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "test@gmail.com", OrderQuantity: 1,
-			PaymentType: "card", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 12000},
+			Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+				TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 	}
 
 	//Test 1: No errors, no fees
@@ -183,41 +197,41 @@ func TestValidateCreateOrderRequest(t *testing.T) {
 
 	dummyOrderRequests := []data.CreateOrderRequestData{
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456", TelegramHandle: "test"},
 		{ProductId: productIds[1], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10400},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+				TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 10,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 100400},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 100400, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456", TelegramHandle: "test"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: -1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 0},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 0, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: "wrong_id", BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "standard_delivery", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "card", DeliveryType: "self-collect", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "card_payment", DeliveryType: "self-collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "card", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 12000},
+			Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+				TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: "wrong id", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 	}
 
 	//Test 1: No errors, no fees
@@ -273,7 +287,7 @@ func TestGetGuestOrderById(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@gmail.com", 10000)
+	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@gmail.com")
 
 	//Test 1: Order Id exists
 	guestOrder, getErr := GetGuestOrderById(db, guestOrderIds[0])
@@ -299,7 +313,7 @@ func TestGetOrderById(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	buyerIds := createDummyBuyers(db)
 	assert.NoError(t, err)
-	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0], 10000)
+	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
 
 	//Test 1: Order Id exists
 	order, getErr := GetOrderById(db, orderIds[0])
@@ -327,25 +341,25 @@ func TestGuestCreateOrder(t *testing.T) {
 
 	dummyGuestOrders := []data.CreateGuestOrderRequestData{
 		{ProductId: productIds[0], Email: "Test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "Test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "Test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10003},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "Test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_qr-code", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10003},
+			Fees: data.OrderFees{PaymentType: "paynow_qr", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], Email: "Test@gmail.com", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 	}
 
 	//Test 1: No errors in guest order
@@ -388,29 +402,29 @@ func TestCreateOrder(t *testing.T) {
 
 	dummyOrders := []data.CreateOrderRequestData{
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10003},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_qr-code", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456",
-			Amount: 10003},
+			Fees: data.OrderFees{PaymentType: "paynow-qr", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 		{ProductId: productIds[0], BuyerId: "wrong_id", OrderQuantity: 1,
-			PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-			Amount: 10000},
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
 	}
 
 	//Test 1: No errors in guest order
@@ -476,7 +490,7 @@ func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
 			ProductType: "Buy-Now", Price: 10000, Condition: 5, Quantity: 3},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 9000, Condition: 4, Quantity: 3}}
+			ProductType: "Pre-Order", Price: 10000, Condition: 4, Quantity: 3}}
 	var productIds []string
 
 	for i := 0; i < len(dummyCreateProducts); i++ {
@@ -499,32 +513,32 @@ func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 	return productIds, nil
 }
 
-func createDummyOrders(db *sql.DB, productId string, buyerId string, price int) ([]string, error) {
+func createDummyOrders(db *sql.DB, productId string, buyerId string) ([]string, error) {
 	var orderIds []string
 	dummyOrders := []data.CreateOrderRequestData{{ProductId: productId, BuyerId: buyerId, OrderQuantity: 1,
-		PaymentType: "card", DeliveryType: "self-collect", PhoneNumber: "12345678",
-		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-		Amount: price}, {ProductId: productId, BuyerId: buyerId, OrderQuantity: 1,
-		PaymentType: "paynow_online", DeliveryType: "self-collect", PhoneNumber: "12345678",
-		AddressLine1: "Test", PostalCode: "123456",
-		Amount: price}}
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}, {ProductId: productId, BuyerId: buyerId, OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}}
 	//SQL Query to insert new order
 	query := `INSERT INTO orders(
-		product_id, buyer_id, delivery_type, order_quantity, payment_type, 
-		payment_status, phone_number, order_date, address_line_1, 
-		address_line_2, postal_code) 
+		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle, 
+		product_price) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
 		RETURNING order_id;`
 
 	for i := 0; i < len(dummyOrders); i++ {
 		var orderId string
 		request := dummyOrders[i]
 		orderDate := time.Now()
-		paymentStatus := "pending"
-		err := db.QueryRowContext(context.Background(), query, request.ProductId, request.BuyerId, request.DeliveryType,
-			request.OrderQuantity, request.PaymentType, paymentStatus, request.PhoneNumber, orderDate,
-			request.AddressLine1, utils.NewNullableString(request.AddressLine2), request.PostalCode).Scan(&orderId)
+		err := db.QueryRowContext(context.Background(), query, request.ProductId, request.BuyerId, request.Fees.DeliveryType, request.Fees.DeliveryFee,
+			request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee, request.Fees.TotalPaid,
+			request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
+			request.PostalCode, utils.NewNullableString(request.TelegramHandle), request.Fees.ProductPrice).Scan(&orderId)
 
 		if err != nil {
 			return nil, err
@@ -536,32 +550,33 @@ func createDummyOrders(db *sql.DB, productId string, buyerId string, price int) 
 	return orderIds, nil
 }
 
-func createDummyGuestOrders(db *sql.DB, productId string, email string, price int) ([]string, error) {
+func createDummyGuestOrders(db *sql.DB, productId string, email string) ([]string, error) {
 	var guestOrderIds []string
 	dummyOrders := []data.CreateGuestOrderRequestData{{ProductId: productId, Email: email, OrderQuantity: 1,
-		PaymentType: "card", DeliveryType: "self_collection", PhoneNumber: "12345678",
-		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456",
-		Amount: price}, {ProductId: productId, Email: email, OrderQuantity: 1,
-		PaymentType: "paynow_online", DeliveryType: "self_collection", PhoneNumber: "12345678",
-		AddressLine1: "Test", PostalCode: "123456",
-		Amount: price}}
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}, {ProductId: productId, Email: email, OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}}
 	//SQL Query to insert new order
 	query := `INSERT INTO guest_orders(
-		product_id, email, delivery_type, order_quantity, payment_type, 
-		payment_status, phone_number, order_date, address_line_1, 
-		address_line_2, postal_code) 
+		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle,
+		product_price) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
 		RETURNING guest_order_id;`
 
 	for i := 0; i < len(dummyOrders); i++ {
 		var guestOrderId string
 		request := dummyOrders[i]
 		orderDate := time.Now()
-		paymentStatus := "pending"
-		err := db.QueryRowContext(context.Background(), query, request.ProductId, request.Email, request.DeliveryType,
-			request.OrderQuantity, request.PaymentType, paymentStatus, request.PhoneNumber, orderDate,
-			request.AddressLine1, utils.NewNullableString(request.AddressLine2), request.PostalCode).Scan(&guestOrderId)
+		err := db.QueryRowContext(context.Background(), query, request.ProductId, request.Email, request.Fees.DeliveryType,
+			request.Fees.DeliveryFee, request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee,
+			request.Fees.TotalPaid, request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1,
+			utils.NewNullableString(request.AddressLine2), request.PostalCode, utils.NewNullableString(request.TelegramHandle),
+			request.Fees.ProductPrice).Scan(&guestOrderId)
 
 		if err != nil {
 			return nil, err

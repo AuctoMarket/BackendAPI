@@ -17,7 +17,6 @@ buyer or product do not exist, return a BadRequestError (400).
 func CreateOrder(db *sql.DB, request data.CreateOrderRequestData) (data.CreateOrderResponseData, *utils.ErrorHandler) {
 	var response data.CreateOrderResponseData
 	orderDate := time.Now()
-	paymentStatus := `pending`
 
 	//validate input
 	validErr := validateCreateOrderRequest(db, request)
@@ -27,19 +26,20 @@ func CreateOrder(db *sql.DB, request data.CreateOrderRequestData) (data.CreateOr
 
 	//SQL Query to insert new order
 	query := `INSERT INTO orders(
-		product_id, buyer_id, delivery_type, order_quantity, payment_type, 
-		payment_status, phone_number, order_date, address_line_1, 
-		address_line_2, postal_code) 
+		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle, 
+		product_price) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
 		RETURNING order_id;`
 
 	//SQL query execution dependant on if address_line_2 exists
 	err := db.QueryRowContext(
 		context.Background(), query,
-		request.ProductId, request.BuyerId, request.DeliveryType, request.OrderQuantity,
-		request.PaymentType, paymentStatus, request.PhoneNumber, orderDate, request.AddressLine1,
-		utils.NewNullableString(request.AddressLine2), request.PostalCode).Scan(&response.OrderId)
+		request.ProductId, request.BuyerId, request.Fees.DeliveryType, request.Fees.DeliveryFee,
+		request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee, request.Fees.TotalPaid,
+		request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
+		request.PostalCode, utils.NewNullableString(request.TelegramHandle), request.Fees.ProductPrice).Scan(&response.OrderId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -58,7 +58,6 @@ product does not exist, return a BadRequestError (400).
 func CreateGuestOrder(db *sql.DB, request data.CreateGuestOrderRequestData) (data.CreateGuestOrderResponseData, *utils.ErrorHandler) {
 	var response data.CreateGuestOrderResponseData
 	orderDate := time.Now()
-	paymentStatus := `pending`
 
 	//validate input
 	validErr := validateCreateGuestOrderRequest(db, request)
@@ -68,18 +67,19 @@ func CreateGuestOrder(db *sql.DB, request data.CreateGuestOrderRequestData) (dat
 
 	//SQL Query to insert new guest order
 	query := `INSERT INTO guest_orders(
-		product_id, delivery_type, order_quantity, payment_type, 
-		email, payment_status, phone_number, order_date, 
-		address_line_1, address_line_2, postal_code) 
+		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle, 
+		product_price) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
 		RETURNING guest_order_id;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
-		request.ProductId, request.DeliveryType, request.OrderQuantity,
-		request.PaymentType, request.Email, paymentStatus, request.PhoneNumber, orderDate,
-		request.AddressLine1, utils.NewNullableString(request.AddressLine2), request.PostalCode).Scan(&response.GuestOrderId)
+		request.ProductId, request.Email, request.Fees.DeliveryType, request.Fees.DeliveryFee,
+		request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee, request.Fees.TotalPaid,
+		request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
+		request.PostalCode, utils.NewNullableString(request.TelegramHandle), request.Fees.ProductPrice).Scan(&response.GuestOrderId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -101,14 +101,17 @@ func GetOrderById(db *sql.DB, orderId string) (data.GetOrderByIdResponseData, *u
 		return response, utils.NotFoundError("Order with given id does not exist")
 	}
 
-	query := `SELECT product_id, buyer_id, order_quantity, payment_type, delivery_type,
-	phone_number, address_line_1, COALESCE(address_line_2, ''), postal_code
+	query := `SELECT
+		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1,COALESCE(address_line_2, ''), postal_code, payment_status,
+		COALESCE(telegram_handle, ''), product_price
 	FROM orders WHERE order_id=$1;`
 
 	err := db.QueryRowContext(context.Background(), query, orderId).Scan(
-		&response.ProductId, &response.BuyerId, &response.OrderQuantity, &response.PaymentType,
-		&response.DeliveryType, &response.PhoneNumber, &response.AddressLine1, &response.AddressLine2,
-		&response.PostalCode)
+		&response.ProductId, &response.BuyerId, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
+		&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
+		&response.OrderQuantity, &response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
+		&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &response.Fees.ProductPrice)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -130,14 +133,17 @@ func GetGuestOrderById(db *sql.DB, guestOrderId string) (data.GetGuestOrderByIdR
 		return response, utils.NotFoundError("Guest order with given id does not exist")
 	}
 
-	query := `SELECT product_id, email, order_quantity, payment_type, delivery_type,
-	phone_number, address_line_1, COALESCE(address_line_2, ''), postal_code
+	query := `SELECT
+		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
+		order_quantity, phone_number, order_date, address_line_1, COALESCE(address_line_2, ''), postal_code, payment_status,
+		COALESCE(telegram_handle, ''), product_price
 	FROM guest_orders WHERE guest_order_id=$1;`
 
 	err := db.QueryRowContext(context.Background(), query, guestOrderId).Scan(
-		&response.ProductId, &response.Email, &response.OrderQuantity, &response.PaymentType,
-		&response.DeliveryType, &response.PhoneNumber, &response.AddressLine1, &response.AddressLine2,
-		&response.PostalCode)
+		&response.ProductId, &response.Email, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
+		&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
+		&response.OrderQuantity, &response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
+		&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &response.Fees.ProductPrice)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -179,19 +185,20 @@ func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData)
 		return utils.BadRequestError("Bad order_quantity data")
 	}
 
-	if request.PaymentType != "card" && request.PaymentType != "paynow_online" {
+	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
 		utils.LogMessage("Payment Type is invalid")
 		return utils.BadRequestError("Bad payment_type data")
 	}
 
-	if request.DeliveryType != "standard_delivery" && request.DeliveryType != "self_collection" {
+	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {
 		utils.LogMessage("Delivery Type is invalid")
 		return utils.BadRequestError("Bad delivery_type data")
 	}
 
-	if request.Amount != calculatePaymentAmount(price, request.OrderQuantity, request.PaymentType, request.DeliveryType) {
-		utils.LogMessage("Payment amount is incorrect")
-		return utils.BadRequestError("Bad amount data")
+	amountErr := validatePaymentAmount(request.OrderQuantity, request.Fees)
+
+	if amountErr != nil {
+		return amountErr
 	}
 
 	return nil
@@ -222,19 +229,20 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 		return utils.BadRequestError("Bad order_quantity data")
 	}
 
-	if request.PaymentType != "card" && request.PaymentType != "paynow_online" {
+	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
 		utils.LogMessage("Payment Type is invalid")
 		return utils.BadRequestError("Bad payment_type data")
 	}
 
-	if request.DeliveryType != "standard_delivery" && request.DeliveryType != "self_collection" {
+	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {
 		utils.LogMessage("Delivery Type is invalid")
 		return utils.BadRequestError("Bad delivery_type data")
 	}
 
-	if request.Amount != calculatePaymentAmount(price, request.OrderQuantity, request.PaymentType, request.DeliveryType) {
-		utils.LogMessage("Payment amount is incorrect")
-		return utils.BadRequestError("Bad amount data")
+	amountErr := validatePaymentAmount(request.OrderQuantity, request.Fees)
+
+	if amountErr != nil {
+		return amountErr
 	}
 
 	return nil
@@ -243,28 +251,45 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 /*
 Calculate the payment amount given an order request
 */
-func calculatePaymentAmount(price int, quantity int, paymentType string, deliveryType string) int {
+func validatePaymentAmount(quantity int, fees data.OrderFees) *utils.ErrorHandler {
 	//calculate product cost
-	amountToBePaid := quantity * price
+	amountToBePaid := quantity * fees.ProductPrice
 
 	//calculate small order fee
 	if amountToBePaid < 2500 {
+		if fees.SmallOrderFee != 100 {
+			utils.LogMessage("Small Order fee is incorrect")
+			return utils.BadRequestError("Bad small_order_fee data")
+		}
 		amountToBePaid += 100
 	}
 
 	//calculate delivery fee
-	if deliveryType == "standard_delivery" {
+	if fees.DeliveryType == "standard_delivery" {
+		if fees.DeliveryFee != 400 {
+			utils.LogMessage("Delivery fee is incorrect")
+			return utils.BadRequestError("Bad delivery_fee data")
+		}
 		amountToBePaid += 400
 	}
 
-	//calculate payment fee
 	var paymentFee int
-	if paymentType == "card" {
-		paymentFee = (amountToBePaid * 2) / 100
+	//calculate payment fee
+	if fees.PaymentType == "card" {
+		paymentFee = amountToBePaid * 2 / 100
+		amountToBePaid += paymentFee
+		if fees.PaymentFee != paymentFee {
+			utils.LogMessage("Payment fee is incorrect")
+			return utils.BadRequestError("Bad payment_fee data")
+		}
 	}
 
-	amountToBePaid += paymentFee
-	return amountToBePaid
+	if amountToBePaid != fees.TotalPaid {
+		utils.LogMessage("Total Paid amount is incorrect")
+		return utils.BadRequestError("Bad total paid data")
+	}
+
+	return nil
 }
 
 /*

@@ -219,7 +219,7 @@ func TestCreateGuestOrdersTable(t *testing.T) {
 
 	//Test 2: Check if neccessary guest orders tables exists
 	var guestOrdersExist bool
-	err = db.QueryRowContext(context.Background(), queryCheckTableGuestOrders).Scan(guestOrdersExist)
+	err = db.QueryRowContext(context.Background(), queryCheckTableGuestOrders).Scan(&guestOrdersExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, guestOrdersExist)
 

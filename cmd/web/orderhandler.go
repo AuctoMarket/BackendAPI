@@ -3,6 +3,7 @@ package main
 import (
 	"BackendAPI/api/order"
 	"BackendAPI/data"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,7 @@ func handleCreateOrder(c *gin.Context) {
 	bindErr := c.ShouldBindJSON(&createOrderData)
 
 	if bindErr != nil {
+		fmt.Println(bindErr)
 		r := data.Message{Message: "Bad Request Body"}
 		c.JSON(http.StatusBadRequest, r)
 		return
