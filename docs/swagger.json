@@ -119,6 +119,295 @@
                 }
             }
         },
+        "/orders": {
+            "post": {
+                "description": "Creates a new order for a specific product. This order is created by an existing buyer with an account.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new order",
+                "parameters": [
+                    {
+                        "description": "The product for which we are creating an order",
+                        "name": "product_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The id of the buyer who is creating the order",
+                        "name": "buyer_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Quantity of the product being ordered",
+                        "name": "order_quantity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Phone number of buyer",
+                        "name": "phone_number",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Delivery Address",
+                        "name": "address_line_1",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Delivery Address 2",
+                        "name": "address_line_2",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Postal code of address",
+                        "name": "postal_code",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Pricing Info, Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'",
+                        "name": "fees",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/data.OrderFees"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.CreateOrderResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/guest": {
+            "post": {
+                "description": "Creates a new order for a specific product. This order is created by a guest user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a new guest order",
+                "parameters": [
+                    {
+                        "description": "The product for which we are creating an order",
+                        "name": "product_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "The email of the guest user",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Quantity of the product being ordered",
+                        "name": "order_quantity",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "Payment method chosen for this order, can only be 'card' or 'paynow_online'",
+                        "name": "payment_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Type of delivery method, can only be 'self_collection' or 'standard_delivery'",
+                        "name": "delivery_type",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Phone number of buyer",
+                        "name": "phone_number",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Delivery Address",
+                        "name": "address_line_1",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Delivery Address 2",
+                        "name": "address_line_2",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Postal code of address",
+                        "name": "postal_code",
+                        "in": "body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Amount to be paid for the order in cents",
+                        "name": "amount",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/data.CreateGuestOrderResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "description": "Returns the order details of an order with a given order id. If the order id does not exists, returns a 404 error.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Fetched order details for an order with a specific order id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.GetOrderByIdResponseData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/guest": {
+            "get": {
+                "description": "Returns the order details of an guest order with a given guest order id. If the order id does not exists, returns a 404 error.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Fetched order details for an guest order with a specific guest order id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.GetGuestOrderByIdResponseData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/products": {
             "get": {
                 "description": "Gets product information of products given query parameters provided in the Request",
@@ -529,6 +818,142 @@
                 }
             }
         },
+        "data.CreateGuestOrderResponseData": {
+            "type": "object",
+            "required": [
+                "guest_order_id",
+                "redirect_url"
+            ],
+            "properties": {
+                "guest_order_id": {
+                    "type": "string"
+                },
+                "redirect_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.CreateOrderResponseData": {
+            "type": "object",
+            "required": [
+                "order_id",
+                "redirect_url"
+            ],
+            "properties": {
+                "order_id": {
+                    "type": "string"
+                },
+                "redirect_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.GetGuestOrderByIdResponseData": {
+            "type": "object",
+            "required": [
+                "address_line_1",
+                "email",
+                "fees",
+                "guest_order_id",
+                "order_date",
+                "order_quantity",
+                "payment_status",
+                "phone_number",
+                "postal_code",
+                "product_id"
+            ],
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fees": {
+                    "$ref": "#/definitions/data.OrderFees"
+                },
+                "guest_order_id": {
+                    "type": "string"
+                },
+                "order_date": {
+                    "type": "string"
+                },
+                "order_quantity": {
+                    "type": "integer"
+                },
+                "payment_status": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "telegram_handle": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.GetOrderByIdResponseData": {
+            "type": "object",
+            "required": [
+                "address_line_1",
+                "buyer_id",
+                "fees",
+                "order_date",
+                "order_id",
+                "order_quantity",
+                "payment_status",
+                "phone_number",
+                "postal_code",
+                "product_id"
+            ],
+            "properties": {
+                "address_line_1": {
+                    "type": "string"
+                },
+                "address_line_2": {
+                    "type": "string"
+                },
+                "buyer_id": {
+                    "type": "string"
+                },
+                "fees": {
+                    "$ref": "#/definitions/data.OrderFees"
+                },
+                "order_date": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "order_quantity": {
+                    "type": "integer"
+                },
+                "payment_status": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "telegram_handle": {
+                    "type": "string"
+                }
+            }
+        },
         "data.GetProductResponseData": {
             "type": "object",
             "required": [
@@ -608,6 +1033,38 @@
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "data.OrderFees": {
+            "type": "object",
+            "required": [
+                "delivery_type",
+                "payment_type",
+                "product_price",
+                "total_paid"
+            ],
+            "properties": {
+                "delivery_fee": {
+                    "type": "integer"
+                },
+                "delivery_type": {
+                    "type": "string"
+                },
+                "payment_fee": {
+                    "type": "integer"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "product_price": {
+                    "type": "integer"
+                },
+                "small_order_fee": {
+                    "type": "integer"
+                },
+                "total_paid": {
+                    "type": "integer"
                 }
             }
         },

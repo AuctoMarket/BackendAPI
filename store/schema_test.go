@@ -40,6 +40,21 @@ const (
 		  table_schema = 'public' AND 
 		  table_name = 'product_images'
 	);`
+
+	queryCheckTableOrders = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'orders'
+	);`
+	queryCheckTableGuestOrders = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'guest_orders'
+	);`
 )
 
 func TestCreateTables(t *testing.T) {
@@ -160,6 +175,53 @@ func TestCreateProductImagesTable(t *testing.T) {
 	err = db.QueryRowContext(context.Background(), queryCheckTableProductImages).Scan(&productImagesExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, productImagesExist)
+
+	CloseDB(db)
+}
+
+func TestCreateOrdersTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating orders table
+	createSellersTable(db)
+	createProductsTable(db)
+	createBuyersTable(db)
+	err = createOrdersTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary orders tables exists
+	var ordersExist bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableOrders).Scan(&ordersExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, ordersExist)
+
+	CloseDB(db)
+}
+
+func TestCreateGuestOrdersTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating guest orders table
+	createSellersTable(db)
+	createProductsTable(db)
+	err = createGuestOrdersTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary guest orders tables exists
+	var guestOrdersExist bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableGuestOrders).Scan(&guestOrdersExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, guestOrdersExist)
 
 	CloseDB(db)
 }

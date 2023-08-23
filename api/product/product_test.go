@@ -106,23 +106,23 @@ func TestDoesProductExist(t *testing.T) {
 	assert.NoError(t, productErr)
 
 	//Test 1: Product Id Exists
-	doesExist := doesProductExist(db, productIds[0])
+	doesExist := DoesProductExist(db, productIds[0])
 	assert.Equal(t, true, doesExist)
 
 	//Test 2: Product Id Exists
-	doesExist = doesProductExist(db, productIds[1])
+	doesExist = DoesProductExist(db, productIds[1])
 	assert.Equal(t, true, doesExist)
 
 	//Test 3: Product Id Exists
-	doesExist = doesProductExist(db, productIds[2])
+	doesExist = DoesProductExist(db, productIds[2])
 	assert.Equal(t, true, doesExist)
 
 	//Test 4: Product Id does not exist
-	doesExist = doesProductExist(db, "wrong id")
+	doesExist = DoesProductExist(db, "wrong id")
 	assert.Equal(t, false, doesExist)
 
 	//Test 4: Product Id does not exist
-	doesExist = doesProductExist(db, productIds[0]+"1")
+	doesExist = DoesProductExist(db, productIds[0]+"1")
 	assert.Equal(t, false, doesExist)
 
 	store.CloseDB(db)

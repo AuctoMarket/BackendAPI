@@ -83,6 +83,16 @@ func main() {
 
 		}
 
+		orderGroup := apiGroup.Group("/orders")
+		{
+			orderGroup.POST("", handleCreateOrder)
+			orderGroup.POST("/guest", handleCreateGuestOrder)
+			orderGroup.GET("/:id", handleGetOrderById)
+			orderGroup.GET("/:id/guest", handleGetGuestOrderById)
+			// orderGroup.POST("/:id/payment-complete", handlePaymentComplete)
+			// orderGroup.POST("guest/:id/payment-complete", handleGuestPaymentComplete)
+		}
+
 		testGroup := apiGroup.Group("/tests")
 		{
 			testGroup.GET("/ping", handlePing)

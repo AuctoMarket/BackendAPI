@@ -39,6 +39,18 @@ func createTables(db *sql.DB) error {
 		return err
 	}
 
+	err = createOrdersTable(db)
+
+	if err != nil {
+		return err
+	}
+
+	err = createGuestOrdersTable(db)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -112,6 +124,64 @@ func createProductImagesTable(db *sql.DB) error {
 		product_id uuid REFERENCES products(product_id),
 		image_no INT NOT NULL,
 		PRIMARY KEY(product_image_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create the table for Orders
+*/
+func createOrdersTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS orders(
+		order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		buyer_id uuid REFERENCES buyers(buyer_id) NOT NULL,
+		delivery_type VARCHAR NOT NULL,
+		order_quantity INT NOT NULL, 
+		payment_type VARCHAR NOT NULL,
+		payment_status VARCHAR DEFAULT 'pending' NOT NULL,
+		phone_number VARCHAR NOT NULL,
+		order_date TIMESTAMPTZ NOT NULL,
+		address_line_1 VARCHAR NOT NULL,
+		address_line_2 VARCHAR,
+		postal_code VARCHAR NOT NULL,
+		telegram_handle VARCHAR,
+		product_price INT NOT NULL,
+		delivery_fee INT NOT NULL,
+		payment_fee INT NOT NULL,
+		small_order_fee INT NOT NULL,
+		total_paid INT NOT NULL,
+		PRIMARY KEY(order_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create the table for Guest Orders
+*/
+func createGuestOrdersTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS guest_orders(
+		guest_order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		delivery_type VARCHAR NOT NULL,
+		order_quantity INT NOT NULL, 
+		payment_type VARCHAR NOT NULL,
+		payment_status VARCHAR DEFAULT 'pending' NOT NULL,
+		phone_number VARCHAR NOT NULL,
+		email VARCHAR NOT NULL,
+		order_date TIMESTAMPTZ NOT NULL,
+		address_line_1 VARCHAR NOT NULL,
+		address_line_2 VARCHAR,
+		postal_code VARCHAR NOT NULL,
+		telegram_handle VARCHAR,
+		product_price INT NOT NULL,
+		delivery_fee INT NOT NULL,
+		payment_fee INT NOT NULL,
+		small_order_fee INT NOT NULL,
+		total_paid INT NOT NULL,
+		PRIMARY KEY(guest_order_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err

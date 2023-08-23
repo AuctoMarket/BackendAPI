@@ -47,7 +47,10 @@ type ProductImageCreateData struct {
 	Images    []string `json:"images" binding:"required"`
 }
 
-func (request *ProductCreateData) CreateResponseFromRequest(response *ProductCreateResponseData) *ProductCreateResponseData {
+/*
+Takes a product request and creates the corresponding product response
+*/
+func (request *ProductCreateData) CreateProductResponseFromRequest(response *ProductCreateResponseData) *ProductCreateResponseData {
 	response.Condition = request.Condition
 	response.Description = request.Description
 	response.Price = request.Price
@@ -56,6 +59,5 @@ func (request *ProductCreateData) CreateResponseFromRequest(response *ProductCre
 	response.Title = request.Title
 	response.Quantity = request.Quantity
 	response.SoldQuantity = 0
-
 	return response
 }
