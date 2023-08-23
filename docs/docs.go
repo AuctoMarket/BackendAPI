@@ -165,24 +165,6 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Payment method chosen for this order, can only be 'card' or 'paynow_online'",
-                        "name": "payment_type",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Type of delivery method, can only be 'self_collection' or 'standard_delivery'",
-                        "name": "delivery_type",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
                         "description": "Phone number of buyer",
                         "name": "phone_number",
                         "in": "body",
@@ -217,12 +199,11 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Amount to be paid for the order in cents",
-                        "name": "amount",
+                        "description": "Pricing Info, Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'",
+                        "name": "fees",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/data.OrderFees"
                         }
                     }
                 ],
@@ -878,12 +859,12 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address_line_1",
-                "amount",
-                "delivery_type",
                 "email",
+                "fees",
                 "guest_order_id",
+                "order_date",
                 "order_quantity",
-                "payment_type",
+                "payment_status",
                 "phone_number",
                 "postal_code",
                 "product_id"
@@ -895,22 +876,22 @@ const docTemplate = `{
                 "address_line_2": {
                     "type": "string"
                 },
-                "amount": {
-                    "type": "integer"
-                },
-                "delivery_type": {
-                    "type": "string"
-                },
                 "email": {
                     "type": "string"
                 },
+                "fees": {
+                    "$ref": "#/definitions/data.OrderFees"
+                },
                 "guest_order_id": {
+                    "type": "string"
+                },
+                "order_date": {
                     "type": "string"
                 },
                 "order_quantity": {
                     "type": "integer"
                 },
-                "payment_type": {
+                "payment_status": {
                     "type": "string"
                 },
                 "phone_number": {
@@ -920,6 +901,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "product_id": {
+                    "type": "string"
+                },
+                "telegram_handle": {
                     "type": "string"
                 }
             }
@@ -928,12 +912,12 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address_line_1",
-                "amount",
                 "buyer_id",
-                "delivery_type",
+                "fees",
+                "order_date",
                 "order_id",
                 "order_quantity",
-                "payment_type",
+                "payment_status",
                 "phone_number",
                 "postal_code",
                 "product_id"
@@ -945,13 +929,13 @@ const docTemplate = `{
                 "address_line_2": {
                     "type": "string"
                 },
-                "amount": {
-                    "type": "integer"
-                },
                 "buyer_id": {
                     "type": "string"
                 },
-                "delivery_type": {
+                "fees": {
+                    "$ref": "#/definitions/data.OrderFees"
+                },
+                "order_date": {
                     "type": "string"
                 },
                 "order_id": {
@@ -960,7 +944,7 @@ const docTemplate = `{
                 "order_quantity": {
                     "type": "integer"
                 },
-                "payment_type": {
+                "payment_status": {
                     "type": "string"
                 },
                 "phone_number": {
@@ -970,6 +954,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "product_id": {
+                    "type": "string"
+                },
+                "telegram_handle": {
                     "type": "string"
                 }
             }
@@ -1053,6 +1040,38 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "data.OrderFees": {
+            "type": "object",
+            "required": [
+                "delivery_type",
+                "payment_type",
+                "product_price",
+                "total_paid"
+            ],
+            "properties": {
+                "delivery_fee": {
+                    "type": "integer"
+                },
+                "delivery_type": {
+                    "type": "string"
+                },
+                "payment_fee": {
+                    "type": "integer"
+                },
+                "payment_type": {
+                    "type": "string"
+                },
+                "product_price": {
+                    "type": "integer"
+                },
+                "small_order_fee": {
+                    "type": "integer"
+                },
+                "total_paid": {
+                    "type": "integer"
                 }
             }
         },
