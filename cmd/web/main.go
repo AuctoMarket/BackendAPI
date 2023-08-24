@@ -89,8 +89,8 @@ func main() {
 			orderGroup.POST("/guest", handleCreateGuestOrder)
 			orderGroup.GET("/:id", handleGetOrderById)
 			orderGroup.GET("/:id/guest", handleGetGuestOrderById)
-			// orderGroup.POST("/:id/payment-complete", handlePaymentComplete)
-			// orderGroup.POST("guest/:id/payment-complete", handleGuestPaymentComplete)
+			orderGroup.POST("/:id/payment-complete", handlePaymentComplete)
+			orderGroup.POST("/:id/payment-complete/guest", handleGuestPaymentComplete)
 		}
 
 		testGroup := apiGroup.Group("/tests")

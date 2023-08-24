@@ -91,6 +91,7 @@ func handleCreateGuestOrder(c *gin.Context) {
 // handleGetOrderById godoc
 // @Summary      Fetched order details for an order with a specific order id
 // @Description  Returns the order details of an order with a given order id. If the order id does not exists, returns a 404 error.
+// Status of order is either 'pending', 'completed', 'failed'
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  data.GetOrderByIdResponseData
@@ -114,6 +115,7 @@ func handleGetOrderById(c *gin.Context) {
 // handleGetGuestOrderById godoc
 // @Summary      Fetched order details for an guest order with a specific guest order id
 // @Description  Returns the order details of an guest order with a given guest order id. If the order id does not exists, returns a 404 error.
+// Status of order is either 'pending', 'completed', 'failed'
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  data.GetGuestOrderByIdResponseData
@@ -132,4 +134,50 @@ func handleGetGuestOrderById(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, &product)
+}
+
+func handlePaymentComplete(c *gin.Context) {
+	orderId := c.Param("id")
+	var req data.PaymentValidationRequestData
+	bindErr := c.ShouldBind(&req)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	err := order.UpdateOrderPaymentStatus(db, orderId, req)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.Status(200)
+	return
+}
+
+func handleGuestPaymentComplete(c *gin.Context) {
+	orderId := c.Param("id")
+	var req data.PaymentValidationRequestData
+	bindErr := c.ShouldBind(&req)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	err := order.UpdateGuestOrderPaymentStatus(db, orderId, req)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.Status(200)
+	return
 }
