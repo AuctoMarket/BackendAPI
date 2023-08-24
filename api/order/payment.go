@@ -20,9 +20,9 @@ func CreatePaymentRequest(amount float64, orderId string, paymentType string, is
 	hitpayApiKey, envApiKeyExists := os.LookupEnv("HITPAY_API_KEY")
 	redirectResource := "/orders/" + orderId + "/payment-complete"
 	if isGuest {
-		webhookResource = "api/v1/orders/" + orderId + "/payment-complete/guest"
+		webhookResource = "/api/v1/orders/" + orderId + "/payment-complete/guest"
 	} else {
-		webhookResource = "api/v1/orders/" + orderId + "/payment-complete"
+		webhookResource = "/api/v1/orders/" + orderId + "/payment-complete"
 	}
 
 	if !envHitpayExists || !envApiExists || !envAuctoExists || !envApiKeyExists {
