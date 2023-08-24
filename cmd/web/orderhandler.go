@@ -133,3 +133,49 @@ func handleGetGuestOrderById(c *gin.Context) {
 
 	c.JSON(http.StatusOK, &product)
 }
+
+func handlePaymentComplete(c *gin.Context) {
+	orderId := c.Param("id")
+	var req data.PaymentValidationRequestData
+	bindErr := c.ShouldBind(&req)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	err := order.UpdateOrderPaymentStatus(db, orderId, req)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.Status(200)
+	return
+}
+
+func handleGuestPaymentComplete(c *gin.Context) {
+	orderId := c.Param("id")
+	var req data.PaymentValidationRequestData
+	bindErr := c.ShouldBind(&req)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	err := order.UpdateGuestOrderPaymentStatus(db, orderId, req)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.Status(200)
+	return
+}

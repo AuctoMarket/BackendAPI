@@ -7,6 +7,8 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
+	"fmt"
+	"math"
 	"time"
 )
 
@@ -47,8 +49,9 @@ func CreateOrder(db *sql.DB, request data.CreateOrderRequestData) (data.CreateOr
 		return response, errResp
 	}
 
-	response.RedirectUrl = "example.com"
-	return response, nil
+	paymentResponse, paymentErr := CreatePaymentRequest(float64(request.Fees.TotalPaid)/100, response.OrderId, request.Fees.PaymentType, false)
+	response.RedirectUrl = paymentResponse.Url
+	return response, paymentErr
 }
 
 /*
@@ -87,8 +90,9 @@ func CreateGuestOrder(db *sql.DB, request data.CreateGuestOrderRequestData) (dat
 		return response, errResp
 	}
 
-	response.RedirectUrl = "example.com"
-	return response, nil
+	paymentResponse, paymentErr := CreatePaymentRequest(float64(request.Fees.TotalPaid)/100, response.GuestOrderId, request.Fees.PaymentType, true)
+	response.RedirectUrl = paymentResponse.Url
+	return response, paymentErr
 }
 
 /*
@@ -249,6 +253,46 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 }
 
 /*
+Updates the order payment status to either 'failed' or 'complete' based on the Hash sent by the Payment gateway
+*/
+func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValidationRequestData) *utils.ErrorHandler {
+	if !DoesOrderExist(db, orderId) {
+		return utils.NotFoundError("Order with given id does not exist")
+	}
+
+	query := `UPDATE orders SET payment_status = $2 WHERE order_id = $1`
+	_, err := db.ExecContext(context.Background(), query, orderId, req.Status)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Updating order rows")
+		return errResp
+	}
+
+	return nil
+}
+
+/*
+Updates the order payment status to either 'failed' or 'complete' based on the Hash sent by the Payment gateway
+*/
+func UpdateGuestOrderPaymentStatus(db *sql.DB, guestOrderId string, req data.PaymentValidationRequestData) *utils.ErrorHandler {
+	if !DoesGuestOrderExist(db, guestOrderId) {
+		return utils.NotFoundError("Guest order with given id does not exist")
+	}
+
+	query := `UPDATE guest_orders SET payment_status = $2 WHERE guest_order_id = $1`
+	_, err := db.ExecContext(context.Background(), query, guestOrderId, req.Status)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Updating guest_order rows")
+		return errResp
+	}
+
+	return nil
+}
+
+/*
 Calculate the payment amount given an order request
 */
 func validatePaymentAmount(quantity int, fees data.OrderFees) *utils.ErrorHandler {
@@ -276,9 +320,10 @@ func validatePaymentAmount(quantity int, fees data.OrderFees) *utils.ErrorHandle
 	var paymentFee int
 	//calculate payment fee
 	if fees.PaymentType == "card" {
-		paymentFee = amountToBePaid * 2 / 100
+		paymentFee = int(math.Ceil((float64(amountToBePaid) * 2 / 100)))
 		amountToBePaid += paymentFee
 		if fees.PaymentFee != paymentFee {
+			fmt.Println(paymentFee)
 			utils.LogMessage("Payment fee is incorrect")
 			return utils.BadRequestError("Bad payment_fee data")
 		}
