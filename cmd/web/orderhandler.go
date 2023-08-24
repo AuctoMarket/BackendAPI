@@ -91,6 +91,7 @@ func handleCreateGuestOrder(c *gin.Context) {
 // handleGetOrderById godoc
 // @Summary      Fetched order details for an order with a specific order id
 // @Description  Returns the order details of an order with a given order id. If the order id does not exists, returns a 404 error.
+// Status of order is either 'pending', 'completed', 'failed'
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  data.GetOrderByIdResponseData
@@ -114,6 +115,7 @@ func handleGetOrderById(c *gin.Context) {
 // handleGetGuestOrderById godoc
 // @Summary      Fetched order details for an guest order with a specific guest order id
 // @Description  Returns the order details of an guest order with a given guest order id. If the order id does not exists, returns a 404 error.
+// Status of order is either 'pending', 'completed', 'failed'
 // @Accept       json
 // @Produce      json
 // @Success      200  {object}  data.GetGuestOrderByIdResponseData

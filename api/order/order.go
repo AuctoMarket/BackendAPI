@@ -253,7 +253,7 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 }
 
 /*
-Updates the order payment status to either 'failed' or 'complete' based on the Hash sent by the Payment gateway
+Updates the order payment status to either 'failed' or 'completed' based on the Hash sent by the Payment gateway
 */
 func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValidationRequestData) *utils.ErrorHandler {
 	if !DoesOrderExist(db, orderId) {
@@ -273,7 +273,7 @@ func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValida
 }
 
 /*
-Updates the order payment status to either 'failed' or 'complete' based on the Hash sent by the Payment gateway
+Updates the order payment status to either 'failed' or 'completed' based on the Hash sent by the Payment gateway
 */
 func UpdateGuestOrderPaymentStatus(db *sql.DB, guestOrderId string, req data.PaymentValidationRequestData) *utils.ErrorHandler {
 	if !DoesGuestOrderExist(db, guestOrderId) {
