@@ -30,6 +30,7 @@ func CreatePaymentRequest(amount float64, orderId string, paymentType string, is
 		return response, errResp
 	}
 
+	fmt.Println(hitpayBaseUrl)
 	//Create Request Body
 	var requestBody data.PaymentRequestData = data.PaymentRequestData{
 		Amount:         amount,
@@ -38,8 +39,10 @@ func CreatePaymentRequest(amount float64, orderId string, paymentType string, is
 		Webhook:        apiBaseUrl + webhookResource,
 		PaymentMethods: []string{paymentType}}
 
-	fmt.Println(requestBody)
 	requestBodyJSON, err := json.Marshal(requestBody)
+
+	fmt.Println(requestBody)
+
 	req, err := http.NewRequest(http.MethodPost, hitpayBaseUrl, bytes.NewBuffer(requestBodyJSON))
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
