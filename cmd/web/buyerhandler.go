@@ -30,7 +30,7 @@ func handleBuyerSignUp(c *gin.Context) {
 		return
 	}
 
-	signUpResponse, err := buyer.BuyerSignUp(db, signUpData)
+	response, err := buyer.BuyerSignUp(db, signUpData)
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}
@@ -38,7 +38,7 @@ func handleBuyerSignUp(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, &signUpResponse)
+	c.JSON(http.StatusCreated, &response)
 }
 
 // handleBuyerLogin godoc
@@ -64,7 +64,7 @@ func handleBuyerLogin(c *gin.Context) {
 		return
 	}
 
-	loginResponse, err := buyer.BuyerLogin(db, loginData)
+	response, err := buyer.BuyerLogin(db, loginData)
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}
@@ -72,5 +72,69 @@ func handleBuyerLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &loginResponse)
+	c.JSON(http.StatusOK, &response)
+}
+
+// handleResendOtp godoc
+// @Summary      Sends a new Otp to the provided email
+// @Description  Checks to see if the provided buyer_id exists and sends a email to the specific buy_ids email with a newly
+// generated Otp. If buyer_id does not exist, then it returns a 400 error.
+// @Accept       json
+// @Produce      json
+// @Param 		 buyer_id body string true "Buyer Id"
+// @Success      200  {object}  data.Message
+// @Failure      400  {object}  data.Message
+// @Router       /buyers/resend-otp [post]
+func handleResendOtp(c *gin.Context) {
+	var resendOtpReq data.BuyerResendOtpData
+	bindErr := c.ShouldBindJSON(&resendOtpReq)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	response, err := buyer.ResendOtp(db, resendOtpReq)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.JSON(http.StatusOK, &response)
+}
+
+// handleValidateOtp godoc
+// @Summary      Validates a given otp from a specific buyer
+// @Description  Checks to see if the provided buyer exists, if not returns a 400. Otherwise it checks to see if the otps match. If not it
+// returns a 401 unauthorized. If successful, it returns buyer login response data but with updated verification state.
+// @Accept       json
+// @Produce      json
+// @Param 		 buyer_id body string true "Buyer Id"
+// @Param 		 otp body string true "Otp"
+// @Success      200  {object}  data.BuyerLoginResponseData
+// @Failure      400  {object}  data.Message
+// @Failure      401  {object}  data.Message
+// @Router       /buyers/validate-otp [post]
+func handleValidateOtp(c *gin.Context) {
+	var validateOtpReq data.BuyerValidateOtpData
+	bindErr := c.ShouldBindJSON(&validateOtpReq)
+
+	if bindErr != nil {
+		r := data.Message{Message: "Bad Request Body"}
+		c.JSON(http.StatusBadRequest, r)
+		return
+	}
+
+	response, err := buyer.ValidateOtp(db, validateOtpReq)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	c.JSON(http.StatusOK, &response)
 }

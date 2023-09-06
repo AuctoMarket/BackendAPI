@@ -5,14 +5,24 @@ type UserLoginData struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type BuyerResendOtpData struct {
+	BuyerId string `json:"buyer_id" binding:"required"`
+}
+
+type BuyerValidateOtpData struct {
+	BuyerId string `json:"buyer_id" binding:"required"`
+	Otp     string `json:"otp" binding:"required"`
+}
+
 type BuyerSignUpData struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
 type BuyerLoginResponseData struct {
-	Email   string `json:"email" binding:"required"`
-	BuyerId string `json:"buyer_id" binding:"required"`
+	Email        string `json:"email" binding:"required"`
+	BuyerId      string `json:"buyer_id" binding:"required"`
+	Verification string `json:"verification" binding:"required"`
 }
 
 type SellerSignUpData struct {
