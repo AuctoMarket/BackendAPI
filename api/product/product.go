@@ -100,7 +100,7 @@ returns a 400 bad request
 
 func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProductResponseData, *utils.ErrorHandler) {
 	var response []data.GetProductResponseData
-	productMap := make(map[string]data.GetProductResponseData)
+	productMap := make(map[string]int)
 
 	validErr := validateGetProductList(db, sellerId, sortBy)
 
@@ -109,7 +109,7 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 	}
 
 	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-	product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
+	product_type, posted_date, product_quantity, sold_quantity, product_image_id, image_no 
 	FROM (
 		(products INNER JOIN product_images
 			 ON products.product_id = product_images.product_id)
@@ -121,11 +121,7 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 		query = query + ` WHERE sellers.seller_id = '` + sellerId + `'`
 	}
 
-	if sortBy == "None" {
-		query = query + ` ORDER BY posted_date DESC`
-	}
-
-	query = query + `;`
+	query = query + `ORDER BY posted_date DESC, product_images.image_no ASC;`
 
 	rows, err := db.QueryContext(context.Background(), query)
 
@@ -159,20 +155,21 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 			return response, pathErr
 		}
 
-		// Add the product to the map, if it exists add just the image to the product images array
-		if productMap[product.ProductId].ProductId == "" {
+		// If product is already in response array, add the image to that product, otherwise add the entire product
+		if productMap[product.ProductId] == 0 {
 			product.ProductImages = append(product.ProductImages, data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
+			response = append(response, product)
+			index := len(response)
+			productMap[product.ProductId] = index
 		} else {
-			product = productMap[product.ProductId]
-			product.ProductImages = append(product.ProductImages, data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
+			p := response[productMap[product.ProductId]-1]
+			p.ProductImages = append(
+				p.ProductImages,
+				data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
+			response[productMap[product.ProductId]-1] = p
+
 		}
 
-		productMap[product.ProductId] = product
-	}
-
-	// iterate through map and return the list of unique products
-	for _, v := range productMap {
-		response = append(response, v)
 	}
 
 	return response, nil
