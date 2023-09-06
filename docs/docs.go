@@ -74,6 +74,43 @@ const docTemplate = `{
                 }
             }
         },
+        "/buyers/resend-otp": {
+            "post": {
+                "description": "Checks to see if the provided buyer_id exists and sends a email to the specific buy_ids email with a newly",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Sends a new Otp to the provided email",
+                "parameters": [
+                    {
+                        "description": "Buyer Id",
+                        "name": "buyer_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
         "/buyers/signup": {
             "post": {
                 "description": "Checks to see if a buyer email exists and if not creates a new account with supplied email and password",
@@ -119,6 +156,58 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    }
+                }
+            }
+        },
+        "/buyers/validate-otp": {
+            "post": {
+                "description": "Checks to see if the provided buyer exists, if not returns a 400. Otherwise it checks to see if the otps match. If not it",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Validates a given otp from a specific buyer",
+                "parameters": [
+                    {
+                        "description": "Buyer Id",
+                        "name": "buyer_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Otp",
+                        "name": "otp",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/data.BuyerLoginResponseData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/data.Message"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/data.Message"
                         }
@@ -814,13 +903,17 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "buyer_id",
-                "email"
+                "email",
+                "verification"
             ],
             "properties": {
                 "buyer_id": {
                     "type": "string"
                 },
                 "email": {
+                    "type": "string"
+                },
+                "verification": {
                     "type": "string"
                 }
             }
