@@ -71,6 +71,8 @@ func createBuyersTable(db *sql.DB) error {
 		buyer_id uuid DEFAULT uuid_generate_v1() NOT NULL,
 		email VARCHAR NOT NULL UNIQUE, 
 		password VARCHAR NOT NULL,
+		verification VARCHAR NOT NULL DEFAULT 'pending',
+		email_otp VARCHAR,
 		PRIMARY KEY(buyer_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

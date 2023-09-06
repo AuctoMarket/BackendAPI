@@ -5,7 +5,6 @@ import (
 	"BackendAPI/utils"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 )
@@ -30,7 +29,6 @@ func CreatePaymentRequest(amount float64, orderId string, paymentType string, is
 		return response, errResp
 	}
 
-	fmt.Println(hitpayBaseUrl)
 	//Create Request Body
 	var requestBody data.PaymentRequestData = data.PaymentRequestData{
 		Amount:         amount,
@@ -40,8 +38,6 @@ func CreatePaymentRequest(amount float64, orderId string, paymentType string, is
 		PaymentMethods: []string{paymentType}}
 
 	requestBodyJSON, err := json.Marshal(requestBody)
-
-	fmt.Println(requestBody)
 
 	req, err := http.NewRequest(http.MethodPost, hitpayBaseUrl, bytes.NewBuffer(requestBodyJSON))
 	if err != nil {

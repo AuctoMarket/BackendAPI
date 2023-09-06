@@ -119,11 +119,11 @@ func doProductImagesExist(db *sql.DB, productId string) bool {
 Transforms an image to an image path
 */
 func makeImagePath(imageId string) (string, *utils.ErrorHandler) {
-	api_env, envExists := os.LookupEnv("API_ENV")
+	s3Url, doesUrlExist := os.LookupEnv("S3_URL")
 
-	if !envExists {
+	if !doesUrlExist {
 		errResp := utils.InternalServerError(nil)
-		utils.LogError(errors.New("Error in loading. env"), "Error in getting product by id")
+		utils.LogError(errors.New("Error in loading s3 path"), "Error in creating reading env: no s3 url")
 		return "", errResp
 	}
 
@@ -133,13 +133,7 @@ func makeImagePath(imageId string) (string, *utils.ErrorHandler) {
 		return "", errResp
 	}
 
-	if api_env == "local" {
-		imageId = os.Getenv("S3_LOCAL_URL") + "/products/images/" + imageId
-	} else if api_env == "dev" {
-		imageId = os.Getenv("S3_DEV_URL") + "/products/images/" + imageId
-	} else {
-		imageId = os.Getenv("S3_PROD_URL") + "/products/images/" + imageId
-	}
+	imageId = s3Url + "/products/images/" + imageId
 
 	return imageId, nil
 }

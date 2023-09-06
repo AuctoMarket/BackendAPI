@@ -48,17 +48,9 @@ Upload a list of images to the S3 Bucket specified by the environment variables
 func UploadImages(client *s3.Client, keys []string, files []io.Reader) error {
 	var bucket string
 	var hasBucket bool
-	apiEnv, envExists := os.LookupEnv("API_ENV")
 
-	if !envExists {
-		return errors.New("Error in loading environment variables, Bucket name does not exist:")
-	}
+	bucket, hasBucket = os.LookupEnv("S3_BUCKET_NAME")
 
-	if apiEnv == "local" {
-		bucket, hasBucket = os.LookupEnv("S3_BUCKET_NAME_PRODUCT_IMAGES_LOCAL")
-	} else {
-		bucket, hasBucket = os.LookupEnv("S3_BUCKET_NAME_PRODUCT_IMAGES_DEV")
-	}
 	fileType := "image/png"
 
 	if !hasBucket {

@@ -65,6 +65,8 @@ func main() {
 		{
 			buyerGroup.POST("/login", handleBuyerLogin)
 			buyerGroup.POST("/signup", handleBuyerSignUp)
+			buyerGroup.POST("/resend-otp", handleResendOtp)
+			buyerGroup.POST("/validate-otp", handleValidateOtp)
 		}
 
 		productGroup := apiGroup.Group("/products")

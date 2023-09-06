@@ -148,7 +148,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, int8(3), response.Condition)
 	assert.Equal(t, "Buy-Now", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
-	assert.Equal(t, productImageIds[0], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[0], response.ProductImages[0].ProductImagePath)
 
 	//Test 2: Product Id exists
 	response, err = GetProductById(db, productIds[1])
@@ -159,7 +159,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, int8(5), response.Condition)
 	assert.Equal(t, "Buy-Now", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
-	assert.Equal(t, productImageIds[1], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[1], response.ProductImages[0].ProductImagePath)
 
 	//Test 3: Product Id exists
 	response, err = GetProductById(db, productIds[2])
@@ -170,7 +170,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, int8(4), response.Condition)
 	assert.Equal(t, "Pre-Order", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
-	assert.Equal(t, productImageIds[2], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[2], response.ProductImages[0].ProductImagePath)
 
 	//Test 4: Product Id does not exist
 	response, err = GetProductById(db, "wrong id")
@@ -290,7 +290,7 @@ func TestGetProductList(t *testing.T) {
 
 func createDummySeller(db *sql.DB) (string, error) {
 	var sellerId string
-	query := `INSERT INTO sellers(email, seller_name, password) VALUES ('test@gmail.com','test','test') RETURNING seller_id`
+	query := `INSERT INTO sellers(email, seller_name, password) VALUES ('test@aucto.io','test','test') RETURNING seller_id`
 	err := db.QueryRowContext(context.Background(), query).Scan(&sellerId)
 
 	return sellerId, err

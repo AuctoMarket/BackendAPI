@@ -191,18 +191,6 @@ func TestMakeImagePath(t *testing.T) {
 	assert.NotEmpty(t, err)
 	assert.Equal(t, 500, err.ErrorCode())
 
-	os.Setenv("API_ENV", "dev")
-	//Test 4: Environment variables present and image path is dev
-	res, err = makeImagePath("Test")
-	assert.Empty(t, err)
-	assert.Equal(t, "https://aucto-s3-dev.s3.ap-southeast-1.amazonaws.com/products/images/Test", res)
-
-	os.Setenv("API_ENV", "prod")
-	//Test 5: Environment variables present and image path is prod
-	res, err = makeImagePath("Test")
-	assert.Empty(t, err)
-	assert.Equal(t, "https://aucto-s3-prod.s3.ap-southeast-1.amazonaws.com/products/images/Test", res)
-
 	os.Clearenv()
 	utils.LoadDotEnv("../../.env")
 }

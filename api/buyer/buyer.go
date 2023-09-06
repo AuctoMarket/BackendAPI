@@ -20,8 +20,9 @@ func BuyerLogin(db *sql.DB, loginData data.UserLoginData) (data.BuyerLoginRespon
 		return response, utils.UnauthorizedError("Incorrect user email or password!")
 	}
 
-	query := `SELECT email, buyer_id, password from buyers WHERE email = $1;`
-	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(&response.Email, &response.BuyerId, &hashedPwd)
+	query := `SELECT email, buyer_id, verification, password from buyers WHERE email = $1;`
+	err := db.QueryRowContext(context.Background(), query, loginData.Email).Scan(
+		&response.Email, &response.BuyerId, &response.Verification, &hashedPwd)
 
 	if err != nil {
 		errResp := utils.InternalServerError(err)
@@ -57,8 +58,11 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 		return response, errResp
 	}
 
-	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id;`
-	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(&response.Email, &response.BuyerId)
+	otp := utils.GetOtp(6)
+
+	query := `INSERT INTO buyers(email, password, email_otp) VALUES ($1,$2,$3) RETURNING email, buyer_id, verification;`
+	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword, otp).Scan(
+		&response.Email, &response.BuyerId, &response.Verification)
 
 	if err != nil {
 		errResp := utils.InternalServerError(err)
@@ -66,6 +70,61 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 		return response, errResp
 	}
 
+	err = utils.SendOtpMail(response.Email, otp)
+
+	return response, nil
+}
+
+func ResendOtp(db *sql.DB, resendOtpReq data.BuyerResendOtpData) (data.Message, *utils.ErrorHandler) {
+	var response data.Message
+
+	if !DoesBuyerExist(db, resendOtpReq.BuyerId) {
+		return response, utils.BadRequestError("The buyer_id provided is invalid")
+	}
+
+	newOtp := utils.GetOtp(6)
+	query := `UPDATE buyers SET email_otp = $1 WHERE buyer_id = $2 RETURNING email`
+	var email string
+	err := db.QueryRowContext(context.Background(), query, newOtp, resendOtpReq.BuyerId).Scan(&email)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Updating buyer rows")
+		return response, errResp
+	}
+
+	utils.SendOtpMail(email, newOtp)
+
+	response.Message = "Resent otp to provided email address"
+	return response, nil
+}
+
+func ValidateOtp(db *sql.DB, validateOtpReq data.BuyerValidateOtpData) (data.BuyerLoginResponseData, *utils.ErrorHandler) {
+	var response data.BuyerLoginResponseData
+
+	if !DoesBuyerExist(db, validateOtpReq.BuyerId) {
+		return response, utils.BadRequestError("The buyer_id provided is invalid")
+	}
+
+	query := `SELECT email_otp, email FROM buyers WHERE buyer_id = $1`
+	var otp string
+	err := db.QueryRowContext(context.Background(), query, validateOtpReq.BuyerId).Scan(&otp, &response.Email)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Selecting buyer rows")
+		return response, errResp
+	}
+
+	if otp != validateOtpReq.Otp {
+		return response, utils.UnauthorizedError("Incorrect Otp!")
+	}
+
+	query = `UPDATE buyers SET verification = 'verified' WHERE buyer_id = $1`
+	_, err = db.ExecContext(context.Background(), query, validateOtpReq.BuyerId)
+
+	response.BuyerId = validateOtpReq.BuyerId
+	response.Verification = "verified"
 	return response, nil
 }
 
