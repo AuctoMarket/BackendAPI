@@ -147,7 +147,7 @@ Gets a list of products specified by the parameters. If no such products exist r
 returns a 400 bad request
 */
 
-func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProductResponseData, *utils.ErrorHandler) {
+func GetProductList(db *sql.DB, sellerId string, sortBy string, productType string) ([]data.GetProductResponseData, *utils.ErrorHandler) {
 	var response []data.GetProductResponseData
 	productMap := make(map[string]int)
 
@@ -168,6 +168,14 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 	//Add query params to the query
 	if sellerId != "None" {
 		query = query + ` WHERE sellers.seller_id = '` + sellerId + `'`
+	}
+
+	if productType == "Pre-Order" {
+		query = query + ` WHERE product_type = 'Pre-Order'`
+	}
+
+	if productType == "Buy-Now" {
+		query = query + ` WHERE product_type = 'Buy-Now'`
 	}
 
 	query = query + `ORDER BY posted_date DESC, product_images.image_no ASC;`

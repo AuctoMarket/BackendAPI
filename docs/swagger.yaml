@@ -115,10 +115,14 @@ definitions:
         type: integer
       desc:
         type: string
+      discount:
+        type: integer
       images:
         items:
           $ref: '#/definitions/data.ProductImageData'
         type: array
+      order_by:
+        type: string
       posted_date:
         example: 2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936
         type: string
@@ -129,6 +133,8 @@ definitions:
       product_quantity:
         type: integer
       product_type:
+        type: string
+      releases_on:
         type: string
       seller_info:
         $ref: '#/definitions/data.GetSellerByIdResponseData'
@@ -195,6 +201,10 @@ definitions:
         type: integer
       desc:
         type: string
+      discount:
+        type: integer
+      order_by:
+        type: string
       posted_date:
         example: 2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936
         type: string
@@ -205,6 +215,8 @@ definitions:
       product_quantity:
         type: integer
       product_type:
+        type: string
+      releases_on:
         type: string
       seller_id:
         type: string
@@ -601,6 +613,11 @@ paths:
       - description: Sort By a specific attribute of the product. Default is posted_date
         in: query
         name: sort_by
+        type: string
+      - description: Get products by a specific product type, the types are 'Pre-Order'
+          or 'Buy-Now'. Default is both will be selected
+        in: query
+        name: product_type
         type: string
       produces:
       - application/json

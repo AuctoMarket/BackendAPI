@@ -526,6 +526,12 @@ const docTemplate = `{
                         "description": "Sort By a specific attribute of the product. Default is posted_date",
                         "name": "sort_by",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected",
+                        "name": "product_type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1076,11 +1082,17 @@ const docTemplate = `{
                 "desc": {
                     "type": "string"
                 },
+                "discount": {
+                    "type": "integer"
+                },
                 "images": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/data.ProductImageData"
                     }
+                },
+                "order_by": {
+                    "type": "string"
                 },
                 "posted_date": {
                     "type": "string",
@@ -1096,6 +1108,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "product_type": {
+                    "type": "string"
+                },
+                "releases_on": {
                     "type": "string"
                 },
                 "seller_info": {
@@ -1189,6 +1204,12 @@ const docTemplate = `{
                 "desc": {
                     "type": "string"
                 },
+                "discount": {
+                    "type": "integer"
+                },
+                "order_by": {
+                    "type": "string"
+                },
                 "posted_date": {
                     "type": "string",
                     "example": "2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"
@@ -1203,6 +1224,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "product_type": {
+                    "type": "string"
+                },
+                "releases_on": {
                     "type": "string"
                 },
                 "seller_id": {
