@@ -260,12 +260,23 @@ func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValida
 		return utils.NotFoundError("Order with given id does not exist")
 	}
 
-	query := `UPDATE orders SET payment_status = $2 WHERE order_id = $1`
-	_, err := db.ExecContext(context.Background(), query, orderId, req.Status)
+	var productId string
+	var quantity int
+	query := `UPDATE orders SET payment_status = $2 WHERE order_id = $1 RETURNING product_id, order_quantity;`
+	err := db.QueryRowContext(context.Background(), query, orderId, req.Status).Scan(&productId, &quantity)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in Updating order rows")
+		return errResp
+	}
+
+	query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
+	_, err = db.ExecContext(context.Background(), query, quantity, productId)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Updating product rows")
 		return errResp
 	}
 
