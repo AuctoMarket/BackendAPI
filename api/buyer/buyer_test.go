@@ -58,12 +58,12 @@ func TestBuyerLogin(t *testing.T) {
 	//Test 1: Positive Test where username and password are both correct
 	res, err := BuyerLogin(db, testLogin1)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testLogin1.Email)
+	assert.Equal(t, testLogin1.Email, res.Email)
 
 	//Test 2: Positive Test where username and password are both correct
 	res, err = BuyerLogin(db, testLogin2)
 	assert.Empty(t, err)
-	assert.Equal(t, res.Email, testLogin2.Email)
+	assert.Equal(t, testLogin2.Email, res.Email)
 
 	//Test 3: Negative Test where username is correct but password is incorrect
 	res, err = BuyerLogin(db, testLogin3)
@@ -174,9 +174,11 @@ func createDummyBuyers(db *sql.DB) []string {
 	var buyerIds []string
 	for i := 0; i < len(dummyAccounts); i++ {
 		var buyerId string
-		query := `INSERT INTO buyers(email, password, email_otp) VALUES ($1,$2, $3) RETURNING buyer_id;`
+		query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING buyer_id;`
+		query2 := `INSERT INTO buyer_otps(buyer_id, email_otp) VALUES ($1,$2);`
 		hashedPwd, _ := utils.HashAndSalt([]byte(dummyAccounts[i].Password))
-		db.QueryRowContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd, "000000").Scan(&buyerId)
+		db.QueryRowContext(context.Background(), query, dummyAccounts[i].Email, hashedPwd).Scan(&buyerId)
+		db.ExecContext(context.Background(), query2, buyerId, "000000")
 		buyerIds = append(buyerIds, buyerId)
 	}
 

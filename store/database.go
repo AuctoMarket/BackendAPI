@@ -128,11 +128,17 @@ func initTestDB() (*sql.DB, error) {
 Function to reset all the tables in the DB, used mainly during testing
 */
 func resetDB(db *sql.DB) {
+	queryResetBuyerOtps := `TRUNCATE buyer_otps CASCADE;`
+	queryResetGuestOrders := `TRUNCATE guest_orders CASCADE;`
+	queryResetOrders := `TRUNCATE orders CASCADE;`
 	queryResetBuyers := `TRUNCATE buyers CASCADE;`
 	queryResetSellers := `TRUNCATE sellers CASCADE;`
 	queryResetProducts := `TRUNCATE products CASCADE;`
 	queryResetProductImages := `TRUNCATE product_images CASCADE;`
 
+	db.Exec(queryResetBuyerOtps)
+	db.Exec(queryResetGuestOrders)
+	db.Exec(queryResetOrders)
 	db.Exec(queryResetBuyers)
 	db.Exec(queryResetSellers)
 	db.Exec(queryResetProducts)

@@ -17,6 +17,14 @@ const (
 		  table_schema = 'public' AND 
 		  table_name = 'buyers'
 	);`
+
+	queryCheckTableBuyerOtps = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'buyer_otps'
+	);`
 	queryCheckTableSellers = `SELECT EXISTS(
 		SELECT * 
 		FROM information_schema.tables 
@@ -39,6 +47,14 @@ const (
 		WHERE 
 		  table_schema = 'public' AND 
 		  table_name = 'product_images'
+	);`
+
+	queryCheckTablePreorderInformation = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'preorder_information'
 	);`
 
 	queryCheckTableOrders = `SELECT EXISTS(
@@ -111,6 +127,26 @@ func TestCreateBuyersTable(t *testing.T) {
 
 }
 
+func TestCreateBuyerOtpsTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+	//Test 1: No errors in creating buyers table
+	var buyerOtpsExist bool
+	err = createBuyerOtpsTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary buyers tables exists
+	err = db.QueryRowContext(context.Background(), queryCheckTableBuyerOtps).Scan(&buyerOtpsExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, buyerOtpsExist)
+
+	CloseDB(db)
+}
+
 func TestCreateSellersTable(t *testing.T) {
 	err := utils.LoadDotEnv("../.env")
 	assert.NoError(t, err)
@@ -175,6 +211,29 @@ func TestCreateProductImagesTable(t *testing.T) {
 	err = db.QueryRowContext(context.Background(), queryCheckTableProductImages).Scan(&productImagesExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, productImagesExist)
+
+	CloseDB(db)
+}
+
+func TestCreatePreorderInformationTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating products table
+	createSellersTable(db)
+	createProductsTable(db)
+	err = createPreorderInformationTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary products tables exists
+	var preorderInformationExists bool
+	err = db.QueryRowContext(context.Background(), queryCheckTablePreorderInformation).Scan(&preorderInformationExists)
+	assert.NoError(t, err)
+	assert.Equal(t, true, preorderInformationExists)
 
 	CloseDB(db)
 }

@@ -75,6 +75,7 @@ func main() {
 			productGroup.POST("", handleCreateProduct)
 			productGroup.POST("/:id/images", handleCreateProductImages)
 			productGroup.GET("", handleGetProductList)
+			//productGroup.GET("/pre-orders", handleGetPreOrderList)
 		}
 
 		sellerGroup := apiGroup.Group("/sellers")
