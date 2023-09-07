@@ -107,7 +107,7 @@ func GetOrderById(db *sql.DB, orderId string) (data.GetOrderByIdResponseData, *u
 
 	query := `SELECT
 		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date, address_line_1,COALESCE(address_line_2, ''), postal_code, payment_status,
+		order_quantity, phone_number, order_date::TEXT, address_line_1,COALESCE(address_line_2, ''), postal_code, payment_status,
 		COALESCE(telegram_handle, ''), product_price
 	FROM orders WHERE order_id=$1;`
 
@@ -139,7 +139,7 @@ func GetGuestOrderById(db *sql.DB, guestOrderId string) (data.GetGuestOrderByIdR
 
 	query := `SELECT
 		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date, address_line_1, COALESCE(address_line_2, ''), postal_code, payment_status,
+		order_quantity, phone_number, order_date::TEXT, address_line_1, COALESCE(address_line_2, ''), postal_code, payment_status,
 		COALESCE(telegram_handle, ''), product_price
 	FROM guest_orders WHERE guest_order_id=$1;`
 

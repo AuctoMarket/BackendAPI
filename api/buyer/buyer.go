@@ -60,8 +60,8 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 
 	otp := utils.GetOtp(6)
 
-	query := `INSERT INTO buyers(email, password, email_otp) VALUES ($1,$2,$3) RETURNING email, buyer_id, verification;`
-	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword, otp).Scan(
+	query := `INSERT INTO buyers(email, password) VALUES ($1,$2) RETURNING email, buyer_id, verification;`
+	err = db.QueryRowContext(context.Background(), query, signupData.Email, hashPassword).Scan(
 		&response.Email, &response.BuyerId, &response.Verification)
 
 	if err != nil {
@@ -70,7 +70,23 @@ func BuyerSignUp(db *sql.DB, signupData data.BuyerSignUpData) (data.BuyerLoginRe
 		return response, errResp
 	}
 
-	err = utils.SendOtpMail(response.Email, otp)
+	query = `INSERT INTO buyer_otps(buyer_id, email_otp) VALUES ($1,$2);`
+
+	_, err = db.ExecContext(context.Background(), query, response.BuyerId, otp)
+
+	if err != nil {
+		errResp := utils.InternalServerError(err)
+		utils.LogError(err, "Error in Inserting Rows into Buyer Otps table")
+		return response, errResp
+	}
+
+	err = utils.SendOtpMail(signupData.Email, otp)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in sending otp mail")
+		return response, errResp
+	}
 
 	return response, nil
 }
@@ -83,17 +99,33 @@ func ResendOtp(db *sql.DB, resendOtpReq data.BuyerResendOtpData) (data.Message, 
 	}
 
 	newOtp := utils.GetOtp(6)
-	query := `UPDATE buyers SET email_otp = $1 WHERE buyer_id = $2 RETURNING email`
-	var email string
-	err := db.QueryRowContext(context.Background(), query, newOtp, resendOtpReq.BuyerId).Scan(&email)
+	query := `UPDATE buyer_otps SET email_otp = $1 WHERE buyer_id = $2;`
+
+	_, err := db.ExecContext(context.Background(), query, newOtp, resendOtpReq.BuyerId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
-		utils.LogError(err, "Error in Updating buyer rows")
+		utils.LogError(err, "Error in Updating buyer otp rows")
 		return response, errResp
 	}
 
-	utils.SendOtpMail(email, newOtp)
+	var email string
+	query = `SELECT email FROM buyers WHERE buyer_id = $1;`
+	err = db.QueryRowContext(context.Background(), query, resendOtpReq.BuyerId).Scan(&email)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Selecting buyers rows")
+		return response, errResp
+	}
+
+	err = utils.SendOtpMail(email, newOtp)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in sending otp mail")
+		return response, errResp
+	}
 
 	response.Message = "Resent otp to provided email address"
 	return response, nil
@@ -106,7 +138,10 @@ func ValidateOtp(db *sql.DB, validateOtpReq data.BuyerValidateOtpData) (data.Buy
 		return response, utils.BadRequestError("The buyer_id provided is invalid")
 	}
 
-	query := `SELECT email_otp, email FROM buyers WHERE buyer_id = $1`
+	query := `SELECT buyer_otps.email_otp, buyers.email 
+	FROM (buyers INNER JOIN buyer_otps ON buyers.buyer_id = buyer_otps.buyer_id)  
+	WHERE buyers.buyer_id = $1;`
+
 	var otp string
 	err := db.QueryRowContext(context.Background(), query, validateOtpReq.BuyerId).Scan(&otp, &response.Email)
 

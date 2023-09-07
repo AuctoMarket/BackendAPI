@@ -11,6 +11,9 @@ type ProductCreateResponseData struct {
 	Condition    int8   `json:"condition" binding:"required"`
 	Quantity     int    `json:"product_quantity" binding:"required"`
 	SoldQuantity int    `json:"sold_quantity" binding:"required"`
+	OrderBy      string `json:"order_by"`
+	ReleasesOn   string `json:"releases_on"`
+	Discount     int    `json:"discount"`
 }
 
 type GetProductResponseData struct {
@@ -24,6 +27,9 @@ type GetProductResponseData struct {
 	Condition     int8                      `json:"condition" binding:"required"`
 	Quantity      int                       `json:"product_quantity" binding:"required"`
 	SoldQuantity  int                       `json:"sold_quantity" binding:"required"`
+	OrderBy       string                    `json:"order_by"`
+	ReleasesOn    string                    `json:"releases_on"`
+	Discount      int                       `json:"discount"`
 	ProductImages []ProductImageData        `json:"images" binding:"required"`
 }
 
@@ -40,6 +46,9 @@ type ProductCreateData struct {
 	Price       int    `json:"price"`
 	Condition   int8   `json:"condition" `
 	Quantity    int    `json:"product_quantity"`
+	OrderBy     string `json:"order_by"`
+	ReleasesOn  string `json:"releases_on"`
+	Discount    int    `json:"discount"`
 }
 
 type ProductImageCreateData struct {
@@ -59,5 +68,8 @@ func (request *ProductCreateData) CreateProductResponseFromRequest(response *Pro
 	response.Title = request.Title
 	response.Quantity = request.Quantity
 	response.SoldQuantity = 0
+	response.ReleasesOn = request.ReleasesOn
+	response.OrderBy = request.OrderBy
+	response.Discount = request.Discount
 	return response
 }

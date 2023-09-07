@@ -21,6 +21,12 @@ func createTables(db *sql.DB) error {
 		return err
 	}
 
+	err = createBuyerOtpsTable(db)
+
+	if err != nil {
+		return err
+	}
+
 	err = createSellersTable(db)
 
 	if err != nil {
@@ -28,6 +34,12 @@ func createTables(db *sql.DB) error {
 	}
 
 	err = createProductsTable(db)
+
+	if err != nil {
+		return err
+	}
+
+	err = createPreorderInformationTable(db)
 
 	if err != nil {
 		return err
@@ -72,7 +84,19 @@ func createBuyersTable(db *sql.DB) error {
 		email VARCHAR NOT NULL UNIQUE, 
 		password VARCHAR NOT NULL,
 		verification VARCHAR NOT NULL DEFAULT 'pending',
-		email_otp VARCHAR,
+		PRIMARY KEY(buyer_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create the table for Buyer Otps
+*/
+func createBuyerOtpsTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS buyer_otps(
+		buyer_id uuid REFERENCES buyers(buyer_id) NOT NULL,
+		email_otp VARCHAR NOT NULL,
 		PRIMARY KEY(buyer_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -111,6 +135,22 @@ func createProductsTable(db *sql.DB) error {
 		posted_date TIMESTAMPTZ NOT NULL,
 		product_quantity INT NOT NULL,
 		sold_quantity INT DEFAULT 0 NOT NULL,
+		PRIMARY KEY(product_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create Pre Order Information table
+*/
+
+func createPreorderInformationTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS preorder_information(
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		order_by TIMESTAMPTZ NOT NULL,
+		releases_on TIMESTAMPTZ NOT NULL,
+		discount INT,
 		PRIMARY KEY(product_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

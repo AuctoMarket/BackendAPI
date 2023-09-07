@@ -245,7 +245,7 @@ func TestCreateProduct(t *testing.T) {
 	store.CloseDB(db)
 }
 
-func TestGetProductList(t *testing.T) {
+func TestGetBuyNowList(t *testing.T) {
 	utils.LoadDotEnv("../../.env")
 	db, startupErr := store.SetupTestDB("../../.env")
 	assert.NoError(t, startupErr)

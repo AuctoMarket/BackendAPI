@@ -21,12 +21,12 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
 	query := `SELECT products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-		product_type, posted_date, product_quantity, sold_quantity, product_image_id,image_no 
-		FROM (
-			(products INNER JOIN product_images
-				 ON products.product_id = product_images.product_id)
-			INNER JOIN sellers
-				ON products.seller_id = sellers.seller_id) 
+		product_type, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, COALESCE(preorder_information.order_by::TEXT, ''),
+		COALESCE(preorder_information.releases_on::TEXT, ''), COALESCE(preorder_information.discount, 0) 
+		FROM (((
+			products INNER JOIN product_images ON products.product_id = product_images.product_id)
+				INNER JOIN sellers ON products.seller_id = sellers.seller_id)
+					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
 		WHERE products.product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()
@@ -38,7 +38,7 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 			&response.SellerInfo.SellerId, &response.SellerInfo.SellerName, &response.SellerInfo.Followers,
 			&response.Title, &response.Description, &response.Condition, &response.Price,
 			&response.ProductType, &response.PostedDate, &response.Quantity, &response.SoldQuantity,
-			&image, &imageNo)
+			&image, &imageNo, &response.OrderBy, &response.ReleasesOn, &response.Discount)
 
 		image, pathErr := makeImagePath(image)
 		if err != nil {
@@ -64,26 +64,75 @@ Creates a product given product information. If there is an issue with the input
 400 bad request.
 */
 func CreateProduct(db *sql.DB, product data.ProductCreateData) (data.ProductCreateResponseData, *utils.ErrorHandler) {
-	var response data.ProductCreateResponseData
-
 	validationErr := validateCreateProduct(db, product)
 	if validationErr != nil {
+		var response data.ProductCreateResponseData
 		return response, validationErr
 	}
 
+	if product.ProductType == "Buy-Now" {
+		return CreateBuyNow(db, product)
+	} else {
+		return CreatePreOrder(db, product)
+	}
+}
+
+/*
+Handles the creation of a buynow product listing
+*/
+func CreateBuyNow(db *sql.DB, product data.ProductCreateData) (data.ProductCreateResponseData, *utils.ErrorHandler) {
+	var response data.ProductCreateResponseData
 	postedDate := time.Now()
 	query := `INSERT INTO products(
 			title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id;`
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, posted_date::TEXT;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
 		product.Title, product.SellerId, product.Description,
-		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId)
+		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in Inserting Product rows")
+		return response, errResp
+	}
+
+	product.CreateProductResponseFromRequest(&response)
+
+	return response, nil
+}
+
+/*
+Handles the creation of a preorder product listing
+*/
+func CreatePreOrder(db *sql.DB, product data.ProductCreateData) (data.ProductCreateResponseData, *utils.ErrorHandler) {
+	var response data.ProductCreateResponseData
+	postedDate := time.Now()
+	query := `INSERT INTO products(
+		title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, posted_date::TEXT;`
+
+	err := db.QueryRowContext(
+		context.Background(), query,
+		product.Title, product.SellerId, product.Description,
+		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Inserting Product rows")
+		return response, errResp
+	}
+
+	query = `INSERT INTO preorder_information(
+		product_id, order_by, releases_on, discount) 
+		VALUES ($1,$2::timestamptz,$3::timestamptz,$4);`
+
+	_, err = db.ExecContext(context.Background(), query, response.ProductId, product.OrderBy, product.ReleasesOn, product.Discount)
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Inserting Preorder Information rows")
 		return response, errResp
 	}
 
@@ -109,12 +158,12 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 	}
 
 	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-	product_type, posted_date, product_quantity, sold_quantity, product_image_id, image_no 
-	FROM (
-		(products INNER JOIN product_images
-			 ON products.product_id = product_images.product_id)
-		INNER JOIN sellers
-			ON products.seller_id = sellers.seller_id)`
+	product_type, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, COALESCE(preorder_information.order_by::TEXT, ''),
+	COALESCE(preorder_information.releases_on::TEXT, ''), COALESCE(preorder_information.discount, 0) 
+	FROM (((
+		products INNER JOIN product_images ON products.product_id = product_images.product_id)
+			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
+				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id) `
 
 	//Add query params to the query
 	if sellerId != "None" {
@@ -141,7 +190,7 @@ func GetProductList(db *sql.DB, sellerId string, sortBy string) ([]data.GetProdu
 		err = rows.Scan(&product.ProductId, &product.SellerInfo.SellerId, &product.SellerInfo.SellerName,
 			&product.SellerInfo.Followers, &product.Title, &product.Description, &product.Condition,
 			&product.Price, &product.ProductType, &product.PostedDate, &product.Quantity, &product.SoldQuantity,
-			&imagePath, &imageNo)
+			&imagePath, &imageNo, &product.OrderBy, &product.ReleasesOn, &product.Discount)
 
 		if err != nil {
 			errResp := utils.InternalServerError(nil)
@@ -219,6 +268,16 @@ func validateCreateProduct(db *sql.DB, product data.ProductCreateData) *utils.Er
 	if product.Quantity <= 0 {
 		utils.LogMessage("Quantity cannot be less than 1")
 		return utils.BadRequestError("Bad quantity data")
+	}
+
+	if product.ProductType == "Pre-Order" && product.ReleasesOn == "" {
+		utils.LogMessage("Pre orders need a release date")
+		return utils.BadRequestError("Bad pre-order data")
+	}
+
+	if product.ProductType == "Pre-Order" && product.OrderBy == "" {
+		utils.LogMessage("Pre orders need a order by date")
+		return utils.BadRequestError("Bad pre-order data")
 	}
 
 	return nil
