@@ -271,13 +271,15 @@ func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValida
 		return errResp
 	}
 
-	query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
-	_, err = db.ExecContext(context.Background(), query, quantity, productId)
+	if req.Status == "completed" {
+		query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
+		_, err = db.ExecContext(context.Background(), query, quantity, productId)
 
-	if err != nil {
-		errResp := utils.InternalServerError(nil)
-		utils.LogError(err, "Error in Updating product rows")
-		return errResp
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in Updating product rows")
+			return errResp
+		}
 	}
 
 	return nil
@@ -291,13 +293,26 @@ func UpdateGuestOrderPaymentStatus(db *sql.DB, guestOrderId string, req data.Pay
 		return utils.NotFoundError("Guest order with given id does not exist")
 	}
 
-	query := `UPDATE guest_orders SET payment_status = $2 WHERE guest_order_id = $1`
-	_, err := db.ExecContext(context.Background(), query, guestOrderId, req.Status)
+	var productId string
+	var quantity int
+	query := `UPDATE guest_orders SET payment_status = $2 WHERE guest_order_id = $1 RETURNING product_id, order_quantity;`
+	err := db.QueryRowContext(context.Background(), query, guestOrderId, req.Status).Scan(&productId, &quantity)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in Updating guest_order rows")
 		return errResp
+	}
+
+	if req.Status == "completed" {
+		query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
+		_, err = db.ExecContext(context.Background(), query, quantity, productId)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in Updating product rows")
+			return errResp
+		}
 	}
 
 	return nil
