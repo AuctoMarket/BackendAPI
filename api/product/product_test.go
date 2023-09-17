@@ -281,6 +281,67 @@ func TestCreateProduct(t *testing.T) {
 
 	store.CloseDB(db)
 }
+func TestAddProductSorting(t *testing.T) {
+	//Test 1: Sort by price low to high
+	query := AddProductSorting("", "price-low")
+	assert.Equal(t, ` ORDER BY products.price ASC, preorder_information.discount DESC, product_images.image_no ASC`, query)
+
+	//Test 2: Sort by price high to low
+	query = AddProductSorting("", "price-high")
+	assert.Equal(t, ` ORDER BY products.price DESC, preorder_information.discount ASC, product_images.image_no ASC`, query)
+
+	//Test 3: Name ascending
+	query = AddProductSorting("", "name-asc")
+	assert.Equal(t, ` ORDER BY products.title ASC, product_images.image_no ASC`, query)
+
+	//Test 4: Name descending
+	query = AddProductSorting("", "name-desc")
+	assert.Equal(t, ` ORDER BY products.title DESC, product_images.image_no ASC`, query)
+
+	//Test 5: Default
+	query = AddProductSorting("", "None")
+	assert.Equal(t, ` ORDER BY products.posted_date DESC, product_images.image_no ASC`, query)
+
+	//Test 6: Random string
+	query = AddProductSorting("", "sdjknvjk")
+	assert.Equal(t, ` ORDER BY products.posted_date DESC, product_images.image_no ASC`, query)
+
+}
+
+func TestAddProductFiltering(t *testing.T) {
+
+	//Test 1: No filters
+	query := AddProductFiltering("", 0, 0, "None", "None")
+	assert.Equal(t, "", query)
+
+	//Test 2: Preorders
+	query = AddProductFiltering("", 0, 0, "None", "Pre-Order")
+	assert.Equal(t, query, ` WHERE products.product_type = 'Pre-Order'`)
+
+	//Test 3: Buy-Now
+	query = AddProductFiltering("", 0, 0, "None", "Buy-Now")
+	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now'`)
+
+	//Test 4: English
+	query = AddProductFiltering("", 0, 0, "Eng", "None")
+	assert.Equal(t, query, ` WHERE products.language = 'Eng'`)
+
+	//Test 5: Preorders and Japanese
+	query = AddProductFiltering("", 0, 0, "Jap", "Pre-Order")
+	assert.Equal(t, query, ` WHERE products.product_type = 'Pre-Order' AND products.language = 'Jap'`)
+
+	//Test 6: Min price
+	query = AddProductFiltering("", 10, 0, "None", "None")
+	assert.Equal(t, query, ` WHERE products.price >= 10`)
+
+	//Test 7: Max price in japanese
+	query = AddProductFiltering("", 0, 100, "Jap", "None")
+	assert.Equal(t, query, ` WHERE products.language = 'Jap' AND products.price <= 100`)
+
+	//Test 8: Max price & min price in japanese for buy-now
+	query = AddProductFiltering("", 10, 100, "Jap", "Buy-Now")
+	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now' AND products.language = 'Jap' AND products.price >= 10 AND products.price <= 100`)
+}
 
 func TestGetBuyNowList(t *testing.T) {
 	utils.LoadDotEnv("../../.env")
@@ -295,13 +356,13 @@ func TestGetBuyNowList(t *testing.T) {
 	assert.NoError(t, productImageErr)
 
 	//Test 1: Get Product List default options
-	req := data.GetProductListData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None"}
+	req := data.GetProductListData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None"}
 	res, err := GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 3, len(res))
 
 	//Test 2: Get Product List Sorted by Price (Low-High)
-	req = data.GetProductListData{SortBy: "price-low", MinPrice: 0, MaxPrice: 0, ProductType: "None"}
+	req = data.GetProductListData{SortBy: "price-low", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 3, len(res))
@@ -309,7 +370,7 @@ func TestGetBuyNowList(t *testing.T) {
 	assert.Equal(t, 90, res[1].Price)
 
 	//Test 3: Get Product List Sorted by Price (High-Low)
-	req = data.GetProductListData{SortBy: "price-high", MinPrice: 0, MaxPrice: 0, ProductType: "None"}
+	req = data.GetProductListData{SortBy: "price-high", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 3, len(res))
@@ -317,7 +378,7 @@ func TestGetBuyNowList(t *testing.T) {
 	assert.Equal(t, 90, res[1].Price)
 
 	//Test 4: Get Product List Sorted by Name (A-Z)
-	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None"}
+	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 3, len(res))
@@ -325,12 +386,42 @@ func TestGetBuyNowList(t *testing.T) {
 	assert.Equal(t, "Test1", res[1].Title)
 
 	//Test 4: Get Product List Sorted by Name (Z-A)
-	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "None"}
+	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 3, len(res))
 	assert.Equal(t, "Test2", res[0].Title)
 	assert.Equal(t, "Test1", res[1].Title)
+
+	//Test 5: Get Product List Buy-Now
+	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Buy-Now", Language: "None"}
+	res, err = GetProductList(db, req)
+	assert.Empty(t, err)
+	assert.Equal(t, 2, len(res))
+	assert.Equal(t, "Test1", res[0].Title)
+	assert.Equal(t, "Test", res[1].Title)
+
+	//Test 6: Get Product List Pre-Order
+	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Pre-Order", Language: "None"}
+	res, err = GetProductList(db, req)
+	assert.Empty(t, err)
+	assert.Equal(t, 1, len(res))
+	assert.Equal(t, "Test2", res[0].Title)
+
+	//Test 7: Get Product Min Price 20
+	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 20, MaxPrice: 0, ProductType: "None", Language: "None"}
+	res, err = GetProductList(db, req)
+	assert.Empty(t, err)
+	assert.Equal(t, 2, len(res))
+	assert.Equal(t, "Test1", res[0].Title)
+	assert.Equal(t, "Test2", res[1].Title)
+
+	//Test 8: Get Product Max price 40
+	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 40, ProductType: "None", Language: "None"}
+	res, err = GetProductList(db, req)
+	assert.Empty(t, err)
+	assert.Equal(t, 1, len(res))
+	assert.Equal(t, "Test", res[0].Title)
 
 	store.CloseDB(db)
 

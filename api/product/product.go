@@ -6,6 +6,7 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
+	"strconv"
 	"time"
 )
 
@@ -158,7 +159,8 @@ func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProd
 			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
 				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)`
 
-	query = AddSortingProduct(query, request.SortBy)
+	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType)
+	query = AddProductSorting(query, request.SortBy)
 	rows, err := db.QueryContext(context.Background(), query)
 
 	defer rows.Close()
@@ -214,7 +216,7 @@ func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProd
 /*
 Adds the sorting to the query to determine the order of the products
 */
-func AddSortingProduct(query string, sortBy string) string {
+func AddProductSorting(query string, sortBy string) string {
 	if sortBy == "price-low" {
 		query += ` ORDER BY products.price ASC, preorder_information.discount DESC`
 	} else if sortBy == "price-high" {
@@ -226,14 +228,65 @@ func AddSortingProduct(query string, sortBy string) string {
 	} else {
 		query += ` ORDER BY products.posted_date DESC`
 	}
+
+	query += `, product_images.image_no ASC`
 	return query
 }
 
 /*
 Adds the filtering to the query to filter out certain products
 */
-func AddFilterProduct(query string, minPrice int, maxPrice int, language string, productType string) string {
+func AddProductFiltering(query string, minPrice int, maxPrice int, language string, productType string) string {
+	var hasFiltered bool = false
 
+	if productType != "None" {
+		if !hasFiltered {
+			query += ` WHERE products.product_type =`
+			if productType == "Pre-Order" {
+				query += ` 'Pre-Order'`
+			} else {
+				query += ` 'Buy-Now'`
+			}
+			hasFiltered = true
+		}
+	}
+
+	if language != "None" {
+		if !hasFiltered {
+			query += ` WHERE products.language =`
+			if language == "Eng" {
+				query += ` 'Eng'`
+			} else {
+				query += ` 'Jap'`
+			}
+			hasFiltered = true
+		} else {
+			query += ` AND products.language =`
+			if language == "Eng" {
+				query += ` 'Eng'`
+			} else {
+				query += ` 'Jap'`
+			}
+		}
+	}
+
+	if minPrice > 0 {
+		if !hasFiltered {
+			query += ` WHERE products.price >= ` + strconv.Itoa(minPrice)
+			hasFiltered = true
+		} else {
+			query += ` AND products.price >= ` + strconv.Itoa(minPrice)
+		}
+	}
+
+	if maxPrice > 0 {
+		if !hasFiltered {
+			query += ` WHERE products.price <= ` + strconv.Itoa(maxPrice)
+			hasFiltered = true
+		} else {
+			query += ` AND products.price <= ` + strconv.Itoa(maxPrice)
+		}
+	}
 	return query
 }
 
