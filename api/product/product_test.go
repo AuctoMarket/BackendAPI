@@ -23,14 +23,14 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 1: No errors, product is valid
 	testCreateProduct1 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3}
+		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng"}
 	err := validateCreateProduct(db, testCreateProduct1)
 	assert.Empty(t, err)
 
 	//Test 2: Error, product price is invalid
 	testCreateProduct2 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: -5, Condition: 3, Quantity: 3}
+		ProductType: "Buy-Now", Price: -5, Condition: 3, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct2)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad price data", err.Error())
@@ -39,7 +39,7 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 3: Error, product condition is invalid
 	testCreateProduct3 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 10, Condition: 13, Quantity: 3}
+		ProductType: "Buy-Now", Price: 10, Condition: 13, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct3)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad condition data", err.Error())
@@ -48,7 +48,7 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 4: Error, product condition is invalid
 	testCreateProduct4 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 10, Condition: -1, Quantity: 3}
+		ProductType: "Buy-Now", Price: 10, Condition: -1, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct4)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad condition data", err.Error())
@@ -57,21 +57,22 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 5: No errors, product is valid
 	testCreateProduct5 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3, ReleasesOn: "test", OrderBy: "test", Discount: 10}
+		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3, ReleasesOn: "test",
+		OrderBy: "test", Discount: 10, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct5)
 	assert.Empty(t, err)
 
 	//Test 6: No errors, product is valid
 	testCreateProduct6 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 0, Condition: 0, Quantity: 3}
+		ProductType: "Buy-Now", Price: 0, Condition: 0, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct6)
 	assert.Empty(t, err)
 
 	//Test 7:Error product type is wrong
 	testCreateProduct7 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-It-Now", Price: 0, Condition: 0, Quantity: 3}
+		ProductType: "Buy-It-Now", Price: 0, Condition: 0, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct7)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad product_type data", err.Error())
@@ -80,7 +81,7 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 8:Error seller id does not exist
 	testCreateProduct8 := data.CreateProductData{
 		Title: "test", SellerId: "test", Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3}
+		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct8)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad seller_id data", err.Error())
@@ -89,7 +90,7 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 9: No errors, product is valid
 	testCreateProduct9 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 0}
+		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 0, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct9)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad quantity data", err.Error())
@@ -98,7 +99,8 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 10: Missing release date
 	testCreateProduct10 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3, OrderBy: "test", Discount: 10}
+		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
+		OrderBy: "test", Discount: 10, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct10)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad pre-order data", err.Error())
@@ -107,10 +109,20 @@ func TestValidateCreateProduct(t *testing.T) {
 	//Test 11: Missing order by
 	testCreateProduct11 := data.CreateProductData{
 		Title: "test", SellerId: sellerId, Description: "This is a test description",
-		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3, ReleasesOn: "test", Discount: 10}
+		ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
+		ReleasesOn: "test", Discount: 10, Language: "Eng"}
 	err = validateCreateProduct(db, testCreateProduct11)
 	assert.Error(t, err)
 	assert.Equal(t, "Bad pre-order data", err.Error())
+	assert.Equal(t, 400, err.ErrorCode())
+
+	//Test 12: Wrong Language
+	testCreateProduct12 := data.CreateProductData{
+		Title: "test", SellerId: sellerId, Description: "This is a test description",
+		ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Wrong"}
+	err = validateCreateProduct(db, testCreateProduct12)
+	assert.Error(t, err)
+	assert.Equal(t, "Bad language data", err.Error())
 	assert.Equal(t, 400, err.ErrorCode())
 
 	store.CloseDB(db)
@@ -168,6 +180,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, "Buy-Now", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
 	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[0], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "Eng", response.Language)
 
 	//Test 2: Product Id exists
 	response, err = GetProductById(db, productIds[1])
@@ -178,6 +191,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, "Buy-Now", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
 	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[1], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "Jap", response.Language)
 
 	//Test 3: Product Id exists
 	response, err = GetProductById(db, productIds[2])
@@ -188,6 +202,7 @@ func TestGetProductById(t *testing.T) {
 	assert.Equal(t, "Pre-Order", response.ProductType)
 	assert.Equal(t, 3, response.Quantity)
 	assert.Equal(t, "https://aucto-s3-local.s3.ap-southeast-1.amazonaws.com"+productImageIds[2], response.ProductImages[0].ProductImagePath)
+	assert.Equal(t, "Eng", response.Language)
 
 	//Test 4: Product Id does not exist
 	response, err = GetProductById(db, "wrong id")
@@ -205,25 +220,27 @@ func TestCreateProduct(t *testing.T) {
 
 	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10, Condition: 0, Quantity: 3},
+			ProductType: "Buy-Now", Price: 10, Condition: 0, Quantity: 3, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
 			ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
 			ReleasesOn: "2023-10-02 04:44:17.170135", OrderBy: "2023-10-02 04:44:17.170135",
-			Discount: 10},
+			Discount: 10, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: -1, Quantity: 3},
+			ProductType: "Buy-Now", Price: 100, Condition: -1, Quantity: 3, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: 6, Quantity: 3},
+			ProductType: "Buy-Now", Price: 100, Condition: 6, Quantity: 3, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: -100, Condition: 5, Quantity: 3},
+			ProductType: "Buy-Now", Price: -100, Condition: 5, Quantity: 3, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 0},
-		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
-			OrderBy: "2023-10-02 04:44:17.170135", Discount: 10},
+			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 0, Language: "Eng"},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
 			ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
-			ReleasesOn: "2023-10-02 04:44:17.170135", Discount: 10}}
+			OrderBy: "2023-10-02 04:44:17.170135", Discount: 10, Language: "Eng"},
+		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Pre-Order", Price: 0, Condition: 5, Quantity: 3,
+			ReleasesOn: "2023-10-02 04:44:17.170135", Discount: 10, Language: "Eng"},
+		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 0, Language: "wrong"}}
 
 	//Test 1: No error, product is created
 	response, err := CreateProduct(db, dummyCreateProducts[0])
@@ -277,6 +294,12 @@ func TestCreateProduct(t *testing.T) {
 	response, err = CreateProduct(db, dummyCreateProducts[7])
 	assert.Error(t, err)
 	assert.Equal(t, "Bad pre-order data", err.Error())
+	assert.Equal(t, 400, err.ErrorCode())
+
+	//Test 9: Error Language does not exist
+	response, err = CreateProduct(db, dummyCreateProducts[8])
+	assert.Error(t, err)
+	assert.Equal(t, "Bad language data", err.Error())
 	assert.Equal(t, 400, err.ErrorCode())
 
 	store.CloseDB(db)
@@ -438,24 +461,24 @@ func createDummySeller(db *sql.DB) (string, error) {
 func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3},
+			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng"},
 		{Title: "Test1", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3},
+			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3, Language: "Jap"},
 		{Title: "Test2", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3}}
+			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3, Language: "Eng"}}
 	var productIds []string
 
 	for i := 0; i < len(dummyCreateProducts); i++ {
 		query := `INSERT INTO products(
-			title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id;`
+			title, seller_id, description, product_type, language, posted_date, price, condition, product_quantity) 
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING product_id;`
 		postedDate := time.Now()
 		var productId string
 		err := db.QueryRowContext(
 			context.Background(), query,
 			dummyCreateProducts[i].Title, dummyCreateProducts[i].SellerId, dummyCreateProducts[i].Description,
-			dummyCreateProducts[i].ProductType, postedDate, dummyCreateProducts[i].Price, dummyCreateProducts[i].Condition,
-			dummyCreateProducts[i].Quantity).Scan(&productId)
+			dummyCreateProducts[i].ProductType, dummyCreateProducts[i].Language, postedDate, dummyCreateProducts[i].Price,
+			dummyCreateProducts[i].Condition, dummyCreateProducts[i].Quantity).Scan(&productId)
 		if err != nil {
 			return nil, err
 		}

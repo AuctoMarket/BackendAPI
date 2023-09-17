@@ -11,6 +11,7 @@ type CreateProductResponseData struct {
 	Title        string `json:"title" binding:"required"`
 	Description  string `json:"desc" binding:"required"`
 	ProductType  string `json:"product_type" binding:"required"`
+	Language     string `json:"language" binding:"required"`
 	PostedDate   string `json:"posted_date" binding:"required" example:"2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"`
 	Price        int    `json:"price" binding:"required"`
 	Condition    int8   `json:"condition" binding:"required"`
@@ -27,6 +28,7 @@ type GetProductResponseData struct {
 	Title         string                    `json:"title" binding:"required"`
 	Description   string                    `json:"desc" binding:"required"`
 	ProductType   string                    `json:"product_type" binding:"required"`
+	Language      string                    `json:"language" binding:"required"`
 	PostedDate    string                    `json:"posted_date" binding:"required" example:"2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"`
 	Price         int                       `json:"price" binding:"required"`
 	Condition     int8                      `json:"condition" binding:"required"`
@@ -48,6 +50,7 @@ type CreateProductData struct {
 	SellerId    string `json:"seller_id" binding:"required"`
 	Description string `json:"description" binding:"required"`
 	ProductType string `json:"product_type" binding:"required"`
+	Language    string `json:"language" binding:"required"`
 	Price       int    `json:"price"`
 	Condition   int8   `json:"condition" `
 	Quantity    int    `json:"product_quantity"`
@@ -84,6 +87,7 @@ func (request *CreateProductData) ProductCreateResponseFromRequest(response *Cre
 	response.ReleasesOn = request.ReleasesOn
 	response.OrderBy = request.OrderBy
 	response.Discount = request.Discount
+	response.Language = request.Language
 }
 
 func (request *GetProductListData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string, maxPrice string) *utils.ErrorHandler {

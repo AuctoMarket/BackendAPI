@@ -22,8 +22,9 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
 	query := `SELECT products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-		product_type, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, COALESCE(preorder_information.order_by::TEXT, ''),
-		COALESCE(preorder_information.releases_on::TEXT, ''), COALESCE(preorder_information.discount, 0) 
+		product_type, language, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
+		COALESCE(preorder_information.order_by::TEXT, ''), COALESCE(preorder_information.releases_on::TEXT, ''), 
+		COALESCE(preorder_information.discount, 0) 
 		FROM (((
 			products INNER JOIN product_images ON products.product_id = product_images.product_id)
 				INNER JOIN sellers ON products.seller_id = sellers.seller_id)
@@ -38,8 +39,8 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		rows.Scan(
 			&response.SellerInfo.SellerId, &response.SellerInfo.SellerName, &response.SellerInfo.Followers,
 			&response.Title, &response.Description, &response.Condition, &response.Price,
-			&response.ProductType, &response.PostedDate, &response.Quantity, &response.SoldQuantity,
-			&image, &imageNo, &response.OrderBy, &response.ReleasesOn, &response.Discount)
+			&response.ProductType, &response.Language, &response.PostedDate, &response.Quantity,
+			&response.SoldQuantity, &image, &imageNo, &response.OrderBy, &response.ReleasesOn, &response.Discount)
 
 		image, pathErr := makeImagePath(image)
 		if err != nil {
@@ -84,13 +85,14 @@ func CreateBuyNow(db *sql.DB, product data.CreateProductData) (data.CreateProduc
 	var response data.CreateProductResponseData
 	postedDate := time.Now()
 	query := `INSERT INTO products(
-			title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, posted_date::TEXT;`
+			title, seller_id, description, product_type, language, posted_date, price, condition, product_quantity) 
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING product_id, posted_date::TEXT;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
 		product.Title, product.SellerId, product.Description,
-		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
+		product.ProductType, product.Language, postedDate, product.Price,
+		product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -110,13 +112,14 @@ func CreatePreOrder(db *sql.DB, product data.CreateProductData) (data.CreateProd
 	var response data.CreateProductResponseData
 	postedDate := time.Now()
 	query := `INSERT INTO products(
-		title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id, posted_date::TEXT;`
+		title, seller_id, description, product_type, language, posted_date, price, condition, product_quantity) 
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING product_id, posted_date::TEXT;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
 		product.Title, product.SellerId, product.Description,
-		product.ProductType, postedDate, product.Price, product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
+		product.ProductType, product.Language, postedDate, product.Price,
+		product.Condition, product.Quantity).Scan(&response.ProductId, &response.PostedDate)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -152,8 +155,9 @@ func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProd
 	productMap := make(map[string]int)
 
 	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-	product_type, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, COALESCE(preorder_information.order_by::TEXT, ''),
-	COALESCE(preorder_information.releases_on::TEXT, ''), COALESCE(preorder_information.discount, 0) 
+	product_type, language, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
+	COALESCE(preorder_information.order_by::TEXT, ''),COALESCE(preorder_information.releases_on::TEXT, ''), 
+	COALESCE(preorder_information.discount, 0) 
 	FROM (((
 		products INNER JOIN product_images ON products.product_id = product_images.product_id)
 			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
@@ -178,8 +182,8 @@ func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProd
 		// scan the product
 		err = rows.Scan(&product.ProductId, &product.SellerInfo.SellerId, &product.SellerInfo.SellerName,
 			&product.SellerInfo.Followers, &product.Title, &product.Description, &product.Condition,
-			&product.Price, &product.ProductType, &product.PostedDate, &product.Quantity, &product.SoldQuantity,
-			&imagePath, &imageNo, &product.OrderBy, &product.ReleasesOn, &product.Discount)
+			&product.Price, &product.ProductType, &product.Language, &product.PostedDate, &product.Quantity,
+			&product.SoldQuantity, &imagePath, &imageNo, &product.OrderBy, &product.ReleasesOn, &product.Discount)
 
 		if err != nil {
 			errResp := utils.InternalServerError(nil)
@@ -321,6 +325,11 @@ func validateCreateProduct(db *sql.DB, product data.CreateProductData) *utils.Er
 	if product.Condition < 0 || product.Condition > 5 {
 		utils.LogMessage("Condition is less than 0 or greater than 5")
 		return utils.BadRequestError("Bad condition data")
+	}
+
+	if product.Language != "Eng" && product.Language != "Jap" {
+		utils.LogMessage("Product language is not recognised")
+		return utils.BadRequestError("Bad language data")
 	}
 
 	if product.Price < 0 {
