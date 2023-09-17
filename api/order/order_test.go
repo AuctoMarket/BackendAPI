@@ -484,7 +484,7 @@ func createDummySeller(db *sql.DB) (string, error) {
 }
 
 func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
-	var dummyCreateProducts []data.ProductCreateData = []data.ProductCreateData{
+	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
 			ProductType: "Buy-Now", Price: 10000, Condition: 3, Quantity: 3},
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",

@@ -45,12 +45,12 @@ func handleGetProductById(c *gin.Context) {
 // @Param 		 condition body int true "Condition of the product from a scale of 0 to 5"
 // @Param 		 product_type body string true "Type of product sale: Buy-Now or Pre-Order"
 // @Param        product_quantity body int true "Quantity of product to be put for sale"
-// @Success      201  {object}  data.ProductCreateResponseData
+// @Success      201  {object}  data.CreateProductResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
 // @Router       /products  [post]
 func handleCreateProduct(c *gin.Context) {
-	var createProduct data.ProductCreateData
+	var createProduct data.CreateProductData
 	bindErr := c.ShouldBindJSON(&createProduct)
 
 	if bindErr != nil {
@@ -131,11 +131,22 @@ func handleCreateProductImages(c *gin.Context) {
 // @Failure      500  {object}  data.Message
 // @Router       /products  [get]
 func handleGetProductList(c *gin.Context) {
-	sellerId := c.DefaultQuery("seller_id", "None")
-	sortby := c.DefaultQuery("sort_by", "None")
+	var request data.GetProductListData
+	sortBy := c.DefaultQuery("sort_by", "None")
+	minPrice := c.DefaultQuery("min_price", "None")
+	maxPrice := c.DefaultQuery("max_price", "None")
 	productType := c.DefaultQuery("product_type", "None")
+	language := c.DefaultQuery("landuage", "None")
 
-	products, err := product.GetProductList(db, sellerId, sortby, productType)
+	err := request.GetProductListDataRequestFromParams(sortBy, productType, language, minPrice, maxPrice)
+
+	if err != nil {
+		r := data.Message{Message: err.Error()}
+		c.JSON(err.ErrorCode(), r)
+		return
+	}
+
+	products, err := product.GetProductList(db, request)
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}

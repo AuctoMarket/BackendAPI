@@ -19,8 +19,8 @@ import (
 Creates ID's for each image and uses the id for the filename of the image. Stores the
 Stores the image in the s3 bucket and returns a array of the urls to access the image.
 */
-func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images []io.Reader) (data.ProductImageCreateData, *utils.ErrorHandler) {
-	var response data.ProductImageCreateData
+func CreateProductImages(db *sql.DB, client *s3.Client, productId string, images []io.Reader) (data.CreateProductImageData, *utils.ErrorHandler) {
+	var response data.CreateProductImageData
 
 	validateErr := validateCreateProductImages(db, productId, images)
 
