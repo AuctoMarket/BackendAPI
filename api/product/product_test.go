@@ -112,6 +112,8 @@ func TestValidateCreateProduct(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, "Bad pre-order data", err.Error())
 	assert.Equal(t, 400, err.ErrorCode())
+
+	store.CloseDB(db)
 }
 
 func TestDoesProductExist(t *testing.T) {

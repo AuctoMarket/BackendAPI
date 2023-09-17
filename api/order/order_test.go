@@ -457,6 +457,49 @@ func TestCreateOrder(t *testing.T) {
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
+	store.CloseDB(db)
+
+}
+
+func TestUpdateOrderPaymentStatus(t *testing.T) {
+	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+	sellerId, err := createDummySeller(db)
+	assert.NoError(t, err)
+	productIds, err := createDummyProducts(db, sellerId)
+	buyerIds := createDummyBuyers(db)
+	assert.NoError(t, err)
+	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
+
+	//Test 1: Order status is completed
+	testErr := UpdateOrderPaymentStatus(db, orderIds[0], data.PaymentValidationRequestData{Status: "completed"})
+	assert.Empty(t, testErr)
+
+	//Test 2: Order id does not exist
+	testErr = UpdateOrderPaymentStatus(db, "wrong id", data.PaymentValidationRequestData{Status: "completed"})
+	assert.NotEmpty(t, testErr)
+
+	store.CloseDB(db)
+}
+
+func TestUpdateGuestOrderPaymentStatus(t *testing.T) {
+	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+	sellerId, err := createDummySeller(db)
+	assert.NoError(t, err)
+	productIds, err := createDummyProducts(db, sellerId)
+	assert.NoError(t, err)
+	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@aucto.io")
+
+	//Test 1: Order status is completed
+	testErr := UpdateGuestOrderPaymentStatus(db, guestOrderIds[0], data.PaymentValidationRequestData{Status: "completed"})
+	assert.Empty(t, testErr)
+
+	//Test 2: Order id does not exist
+	testErr = UpdateGuestOrderPaymentStatus(db, "wrong id", data.PaymentValidationRequestData{Status: "completed"})
+	assert.NotEmpty(t, testErr)
+
+	store.CloseDB(db)
 }
 
 func createDummyBuyers(db *sql.DB) []string {

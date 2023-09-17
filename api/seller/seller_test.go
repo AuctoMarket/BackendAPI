@@ -209,6 +209,8 @@ func TestGetSellerById(t *testing.T) {
 	assert.NotEmpty(t, err)
 	assert.Equal(t, 404, err.ErrorCode())
 	assert.Equal(t, "Seller with given Seller Id does not exist", err.Error())
+
+	store.CloseDB(db)
 }
 
 func addDummyAccounts(db *sql.DB) []string {

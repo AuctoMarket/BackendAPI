@@ -37,6 +37,8 @@ func TestDoProductImagesExist(t *testing.T) {
 	createDummyProductImages(db, []string{productIds[2]})
 	res = doProductImagesExist(db, productIds[2])
 	assert.Equal(t, true, res)
+
+	store.CloseDB(db)
 }
 
 func TestCreateProductImages(t *testing.T) {
@@ -171,6 +173,8 @@ func TestValidateCreateProductImages(t *testing.T) {
 	assert.NotEmpty(t, testErr)
 	assert.Equal(t, "Product with given id already has images", testErr.Error())
 	assert.Equal(t, 400, testErr.ErrorCode())
+
+	store.CloseDB(db)
 }
 
 func TestMakeImagePath(t *testing.T) {
