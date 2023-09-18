@@ -529,6 +529,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Get products filtered by the language of the expansion. The choices are 'Eng' or 'Jap' and default is both.",
+                        "name": "language",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Get products filtered by the expansion of the product. Default is all expansions",
                         "name": "expansion",
                         "in": "query"

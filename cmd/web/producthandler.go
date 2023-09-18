@@ -128,6 +128,7 @@ func handleCreateProductImages(c *gin.Context) {
 // @Produce      json
 // @Param        sort_by query string false  "Sort By a specific attribute of the product. Default is posted_date"
 // @Param 		 product_type query string false "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected"
+// @Param 		 language query string false "Get products filtered by the language of the expansion. The choices are 'Eng' or 'Jap' and default is both."
 // @Param 		 expansion query string false "Get products filtered by the expansion of the product. Default is all expansions"
 // @Param 		 min_price query int false "Minimum price of the products, will fetch products of greater than or equal to value than minimum price"
 // @Param 		 max_price query int false "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price"

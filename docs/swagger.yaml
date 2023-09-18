@@ -626,6 +626,11 @@ paths:
         in: query
         name: product_type
         type: string
+      - description: Get products filtered by the language of the expansion. The choices
+          are 'Eng' or 'Jap' and default is both.
+        in: query
+        name: language
+        type: string
       - description: Get products filtered by the expansion of the product. Default
           is all expansions
         in: query
