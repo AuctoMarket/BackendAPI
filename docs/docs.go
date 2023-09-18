@@ -517,12 +517,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Get products from a specific seller Id. Default is without any seller_id specified.",
-                        "name": "seller_id",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "description": "Sort By a specific attribute of the product. Default is posted_date",
                         "name": "sort_by",
                         "in": "query"
@@ -531,6 +525,24 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected",
                         "name": "product_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Get products filtered by the expansion of the product. Default is all expansions",
+                        "name": "expansion",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Minimum price of the products, will fetch products of greater than or equal to value than minimum price",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price",
+                        "name": "max_price",
                         "in": "query"
                     }
                 ],
@@ -614,6 +626,24 @@ const docTemplate = `{
                         }
                     },
                     {
+                        "description": "Language of the product, is either 'Eng' or 'Jap'",
+                        "name": "language",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Expansion of the product",
+                        "name": "expansion",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "description": "Quantity of product to be put for sale",
                         "name": "product_quantity",
                         "in": "body",
@@ -627,7 +657,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/data.ProductCreateResponseData"
+                            "$ref": "#/definitions/data.CreateProductResponseData"
                         }
                     },
                     "400": {
@@ -954,6 +984,71 @@ const docTemplate = `{
                 }
             }
         },
+        "data.CreateProductResponseData": {
+            "type": "object",
+            "required": [
+                "condition",
+                "desc",
+                "expansion",
+                "language",
+                "posted_date",
+                "price",
+                "product_id",
+                "product_quantity",
+                "product_type",
+                "seller_id",
+                "sold_quantity",
+                "title"
+            ],
+            "properties": {
+                "condition": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "integer"
+                },
+                "expansion": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "order_by": {
+                    "type": "string"
+                },
+                "posted_date": {
+                    "type": "string",
+                    "example": "2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "product_quantity": {
+                    "type": "integer"
+                },
+                "product_type": {
+                    "type": "string"
+                },
+                "releases_on": {
+                    "type": "string"
+                },
+                "seller_id": {
+                    "type": "string"
+                },
+                "sold_quantity": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "data.GetGuestOrderByIdResponseData": {
             "type": "object",
             "required": [
@@ -1065,7 +1160,9 @@ const docTemplate = `{
             "required": [
                 "condition",
                 "desc",
+                "expansion",
                 "images",
+                "language",
                 "posted_date",
                 "price",
                 "product_id",
@@ -1085,11 +1182,17 @@ const docTemplate = `{
                 "discount": {
                     "type": "integer"
                 },
+                "expansion": {
+                    "type": "string"
+                },
                 "images": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/data.ProductImageData"
                     }
+                },
+                "language": {
+                    "type": "string"
                 },
                 "order_by": {
                     "type": "string"
@@ -1180,63 +1283,6 @@ const docTemplate = `{
                 },
                 "total_paid": {
                     "type": "integer"
-                }
-            }
-        },
-        "data.ProductCreateResponseData": {
-            "type": "object",
-            "required": [
-                "condition",
-                "desc",
-                "posted_date",
-                "price",
-                "product_id",
-                "product_quantity",
-                "product_type",
-                "seller_id",
-                "sold_quantity",
-                "title"
-            ],
-            "properties": {
-                "condition": {
-                    "type": "integer"
-                },
-                "desc": {
-                    "type": "string"
-                },
-                "discount": {
-                    "type": "integer"
-                },
-                "order_by": {
-                    "type": "string"
-                },
-                "posted_date": {
-                    "type": "string",
-                    "example": "2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936"
-                },
-                "price": {
-                    "type": "integer"
-                },
-                "product_id": {
-                    "type": "string"
-                },
-                "product_quantity": {
-                    "type": "integer"
-                },
-                "product_type": {
-                    "type": "string"
-                },
-                "releases_on": {
-                    "type": "string"
-                },
-                "seller_id": {
-                    "type": "string"
-                },
-                "sold_quantity": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
                 }
             }
         },

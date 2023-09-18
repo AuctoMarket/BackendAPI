@@ -33,6 +33,53 @@ definitions:
     - order_id
     - redirect_url
     type: object
+  data.CreateProductResponseData:
+    properties:
+      condition:
+        type: integer
+      desc:
+        type: string
+      discount:
+        type: integer
+      expansion:
+        type: string
+      language:
+        type: string
+      order_by:
+        type: string
+      posted_date:
+        example: 2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936
+        type: string
+      price:
+        type: integer
+      product_id:
+        type: string
+      product_quantity:
+        type: integer
+      product_type:
+        type: string
+      releases_on:
+        type: string
+      seller_id:
+        type: string
+      sold_quantity:
+        type: integer
+      title:
+        type: string
+    required:
+    - condition
+    - desc
+    - expansion
+    - language
+    - posted_date
+    - price
+    - product_id
+    - product_quantity
+    - product_type
+    - seller_id
+    - sold_quantity
+    - title
+    type: object
   data.GetGuestOrderByIdResponseData:
     properties:
       address_line_1:
@@ -117,10 +164,14 @@ definitions:
         type: string
       discount:
         type: integer
+      expansion:
+        type: string
       images:
         items:
           $ref: '#/definitions/data.ProductImageData'
         type: array
+      language:
+        type: string
       order_by:
         type: string
       posted_date:
@@ -145,7 +196,9 @@ definitions:
     required:
     - condition
     - desc
+    - expansion
     - images
+    - language
     - posted_date
     - price
     - product_id
@@ -194,47 +247,6 @@ definitions:
     - payment_type
     - product_price
     - total_paid
-    type: object
-  data.ProductCreateResponseData:
-    properties:
-      condition:
-        type: integer
-      desc:
-        type: string
-      discount:
-        type: integer
-      order_by:
-        type: string
-      posted_date:
-        example: 2023-08-03 02:50:26.034552906 +0000 UTC m=+192.307467936
-        type: string
-      price:
-        type: integer
-      product_id:
-        type: string
-      product_quantity:
-        type: integer
-      product_type:
-        type: string
-      releases_on:
-        type: string
-      seller_id:
-        type: string
-      sold_quantity:
-        type: integer
-      title:
-        type: string
-    required:
-    - condition
-    - desc
-    - posted_date
-    - price
-    - product_id
-    - product_quantity
-    - product_type
-    - seller_id
-    - sold_quantity
-    - title
     type: object
   data.ProductImageData:
     properties:
@@ -605,11 +617,6 @@ paths:
       description: Gets product information of products given query parameters provided
         in the Request
       parameters:
-      - description: Get products from a specific seller Id. Default is without any
-          seller_id specified.
-        in: query
-        name: seller_id
-        type: string
       - description: Sort By a specific attribute of the product. Default is posted_date
         in: query
         name: sort_by
@@ -619,6 +626,21 @@ paths:
         in: query
         name: product_type
         type: string
+      - description: Get products filtered by the expansion of the product. Default
+          is all expansions
+        in: query
+        name: expansion
+        type: string
+      - description: Minimum price of the products, will fetch products of greater
+          than or equal to value than minimum price
+        in: query
+        name: min_price
+        type: integer
+      - description: Maximum price of the products, will fetch products of lesser
+          than or equal to value than maximum price
+        in: query
+        name: max_price
+        type: integer
       produces:
       - application/json
       responses:
@@ -673,6 +695,18 @@ paths:
         required: true
         schema:
           type: string
+      - description: Language of the product, is either 'Eng' or 'Jap'
+        in: body
+        name: language
+        required: true
+        schema:
+          type: string
+      - description: Expansion of the product
+        in: body
+        name: expansion
+        required: true
+        schema:
+          type: string
       - description: Quantity of product to be put for sale
         in: body
         name: product_quantity
@@ -685,7 +719,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/data.ProductCreateResponseData'
+            $ref: '#/definitions/data.CreateProductResponseData'
         "400":
           description: Bad Request
           schema:
