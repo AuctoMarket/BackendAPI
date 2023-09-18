@@ -45,6 +45,12 @@ func createTables(db *sql.DB) error {
 		return err
 	}
 
+	err = createProductDiscountsTable(db)
+
+	if err != nil {
+		return err
+	}
+
 	err = createProductImagesTable(db)
 
 	if err != nil {
@@ -135,6 +141,8 @@ func createProductsTable(db *sql.DB) error {
 		posted_date TIMESTAMPTZ NOT NULL,
 		product_quantity INT NOT NULL,
 		sold_quantity INT DEFAULT 0 NOT NULL,
+		language VARCHAR DEFAULT 'ENG' NOT NULL,
+		expansion VARCHAR NOT NULL,
 		PRIMARY KEY(product_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
@@ -144,13 +152,24 @@ func createProductsTable(db *sql.DB) error {
 /*
 Create Pre Order Information table
 */
-
 func createPreorderInformationTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS preorder_information(
 		product_id uuid REFERENCES products(product_id) NOT NULL,
 		order_by TIMESTAMPTZ NOT NULL,
 		releases_on TIMESTAMPTZ NOT NULL,
-		discount INT,
+		PRIMARY KEY(product_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create Product Discounts table
+*/
+func createProductDiscountsTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS product_discounts(
+		product_id uuid REFERENCES products(product_id) NOT NULL,
+		discount INT NOT NULL,
 		PRIMARY KEY(product_id));`
 
 	_, err := db.ExecContext(context.Background(), query)

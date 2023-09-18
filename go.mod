@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.32
 	github.com/gin-contrib/cors v1.4.0
 	github.com/joho/godotenv v1.5.1
+	github.com/sendgrid/sendgrid-go v3.13.0+incompatible
 	github.com/swaggo/swag v1.16.1
 )
 
@@ -38,7 +39,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
-	github.com/sendgrid/sendgrid-go v3.13.0+incompatible // indirect
 	golang.org/x/tools v0.11.1 // indirect
 )
 

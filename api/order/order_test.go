@@ -457,6 +457,49 @@ func TestCreateOrder(t *testing.T) {
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
+	store.CloseDB(db)
+
+}
+
+func TestUpdateOrderPaymentStatus(t *testing.T) {
+	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+	sellerId, err := createDummySeller(db)
+	assert.NoError(t, err)
+	productIds, err := createDummyProducts(db, sellerId)
+	buyerIds := createDummyBuyers(db)
+	assert.NoError(t, err)
+	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
+
+	//Test 1: Order status is completed
+	testErr := UpdateOrderPaymentStatus(db, orderIds[0], data.PaymentValidationRequestData{Status: "completed"})
+	assert.Empty(t, testErr)
+
+	//Test 2: Order id does not exist
+	testErr = UpdateOrderPaymentStatus(db, "wrong id", data.PaymentValidationRequestData{Status: "completed"})
+	assert.NotEmpty(t, testErr)
+
+	store.CloseDB(db)
+}
+
+func TestUpdateGuestOrderPaymentStatus(t *testing.T) {
+	db, err := store.SetupTestDB("../../.env")
+	assert.NoError(t, err)
+	sellerId, err := createDummySeller(db)
+	assert.NoError(t, err)
+	productIds, err := createDummyProducts(db, sellerId)
+	assert.NoError(t, err)
+	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@aucto.io")
+
+	//Test 1: Order status is completed
+	testErr := UpdateGuestOrderPaymentStatus(db, guestOrderIds[0], data.PaymentValidationRequestData{Status: "completed"})
+	assert.Empty(t, testErr)
+
+	//Test 2: Order id does not exist
+	testErr = UpdateGuestOrderPaymentStatus(db, "wrong id", data.PaymentValidationRequestData{Status: "completed"})
+	assert.NotEmpty(t, testErr)
+
+	store.CloseDB(db)
 }
 
 func createDummyBuyers(db *sql.DB) []string {
@@ -484,26 +527,29 @@ func createDummySeller(db *sql.DB) (string, error) {
 }
 
 func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
-	var dummyCreateProducts []data.ProductCreateData = []data.ProductCreateData{
+	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10000, Condition: 3, Quantity: 3},
-		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10000, Condition: 5, Quantity: 3},
-		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 10000, Condition: 4, Quantity: 3}}
+			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng",
+			Expansion: "Test"},
+		{Title: "Test1", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3, Language: "Jap",
+			Expansion: "Test"},
+		{Title: "Test2", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3, Language: "Eng",
+			Expansion: "Test2"}}
 	var productIds []string
 
 	for i := 0; i < len(dummyCreateProducts); i++ {
 		query := `INSERT INTO products(
-			title, seller_id, description, product_type, posted_date, price, condition, product_quantity) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING product_id;`
+			title, seller_id, description, product_type, language, expansion, posted_date, price, condition, product_quantity) 
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING product_id;`
 		postedDate := time.Now()
 		var productId string
 		err := db.QueryRowContext(
 			context.Background(), query,
 			dummyCreateProducts[i].Title, dummyCreateProducts[i].SellerId, dummyCreateProducts[i].Description,
-			dummyCreateProducts[i].ProductType, postedDate, dummyCreateProducts[i].Price, dummyCreateProducts[i].Condition,
-			dummyCreateProducts[i].Quantity).Scan(&productId)
+			dummyCreateProducts[i].ProductType, dummyCreateProducts[i].Language, dummyCreateProducts[i].Expansion, postedDate,
+			dummyCreateProducts[i].Price, dummyCreateProducts[i].Condition, dummyCreateProducts[i].Quantity).Scan(&productId)
 		if err != nil {
 			return nil, err
 		}

@@ -57,6 +57,14 @@ const (
 		  table_name = 'preorder_information'
 	);`
 
+	queryCheckTableProductDiscounts = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'product_discounts'
+	);`
+
 	queryCheckTableOrders = `SELECT EXISTS(
 		SELECT * 
 		FROM information_schema.tables 
@@ -234,6 +242,29 @@ func TestCreatePreorderInformationTable(t *testing.T) {
 	err = db.QueryRowContext(context.Background(), queryCheckTablePreorderInformation).Scan(&preorderInformationExists)
 	assert.NoError(t, err)
 	assert.Equal(t, true, preorderInformationExists)
+
+	CloseDB(db)
+}
+
+func TestCreateProductDiscountsTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating products table
+	createSellersTable(db)
+	createProductsTable(db)
+	err = createProductDiscountsTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary products tables exists
+	var productDiscountsExists bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableProductDiscounts).Scan(&productDiscountsExists)
+	assert.NoError(t, err)
+	assert.Equal(t, true, productDiscountsExists)
 
 	CloseDB(db)
 }
