@@ -529,24 +529,27 @@ func createDummySeller(db *sql.DB) (string, error) {
 func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng"},
+			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng",
+			Expansion: "Test"},
 		{Title: "Test1", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3, Language: "Jap"},
+			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3, Language: "Jap",
+			Expansion: "Test"},
 		{Title: "Test2", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3, Language: "Eng"}}
+			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3, Language: "Eng",
+			Expansion: "Test2"}}
 	var productIds []string
 
 	for i := 0; i < len(dummyCreateProducts); i++ {
 		query := `INSERT INTO products(
-			title, seller_id, description, product_type, language, posted_date, price, condition, product_quantity) 
-			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING product_id;`
+			title, seller_id, description, product_type, language, expansion, posted_date, price, condition, product_quantity) 
+			VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING product_id;`
 		postedDate := time.Now()
 		var productId string
 		err := db.QueryRowContext(
 			context.Background(), query,
 			dummyCreateProducts[i].Title, dummyCreateProducts[i].SellerId, dummyCreateProducts[i].Description,
-			dummyCreateProducts[i].ProductType, dummyCreateProducts[i].Language, postedDate, dummyCreateProducts[i].Price,
-			dummyCreateProducts[i].Condition, dummyCreateProducts[i].Quantity).Scan(&productId)
+			dummyCreateProducts[i].ProductType, dummyCreateProducts[i].Language, dummyCreateProducts[i].Expansion, postedDate,
+			dummyCreateProducts[i].Price, dummyCreateProducts[i].Condition, dummyCreateProducts[i].Quantity).Scan(&productId)
 		if err != nil {
 			return nil, err
 		}

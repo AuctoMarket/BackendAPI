@@ -142,6 +142,7 @@ func createProductsTable(db *sql.DB) error {
 		product_quantity INT NOT NULL,
 		sold_quantity INT DEFAULT 0 NOT NULL,
 		language VARCHAR DEFAULT 'ENG' NOT NULL,
+		expansion VARCHAR NOT NULL,
 		PRIMARY KEY(product_id));`
 
 	_, err := db.ExecContext(context.Background(), query)
