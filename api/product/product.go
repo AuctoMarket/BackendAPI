@@ -66,17 +66,30 @@ Creates a product given product information. If there is an issue with the input
 400 bad request.
 */
 func CreateProduct(db *sql.DB, product data.CreateProductData) (data.CreateProductResponseData, *utils.ErrorHandler) {
-	validationErr := validateCreateProduct(db, product)
-	if validationErr != nil {
+	err := validateCreateProduct(db, product)
+	var response data.CreateProductResponseData
+	if err != nil {
 		var response data.CreateProductResponseData
-		return response, validationErr
+		return response, err
 	}
 
 	if product.ProductType == "Buy-Now" {
-		return CreateBuyNow(db, product)
+		response, err = CreateBuyNow(db, product)
+
 	} else {
-		return CreatePreOrder(db, product)
+		response, err = CreatePreOrder(db, product)
 	}
+
+	if err != nil {
+		return response, err
+	}
+
+	if product.Discount > 0 {
+		err = addDiscount(db, response.ProductId, product.Discount)
+	}
+
+	return response, err
+
 }
 
 /*
@@ -131,10 +144,10 @@ func CreatePreOrder(db *sql.DB, product data.CreateProductData) (data.CreateProd
 	}
 
 	query = `INSERT INTO preorder_information(
-		product_id, order_by, releases_on, discount) 
-		VALUES ($1,$2::timestamptz,$3::timestamptz,$4);`
+		product_id, order_by, releases_on) 
+		VALUES ($1,$2::timestamptz,$3::timestamptz);`
 
-	_, err = db.ExecContext(context.Background(), query, response.ProductId, product.OrderBy, product.ReleasesOn, product.Discount)
+	_, err = db.ExecContext(context.Background(), query, response.ProductId, product.OrderBy, product.ReleasesOn)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -146,6 +159,25 @@ func CreatePreOrder(db *sql.DB, product data.CreateProductData) (data.CreateProd
 	response.PostedDate = postedDate.String()
 
 	return response, nil
+}
+
+/*
+Adds discount for a product in terms of the product amount in cents
+*/
+func addDiscount(db *sql.DB, productId string, discountAmount int) *utils.ErrorHandler {
+	query := `INSERT INTO product_discounts(
+		product_id, discount) 
+		VALUES ($1,$2);`
+
+	_, err := db.ExecContext(context.Background(), query, productId, discountAmount)
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Inserting Product Discounts rows")
+		return errResp
+	}
+
+	return nil
+
 }
 
 /*
@@ -170,6 +202,8 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 
 	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
 	query = AddProductSorting(query, request.SortBy)
+	query = AddPagesProduct(query, request.Anchor, request.Limit)
+
 	rows, err := db.QueryContext(context.Background(), query)
 
 	defer rows.Close()
@@ -243,9 +277,9 @@ Adds the sorting to the query to determine the order of the products
 */
 func AddProductSorting(query string, sortBy string) string {
 	if sortBy == "price-low" {
-		query += ` ORDER BY products.price ASC, preorder_information.discount DESC`
+		query += ` ORDER BY products.price ASC, product_discounts.discount DESC`
 	} else if sortBy == "price-high" {
-		query += ` ORDER BY products.price DESC, preorder_information.discount ASC`
+		query += ` ORDER BY products.price DESC, product_discounts.discount ASC`
 	} else if sortBy == "name-asc" {
 		query += ` ORDER BY products.title ASC`
 	} else if sortBy == "name-desc" {
@@ -327,7 +361,8 @@ func AddProductFiltering(query string, minPrice int, maxPrice int, language stri
 /*
 Adds pages to the query to allow for pagination
 */
-func AddPagesProduct(query string, page int) string {
+func AddPagesProduct(query string, anchor int, limit int) string {
+	query += ` OFFSET ` + strconv.Itoa(anchor) + ` LIMIT ` + strconv.Itoa(limit)
 	return query
 }
 
@@ -355,6 +390,11 @@ func validateCreateProduct(db *sql.DB, product data.CreateProductData) *utils.Er
 	if product.Condition < 0 || product.Condition > 5 {
 		utils.LogMessage("Condition is less than 0 or greater than 5")
 		return utils.BadRequestError("Bad condition data")
+	}
+
+	if product.Discount < 0 {
+		utils.LogMessage("Discount is less than 0")
+		return utils.BadRequestError("Bad discount data")
 	}
 
 	if product.Language != "Eng" && product.Language != "Jap" {

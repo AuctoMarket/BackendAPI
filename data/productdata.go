@@ -74,6 +74,8 @@ type GetProductListRequestData struct {
 	ProductType string `json:"product_type"`
 	Language    string `json:"language"`
 	Expansion   string `json:"expansion"`
+	Anchor      int    `json:"anchor"`
+	Limit       int    `json:"limit"`
 }
 
 type GetProductListResponseData struct {
@@ -101,7 +103,7 @@ func (request *CreateProductData) ProductCreateResponseFromRequest(response *Cre
 }
 
 func (request *GetProductListRequestData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
-	maxPrice string, expansion string) *utils.ErrorHandler {
+	maxPrice string, expansion string, anchor string, limit string) *utils.ErrorHandler {
 	request.SortBy = sortBy
 	request.ProductType = productType
 	request.Language = language
@@ -122,6 +124,24 @@ func (request *GetProductListRequestData) GetProductListDataRequestFromParams(so
 		}
 
 		request.MaxPrice = max
+	}
+
+	if anchor != "None" {
+		anch, err := strconv.Atoi(anchor)
+		if err != nil || anch < 0 {
+			return utils.BadRequestError("Bad anchor param")
+		}
+
+		request.Anchor = anch
+	}
+
+	if limit != "None" {
+		lim, err := strconv.Atoi(limit)
+		if err != nil || lim < 0 {
+			return utils.BadRequestError("Bad limit param")
+		}
+
+		request.Limit = lim
 	}
 
 	request.Expansion = expansion

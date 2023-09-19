@@ -132,6 +132,8 @@ func handleCreateProductImages(c *gin.Context) {
 // @Param 		 expansion query string false "Get products filtered by the expansion of the product. Default is all expansions"
 // @Param 		 min_price query int false "Minimum price of the products, will fetch products of greater than or equal to value than minimum price"
 // @Param 		 max_price query int false "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price"
+// @Param 		 anchor query int true "Indicates the offset for the products"
+// @Param 		 limit query int true "Indicates the number of products fetched"
 // @Success      200  {object}  data.GetProductListResponseData
 // @Failure      500  {object}  data.Message
 // @Router       /products  [get]
@@ -143,8 +145,10 @@ func handleGetProductList(c *gin.Context) {
 	productType := c.DefaultQuery("product_type", "None")
 	language := c.DefaultQuery("language", "None")
 	expansion := c.DefaultQuery("expansion", "None")
+	anchor := c.DefaultQuery("anchor", "None")
+	limit := c.DefaultQuery("limit", "None")
 
-	err := request.GetProductListDataRequestFromParams(sortBy, productType, language, minPrice, maxPrice, expansion)
+	err := request.GetProductListDataRequestFromParams(sortBy, productType, language, minPrice, maxPrice, expansion, anchor, limit)
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}
