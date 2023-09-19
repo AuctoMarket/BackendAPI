@@ -156,6 +156,18 @@ definitions:
     - postal_code
     - product_id
     type: object
+  data.GetProductListResponseData:
+    properties:
+      product_count:
+        type: integer
+      products:
+        items:
+          $ref: '#/definitions/data.GetProductResponseData'
+        type: array
+    required:
+    - product_count
+    - products
+    type: object
   data.GetProductResponseData:
     properties:
       condition:
@@ -646,15 +658,23 @@ paths:
         in: query
         name: max_price
         type: integer
+      - description: Indicates the offset for the products
+        in: query
+        name: anchor
+        required: true
+        type: integer
+      - description: Indicates the number of products fetched
+        in: query
+        name: limit
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/data.GetProductResponseData'
-            type: array
+            $ref: '#/definitions/data.GetProductListResponseData'
         "500":
           description: Internal Server Error
           schema:

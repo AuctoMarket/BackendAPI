@@ -550,16 +550,27 @@ const docTemplate = `{
                         "description": "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price",
                         "name": "max_price",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Indicates the offset for the products",
+                        "name": "anchor",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Indicates the number of products fetched",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/data.GetProductResponseData"
-                            }
+                            "$ref": "#/definitions/data.GetProductListResponseData"
                         }
                     },
                     "500": {
@@ -1158,6 +1169,24 @@ const docTemplate = `{
                 },
                 "telegram_handle": {
                     "type": "string"
+                }
+            }
+        },
+        "data.GetProductListResponseData": {
+            "type": "object",
+            "required": [
+                "product_count",
+                "products"
+            ],
+            "properties": {
+                "product_count": {
+                    "type": "integer"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.GetProductResponseData"
+                    }
                 }
             }
         },
