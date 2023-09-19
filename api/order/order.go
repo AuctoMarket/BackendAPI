@@ -175,7 +175,9 @@ func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData)
 
 	var price int
 	var availableStock int
-	query := `SELECT price, (product_quantity - sold_quantity) FROM products WHERE product_id = $1;`
+	query := `SELECT (price - COALESCE(product_discounts.discount, 0)), (product_quantity - sold_quantity) 
+		FROM (products LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)  
+			WHERE products.product_id = $1;`
 	err := db.QueryRowContext(context.Background(), query, request.ProductId).Scan(&price, &availableStock)
 
 	if err != nil {
@@ -192,6 +194,11 @@ func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData)
 	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
 		utils.LogMessage("Payment Type is invalid")
 		return utils.BadRequestError("Bad payment_type data")
+	}
+
+	if price != request.Fees.ProductPrice {
+		utils.LogMessage("Product Price is invalid")
+		return utils.BadRequestError("Bad product_price data")
 	}
 
 	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {
@@ -219,7 +226,9 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 
 	var price int
 	var availableStock int
-	query := `SELECT price, (product_quantity - sold_quantity) FROM products WHERE product_id = $1;`
+	query := `SELECT (price - COALESCE(product_discounts.discount, 0)), (product_quantity - sold_quantity) 
+		FROM (products LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)  
+			WHERE products.product_id = $1;`
 	err := db.QueryRowContext(context.Background(), query, request.ProductId).Scan(&price, &availableStock)
 
 	if err != nil {
@@ -236,6 +245,11 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
 		utils.LogMessage("Payment Type is invalid")
 		return utils.BadRequestError("Bad payment_type data")
+	}
+
+	if price != request.Fees.ProductPrice {
+		utils.LogMessage("Product Price is invalid")
+		return utils.BadRequestError("Bad product_price data")
 	}
 
 	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {

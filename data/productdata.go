@@ -67,13 +67,20 @@ type CreateProductImageData struct {
 	Images    []string `json:"images" binding:"required"`
 }
 
-type GetProductListData struct {
+type GetProductListRequestData struct {
 	SortBy      string `json:"sort"`
 	MinPrice    int    `json:"min_price"`
 	MaxPrice    int    `json:"max_price"`
 	ProductType string `json:"product_type"`
 	Language    string `json:"language"`
 	Expansion   string `json:"expansion"`
+	Anchor      int    `json:"anchor"`
+	Limit       int    `json:"limit"`
+}
+
+type GetProductListResponseData struct {
+	ProductCount int                      `json:"product_count" binding:"required"`
+	Products     []GetProductResponseData `json:"products" binding:"required"`
 }
 
 /*
@@ -95,8 +102,8 @@ func (request *CreateProductData) ProductCreateResponseFromRequest(response *Cre
 	response.Expansion = request.Expansion
 }
 
-func (request *GetProductListData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
-	maxPrice string, expansion string) *utils.ErrorHandler {
+func (request *GetProductListRequestData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
+	maxPrice string, expansion string, anchor string, limit string) *utils.ErrorHandler {
 	request.SortBy = sortBy
 	request.ProductType = productType
 	request.Language = language
@@ -117,6 +124,24 @@ func (request *GetProductListData) GetProductListDataRequestFromParams(sortBy st
 		}
 
 		request.MaxPrice = max
+	}
+
+	if anchor != "None" {
+		anch, err := strconv.Atoi(anchor)
+		if err != nil || anch < 0 {
+			return utils.BadRequestError("Bad anchor param")
+		}
+
+		request.Anchor = anch
+	}
+
+	if limit != "None" {
+		lim, err := strconv.Atoi(limit)
+		if err != nil || lim < 0 {
+			return utils.BadRequestError("Bad limit param")
+		}
+
+		request.Limit = lim
 	}
 
 	request.Expansion = expansion

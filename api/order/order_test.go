@@ -21,7 +21,7 @@ func TestDoesOrderExist(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
+	orderIds, err := createDummyOrders(db, productIds, buyerIds[0])
 	assert.NoError(t, err)
 
 	//Test 1: OrderId exists
@@ -46,7 +46,7 @@ func TestDoesGuestOrderExist(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	orderIds, err := createDummyGuestOrders(db, productIds[0], "test@aucto.io")
+	orderIds, err := createDummyGuestOrders(db, productIds, "test@aucto.io")
 	assert.NoError(t, err)
 
 	//Test 1: OrderId exists
@@ -110,78 +110,111 @@ func TestValidateCreateGuestOrderRequest(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
 
-	dummyGuestOrderRequests := []data.CreateGuestOrderRequestData{
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[1], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
-				TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 10,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 100400, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: -1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 0, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: "wrong_id", Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
-				TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-	}
-
 	//Test 1: No errors, no fees
-	valErr := validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[0])
+	order := data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr := validateCreateGuestOrderRequest(db, order)
 	assert.Empty(t, valErr)
 
 	//Test 2: No errors, delivery fee
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[1])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[1], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+			TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.Empty(t, valErr)
 
 	//Test 3: To high an order quantity
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[2])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 10,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 100000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 4: To low an order quantity
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[3])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: -1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 100000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 5:  Product Id does not exist
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[4])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: "wrong_id", Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 6: Wrong delivery type
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[5])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 7: Wrong payment type
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[6])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 8: Wrong amount
-	valErr = validateCreateGuestOrderRequest(db, dummyGuestOrderRequests[7])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+			TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
+
+	//Test 9: Correct amount Card Payment
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[1], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+			TotalPaid: 10200, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
+	assert.Empty(t, valErr)
+
+	//Test 10: Incorrect amount Discount
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[4], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
+	assert.NotEmpty(t, valErr)
+	assert.Equal(t, 400, valErr.ErrorCode())
+
+	//Test 11: Correct Amount Discount
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[4], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateGuestOrderRequest(db, order)
+	assert.Empty(t, valErr)
 
 	store.CloseDB(db)
 }
@@ -195,85 +228,119 @@ func TestValidateCreateOrderRequest(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
 
-	dummyOrderRequests := []data.CreateOrderRequestData{
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456", TelegramHandle: "test"},
-		{ProductId: productIds[1], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
-				TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 10,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 100400, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456", TelegramHandle: "test"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: -1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 0, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: "wrong_id", BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
-				TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: "wrong id", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
-			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-	}
-
 	//Test 1: No errors, no fees
-	valErr := validateCreateOrderRequest(db, dummyOrderRequests[0])
+	order := data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr := validateCreateOrderRequest(db, order)
 	assert.Empty(t, valErr)
 
 	//Test 2: No errors, delivery fee
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[1])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[1], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "standard_delivery",
+			TotalPaid: 10400, PaymentFee: 0, DeliveryFee: 400, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.Empty(t, valErr)
 
 	//Test 3: To high an order quantity
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[2])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 10,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 100000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 4: To low an order quantity
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[3])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: -1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 100000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 5:  Product Id does not exist
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[4])
+	order = data.CreateOrderRequestData{
+		ProductId: "wrong_id", BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 6: Wrong delivery type
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[5])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self-collect",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 7: Wrong payment type
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[6])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card-payment", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
 	//Test 8: Wrong amount
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[7])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+			TotalPaid: 12000, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
-	//Test 9: Buyer id does not exist
-	valErr = validateCreateOrderRequest(db, dummyOrderRequests[8])
+	//Test 9: Correct amount Card Payment
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[1], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "card", DeliveryType: "self_collection",
+			TotalPaid: 10200, PaymentFee: 200, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
+	assert.Empty(t, valErr)
+
+	//Test 10: Incorrect amount Discount
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
+	assert.NotEmpty(t, valErr)
+	assert.Equal(t, 400, valErr.ErrorCode())
+
+	//Test 11: Correct Amount Discount
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
+	assert.Empty(t, valErr)
+
+	//Test 12: Buyer Id does not exist
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: "wrong id", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	valErr = validateCreateOrderRequest(db, order)
 	assert.NotEmpty(t, valErr)
 	assert.Equal(t, 400, valErr.ErrorCode())
 
@@ -287,7 +354,7 @@ func TestGetGuestOrderById(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@aucto.io")
+	guestOrderIds, err := createDummyGuestOrders(db, productIds, "test@aucto.io")
 
 	//Test 1: Order Id exists
 	guestOrder, getErr := GetGuestOrderById(db, guestOrderIds[0])
@@ -313,7 +380,7 @@ func TestGetOrderById(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	buyerIds := createDummyBuyers(db)
 	assert.NoError(t, err)
-	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
+	orderIds, err := createDummyOrders(db, productIds, buyerIds[0])
 
 	//Test 1: Order Id exists
 	order, getErr := GetOrderById(db, orderIds[0])
@@ -339,56 +406,76 @@ func TestGuestCreateOrder(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
 
-	dummyGuestOrders := []data.CreateGuestOrderRequestData{
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_qr", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-	}
-
 	//Test 1: No errors in guest order
-	guestOrder, orderErr := CreateGuestOrder(db, dummyGuestOrders[0])
+	order := data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr := CreateGuestOrder(db, order)
 	assert.Empty(t, orderErr)
-	assert.NotEmpty(t, guestOrder)
+	assert.NotEmpty(t, response)
 
 	//Test 2: No errors in guest order
-	guestOrder, orderErr = CreateGuestOrder(db, dummyGuestOrders[1])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[1], Email: "test@aucto.io", OrderQuantity: 2,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 20000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
 	assert.Empty(t, orderErr)
-	assert.NotEmpty(t, guestOrder)
+	assert.NotEmpty(t, response)
 
 	//Test 3: Incorrect amount
-	guestOrder, orderErr = CreateGuestOrder(db, dummyGuestOrders[2])
+	order = data.CreateGuestOrderRequestData{ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
 	//Test 4: Incorrect Payment Type
-	guestOrder, orderErr = CreateGuestOrder(db, dummyGuestOrders[3])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_qr", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
 	//Test 5: Incorrect Delivery Type
-	guestOrder, orderErr = CreateGuestOrder(db, dummyGuestOrders[4])
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[0], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
-	store.CloseDB(db)
+	//Test 6: Incorrect amount Discount
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[4], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
+	assert.NotEmpty(t, orderErr)
+	assert.Equal(t, 400, orderErr.ErrorCode())
 
+	//Test 7: Correct Amount Discount
+	order = data.CreateGuestOrderRequestData{
+		ProductId: productIds[4], Email: "test@aucto.io", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateGuestOrder(db, order)
+	assert.Empty(t, orderErr)
+	assert.NotEmpty(t, response)
+
+	store.CloseDB(db)
 }
 
 func TestCreateOrder(t *testing.T) {
@@ -396,64 +483,86 @@ func TestCreateOrder(t *testing.T) {
 	assert.NoError(t, err)
 	sellerId, err := createDummySeller(db)
 	assert.NoError(t, err)
+	buyerIds := createDummyBuyers(db)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	buyerIds := createDummyBuyers(db)
 
-	dummyOrders := []data.CreateOrderRequestData{
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow-qr", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-		{ProductId: productIds[0], BuyerId: "wrong_id", OrderQuantity: 1,
-			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-			AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
-	}
-
-	//Test 1: No errors in guest order
-	guestOrder, orderErr := CreateOrder(db, dummyOrders[0])
+	//Test 1: No errors in order
+	order := data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr := CreateOrder(db, order)
 	assert.Empty(t, orderErr)
-	assert.NotEmpty(t, guestOrder)
+	assert.NotEmpty(t, response)
 
-	//Test 2: No errors in guest order
-	guestOrder, orderErr = CreateOrder(db, dummyOrders[1])
+	//Test 2: No errors in order
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[1], BuyerId: buyerIds[0], OrderQuantity: 2,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 20000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
 	assert.Empty(t, orderErr)
-	assert.NotEmpty(t, guestOrder)
+	assert.NotEmpty(t, response)
 
 	//Test 3: Incorrect amount
-	guestOrder, orderErr = CreateOrder(db, dummyOrders[2])
+	order = data.CreateOrderRequestData{ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10003, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
 	//Test 4: Incorrect Payment Type
-	guestOrder, orderErr = CreateOrder(db, dummyOrders[3])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_qr", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
 	//Test 5: Incorrect Delivery Type
-	guestOrder, orderErr = CreateOrder(db, dummyOrders[4])
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[0], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
+		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
-	//Test 6: Buyer Id does not exist
-	guestOrder, orderErr = CreateOrder(db, dummyOrders[5])
+	//Test 6: Incorrect amount Discount
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
+	assert.NotEmpty(t, orderErr)
+	assert.Equal(t, 400, orderErr.ErrorCode())
+
+	//Test 7: Correct Amount Discount
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: buyerIds[0], OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
+	assert.Empty(t, orderErr)
+	assert.NotEmpty(t, response)
+
+	//Test 8: Buyer Id does not exist
+	order = data.CreateOrderRequestData{
+		ProductId: productIds[4], BuyerId: "wrong id", OrderQuantity: 1,
+		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+			TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+		PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}
+	response, orderErr = CreateOrder(db, order)
 	assert.NotEmpty(t, orderErr)
 	assert.Equal(t, 400, orderErr.ErrorCode())
 
@@ -469,7 +578,7 @@ func TestUpdateOrderPaymentStatus(t *testing.T) {
 	productIds, err := createDummyProducts(db, sellerId)
 	buyerIds := createDummyBuyers(db)
 	assert.NoError(t, err)
-	orderIds, err := createDummyOrders(db, productIds[0], buyerIds[0])
+	orderIds, err := createDummyOrders(db, productIds, buyerIds[0])
 
 	//Test 1: Order status is completed
 	testErr := UpdateOrderPaymentStatus(db, orderIds[0], data.PaymentValidationRequestData{Status: "completed"})
@@ -489,7 +598,7 @@ func TestUpdateGuestOrderPaymentStatus(t *testing.T) {
 	assert.NoError(t, err)
 	productIds, err := createDummyProducts(db, sellerId)
 	assert.NoError(t, err)
-	guestOrderIds, err := createDummyGuestOrders(db, productIds[0], "test@aucto.io")
+	guestOrderIds, err := createDummyGuestOrders(db, productIds, "test@aucto.io")
 
 	//Test 1: Order status is completed
 	testErr := UpdateGuestOrderPaymentStatus(db, guestOrderIds[0], data.PaymentValidationRequestData{Status: "completed"})
@@ -528,15 +637,26 @@ func createDummySeller(db *sql.DB) (string, error) {
 
 func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 	var dummyCreateProducts []data.CreateProductData = []data.CreateProductData{
+		//Product 1: Test Buy-Now Product English
 		{Title: "Test", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 10, Condition: 3, Quantity: 3, Language: "Eng",
+			ProductType: "Buy-Now", Price: 10000, Condition: 3, Quantity: 3, Language: "Eng",
 			Expansion: "Test"},
+		//Product 2: Test Buy-Now Product Japanese
 		{Title: "Test1", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Buy-Now", Price: 100, Condition: 5, Quantity: 3, Language: "Jap",
+			ProductType: "Buy-Now", Price: 10000, Condition: 5, Quantity: 3, Language: "Jap",
 			Expansion: "Test"},
+		//Product 3: Test Buy-Now Product expansion 'Test2'
 		{Title: "Test2", SellerId: sellerId, Description: "This is a test description",
-			ProductType: "Pre-Order", Price: 90, Condition: 4, Quantity: 3, Language: "Eng",
-			Expansion: "Test2"}}
+			ProductType: "Buy-Now", Price: 10000, Condition: 4, Quantity: 3, Language: "Eng",
+			Expansion: "Test2"},
+		//Product 4: Test Pre-Order Product
+		{Title: "Test3", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Pre-Order", Price: 10000, Condition: 4, Quantity: 3, Language: "Eng",
+			Expansion: "Test"},
+		//Product 5: Test Buy-Now Product with discount
+		{Title: "Test3", SellerId: sellerId, Description: "This is a test description",
+			ProductType: "Buy-Now", Price: 10000, Condition: 4, Quantity: 3, Language: "Eng",
+			Expansion: "Test", Discount: 1000}}
 	var productIds []string
 
 	for i := 0; i < len(dummyCreateProducts); i++ {
@@ -556,18 +676,34 @@ func createDummyProducts(db *sql.DB, sellerId string) ([]string, error) {
 		productIds = append(productIds, productId)
 	}
 
+	query := `INSERT INTO product_discounts(product_id, discount) VALUES ($1,$2);`
+	_, err := db.ExecContext(context.Background(), query, productIds[4], dummyCreateProducts[4].Discount)
+	if err != nil {
+		return nil, err
+	}
+
 	return productIds, nil
 }
 
-func createDummyOrders(db *sql.DB, productId string, buyerId string) ([]string, error) {
+func createDummyOrders(db *sql.DB, products []string, buyerId string) ([]string, error) {
 	var orderIds []string
-	dummyOrders := []data.CreateOrderRequestData{{ProductId: productId, BuyerId: buyerId, OrderQuantity: 1,
-		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}, {ProductId: productId, BuyerId: buyerId, OrderQuantity: 1,
-		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-		AddressLine1: "Test", PostalCode: "123456"}}
+	dummyOrders := []data.CreateOrderRequestData{
+		//Order 1: Basic Order with Paynow_online, Self-Collection
+		{ProductId: products[0], BuyerId: buyerId, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+		//Order 2: Basic Order with Paynow_online, Self-Collection and discount
+		{ProductId: products[4], BuyerId: buyerId, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+		//Order 3: Basic Pre-Order with Paynow_online, Self-Collection
+		{ProductId: products[3], BuyerId: buyerId, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+	}
 	//SQL Query to insert new order
 	query := `INSERT INTO orders(
 		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
@@ -589,22 +725,32 @@ func createDummyOrders(db *sql.DB, productId string, buyerId string) ([]string, 
 		if err != nil {
 			return nil, err
 		}
-
 		orderIds = append(orderIds, orderId)
 	}
 
 	return orderIds, nil
 }
 
-func createDummyGuestOrders(db *sql.DB, productId string, email string) ([]string, error) {
+func createDummyGuestOrders(db *sql.DB, products []string, email string) ([]string, error) {
 	var guestOrderIds []string
-	dummyOrders := []data.CreateGuestOrderRequestData{{ProductId: productId, Email: email, OrderQuantity: 1,
-		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-		AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"}, {ProductId: productId, Email: email, OrderQuantity: 1,
-		Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
-			TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000}, PhoneNumber: "12345678",
-		AddressLine1: "Test", PostalCode: "123456"}}
+	dummyOrders := []data.CreateGuestOrderRequestData{
+		//Order 1: Basic Order with Paynow_online, Self-Collection
+		{ProductId: products[0], Email: email, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+		//Order 2: Basic Order with Paynow_online, Self-Collection and discount
+		{ProductId: products[4], Email: email, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 9000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 9000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+		//Order 3: Basic Pre-Order with Paynow_online, Self-Collection
+		{ProductId: products[3], Email: email, OrderQuantity: 1,
+			Fees: data.OrderFees{PaymentType: "paynow_online", DeliveryType: "self_collection",
+				TotalPaid: 10000, PaymentFee: 0, DeliveryFee: 0, SmallOrderFee: 0, ProductPrice: 10000},
+			PhoneNumber: "12345678", AddressLine1: "Test", AddressLine2: "Test", PostalCode: "123456"},
+	}
+
 	//SQL Query to insert new order
 	query := `INSERT INTO guest_orders(
 		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
