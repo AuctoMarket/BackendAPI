@@ -386,80 +386,80 @@ func TestGetBuyNowList(t *testing.T) {
 	assert.NoError(t, productImageErr)
 
 	//Test 1: Get Product List default options
-	req := data.GetProductListData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req := data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err := GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 3, len(res))
+	assert.Equal(t, 3, res.ProductCount)
 
 	//Test 2: Get Product List Sorted by Price (Low-High)
-	req = data.GetProductListData{SortBy: "price-low", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "price-low", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, 10, res[0].Price)
-	assert.Equal(t, 90, res[1].Price)
+	assert.Equal(t, 3, res.ProductCount)
+	assert.Equal(t, 10, res.Products[0].Price)
+	assert.Equal(t, 90, res.Products[1].Price)
 
 	//Test 3: Get Product List Sorted by Price (High-Low)
-	req = data.GetProductListData{SortBy: "price-high", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "price-high", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, 100, res[0].Price)
-	assert.Equal(t, 90, res[1].Price)
+	assert.Equal(t, 3, res.ProductCount)
+	assert.Equal(t, 100, res.Products[0].Price)
+	assert.Equal(t, 90, res.Products[1].Price)
 
 	//Test 4: Get Product List Sorted by Name (A-Z)
-	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, "Test", res[0].Title)
-	assert.Equal(t, "Test1", res[1].Title)
+	assert.Equal(t, 3, res.ProductCount)
+	assert.Equal(t, "Test", res.Products[0].Title)
+	assert.Equal(t, "Test1", res.Products[1].Title)
 
 	//Test 4: Get Product List Sorted by Name (Z-A)
-	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, "Test2", res[0].Title)
-	assert.Equal(t, "Test1", res[1].Title)
+	assert.Equal(t, 3, res.ProductCount)
+	assert.Equal(t, "Test2", res.Products[0].Title)
+	assert.Equal(t, "Test1", res.Products[1].Title)
 
 	//Test 5: Get Product List Buy-Now
-	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Buy-Now", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Buy-Now", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 2, len(res))
-	assert.Equal(t, "Test1", res[0].Title)
-	assert.Equal(t, "Test", res[1].Title)
+	assert.Equal(t, 2, res.ProductCount)
+	assert.Equal(t, "Test1", res.Products[0].Title)
+	assert.Equal(t, "Test", res.Products[1].Title)
 
 	//Test 6: Get Product List Pre-Order
-	req = data.GetProductListData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Pre-Order", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Pre-Order", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 1, len(res))
-	assert.Equal(t, "Test2", res[0].Title)
+	assert.Equal(t, 1, res.ProductCount)
+	assert.Equal(t, "Test2", res.Products[0].Title)
 
 	//Test 7: Get Product Min Price 20
-	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 20, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 20, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 2, len(res))
-	assert.Equal(t, "Test1", res[0].Title)
-	assert.Equal(t, "Test2", res[1].Title)
+	assert.Equal(t, 2, res.ProductCount)
+	assert.Equal(t, "Test1", res.Products[0].Title)
+	assert.Equal(t, "Test2", res.Products[1].Title)
 
 	//Test 8: Get Product Max price 40
-	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 40, ProductType: "None", Language: "None", Expansion: "None"}
+	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 40, ProductType: "None", Language: "None", Expansion: "None"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 1, len(res))
-	assert.Equal(t, "Test", res[0].Title)
+	assert.Equal(t, 1, res.ProductCount)
+	assert.Equal(t, "Test", res.Products[0].Title)
 
 	//Test 9:: Get Product expansion Test
-	req = data.GetProductListData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "Test"}
+	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None", Language: "None", Expansion: "Test"}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
-	assert.Equal(t, 2, len(res))
-	assert.Equal(t, "Test", res[0].Title)
-	assert.Equal(t, "Test1", res[1].Title)
+	assert.Equal(t, 2, res.ProductCount)
+	assert.Equal(t, "Test", res.Products[0].Title)
+	assert.Equal(t, "Test1", res.Products[1].Title)
 	store.CloseDB(db)
 
 }

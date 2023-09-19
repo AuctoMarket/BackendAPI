@@ -24,11 +24,12 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 	query := `SELECT products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
 		product_type, language, expansion, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
 		COALESCE(preorder_information.order_by::TEXT, ''), COALESCE(preorder_information.releases_on::TEXT, ''), 
-		COALESCE(preorder_information.discount, 0) 
-		FROM (((
+		COALESCE(product_discounts.discount, 0) 
+		FROM ((((
 			products INNER JOIN product_images ON products.product_id = product_images.product_id)
 				INNER JOIN sellers ON products.seller_id = sellers.seller_id)
 					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
+						LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)
 		WHERE products.product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()
@@ -152,18 +153,20 @@ Gets a list of products specified by the parameters. If no such products exist r
 returns a 400 bad request
 */
 
-func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProductResponseData, *utils.ErrorHandler) {
-	var response []data.GetProductResponseData
+func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.GetProductListResponseData, *utils.ErrorHandler) {
+	var response data.GetProductListResponseData
+	var products []data.GetProductResponseData
 	productMap := make(map[string]int)
 
 	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
 	product_type, language, expansion, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
 	COALESCE(preorder_information.order_by::TEXT, ''),COALESCE(preorder_information.releases_on::TEXT, ''), 
-	COALESCE(preorder_information.discount, 0) 
-	FROM (((
+	COALESCE(product_discounts.discount, 0) 
+	FROM ((((
 		products INNER JOIN product_images ON products.product_id = product_images.product_id)
 			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
-				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)`
+				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
+					LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)`
 
 	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
 	query = AddProductSorting(query, request.SortBy)
@@ -202,21 +205,37 @@ func GetProductList(db *sql.DB, request data.GetProductListData) ([]data.GetProd
 		// If product is already in response array, add the image to that product, otherwise add the entire product
 		if productMap[product.ProductId] == 0 {
 			product.ProductImages = append(product.ProductImages, data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
-			response = append(response, product)
-			index := len(response)
+			products = append(products, product)
+			index := len(products)
 			productMap[product.ProductId] = index
 		} else {
-			p := response[productMap[product.ProductId]-1]
+			p := products[productMap[product.ProductId]-1]
 			p.ProductImages = append(
 				p.ProductImages,
 				data.ProductImageData{ProductImagePath: imagePath, ProductImageNo: imageNo})
-			response[productMap[product.ProductId]-1] = p
+			products[productMap[product.ProductId]-1] = p
 
 		}
 
 	}
 
+	response.Products = products
+	response.ProductCount = getProductCount(db, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
+
 	return response, nil
+}
+
+/*
+Gets the total number of products after applying filters
+*/
+func getProductCount(db *sql.DB, minPrice int, maxPrice int, language string, productType string, expansion string) int {
+	var count int
+	query := `SELECT COUNT(*) FROM products`
+	query = AddProductFiltering(query, minPrice, maxPrice, language, productType, expansion)
+
+	db.QueryRowContext(context.Background(), query).Scan(&count)
+
+	return count
 }
 
 /*

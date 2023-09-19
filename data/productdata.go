@@ -67,13 +67,18 @@ type CreateProductImageData struct {
 	Images    []string `json:"images" binding:"required"`
 }
 
-type GetProductListData struct {
+type GetProductListRequestData struct {
 	SortBy      string `json:"sort"`
 	MinPrice    int    `json:"min_price"`
 	MaxPrice    int    `json:"max_price"`
 	ProductType string `json:"product_type"`
 	Language    string `json:"language"`
 	Expansion   string `json:"expansion"`
+}
+
+type GetProductListResponseData struct {
+	ProductCount int                      `json:"product_count" binding:"required"`
+	Products     []GetProductResponseData `json:"products" binding:"required"`
 }
 
 /*
@@ -95,7 +100,7 @@ func (request *CreateProductData) ProductCreateResponseFromRequest(response *Cre
 	response.Expansion = request.Expansion
 }
 
-func (request *GetProductListData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
+func (request *GetProductListRequestData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
 	maxPrice string, expansion string) *utils.ErrorHandler {
 	request.SortBy = sortBy
 	request.ProductType = productType
