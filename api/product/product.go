@@ -6,6 +6,7 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -21,7 +22,7 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 	if !productExists {
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
-	query := `SELECT products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
+	query := `SELECT products.seller_id, sellers.seller_name, title, description, condition, price, 
 		product_type, language, expansion, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
 		COALESCE(preorder_information.order_by::TEXT, ''), COALESCE(preorder_information.releases_on::TEXT, ''), 
 		COALESCE(product_discounts.discount, 0) 
@@ -38,7 +39,7 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 		var image string
 		var imageNo int
 		rows.Scan(
-			&response.SellerInfo.SellerId, &response.SellerInfo.SellerName, &response.SellerInfo.Followers,
+			&response.SellerInfo.SellerId, &response.SellerInfo.SellerName,
 			&response.Title, &response.Description, &response.Condition, &response.Price,
 			&response.ProductType, &response.Language, &response.Expansion, &response.PostedDate, &response.Quantity,
 			&response.SoldQuantity, &image, &imageNo, &response.OrderBy, &response.ReleasesOn, &response.Discount)
@@ -190,19 +191,57 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 	var products []data.GetProductResponseData
 	productMap := make(map[string]int)
 
-	query := `SELECT products.product_id, products.seller_id, sellers.seller_name, sellers.followers, title, description, condition, price, 
-	product_type, language, expansion, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
-	COALESCE(preorder_information.order_by::TEXT, ''),COALESCE(preorder_information.releases_on::TEXT, ''), 
-	COALESCE(product_discounts.discount, 0) 
-	FROM ((((
-		products INNER JOIN product_images ON products.product_id = product_images.product_id)
-			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
-				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
-					LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)`
+	query := `
+	SELECT
+		products.product_id,
+		seller_id,
+		seller_name,
+		title,
+		description,
+		condition,
+		price,
+		product_type,
+		language,
+		expansion,
+		posted_date::TEXT,
+		product_quantity,
+		sold_quantity,
+		product_image_id,
+		image_no,
+		order_by,
+		releases_on,
+		discount
+	FROM
+		product_images
+		RIGHT JOIN (
+			SELECT
+				products.product_id,
+				sellers.seller_id,
+				seller_name,
+				title,
+				description,
+				condition,
+				price,
+				product_type,
+				language,
+				expansion,
+				posted_date::TEXT,
+				product_quantity,
+				sold_quantity,
+				COALESCE(order_by::TEXT, '') AS order_by,
+				COALESCE(releases_on::TEXT, '') AS releases_on,
+				COALESCE(discount, 0) AS discount
+			FROM (((products
+						INNER JOIN sellers ON products.seller_id = sellers.seller_id)
+					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
+				LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)`
 
 	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
-	query = AddProductSorting(query, request.SortBy)
 	query = AddPagesProduct(query, request.Anchor, request.Limit)
+	query += `) products ON products.product_id = product_images.product_id`
+	query = AddProductSorting(query, request.SortBy)
+
+	fmt.Println(query)
 
 	rows, err := db.QueryContext(context.Background(), query)
 
@@ -220,8 +259,8 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 		var imageNo int
 		// scan the product
 		err = rows.Scan(&product.ProductId, &product.SellerInfo.SellerId, &product.SellerInfo.SellerName,
-			&product.SellerInfo.Followers, &product.Title, &product.Description, &product.Condition,
-			&product.Price, &product.ProductType, &product.Language, &product.Expansion, &product.PostedDate, &product.Quantity,
+			&product.Title, &product.Description, &product.Condition, &product.Price, &product.ProductType,
+			&product.Language, &product.Expansion, &product.PostedDate, &product.Quantity,
 			&product.SoldQuantity, &imagePath, &imageNo, &product.OrderBy, &product.ReleasesOn, &product.Discount)
 
 		if err != nil {
@@ -277,9 +316,9 @@ Adds the sorting to the query to determine the order of the products
 */
 func AddProductSorting(query string, sortBy string) string {
 	if sortBy == "price-low" {
-		query += ` ORDER BY products.price ASC, product_discounts.discount DESC`
+		query += ` ORDER BY products.price ASC, products.discount DESC`
 	} else if sortBy == "price-high" {
-		query += ` ORDER BY products.price DESC, product_discounts.discount ASC`
+		query += ` ORDER BY products.price DESC, products.discount ASC`
 	} else if sortBy == "name-asc" {
 		query += ` ORDER BY products.title ASC`
 	} else if sortBy == "name-desc" {
