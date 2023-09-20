@@ -241,8 +241,6 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 	query += `) products ON products.product_id = product_images.product_id`
 	query = AddProductSorting(query, request.SortBy)
 
-	fmt.Println(query)
-
 	rows, err := db.QueryContext(context.Background(), query)
 
 	defer rows.Close()
