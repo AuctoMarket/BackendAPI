@@ -334,11 +334,11 @@ func TestCreateProduct(t *testing.T) {
 func TestAddProductSorting(t *testing.T) {
 	//Test 1: Sort by price low to high
 	query := AddProductSorting("", "price-low")
-	assert.Equal(t, ` ORDER BY products.price ASC, product_discounts.discount DESC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.price ASC, products.discount DESC, product_images.image_no ASC`, query)
 
 	//Test 2: Sort by price high to low
 	query = AddProductSorting("", "price-high")
-	assert.Equal(t, ` ORDER BY products.price DESC, product_discounts.discount ASC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.price DESC, products.discount ASC, product_images.image_no ASC`, query)
 
 	//Test 3: Name ascending
 	query = AddProductSorting("", "name-asc")
