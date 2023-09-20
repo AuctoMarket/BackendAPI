@@ -207,9 +207,9 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 		sold_quantity,
 		product_image_id,
 		image_no,
-		order_by,
-		releases_on,
-		discount
+		COALESCE(order_by::TEXT, '') AS order_by,
+		COALESCE(releases_on::TEXT, '') AS releases_on,
+		COALESCE(discount, 0) AS discount
 	FROM
 		product_images
 		RIGHT JOIN (
@@ -224,12 +224,12 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 				product_type,
 				language,
 				expansion,
-				posted_date::TEXT,
+				posted_date,
 				product_quantity,
 				sold_quantity,
-				COALESCE(order_by::TEXT, '') AS order_by,
-				COALESCE(releases_on::TEXT, '') AS releases_on,
-				COALESCE(discount, 0) AS discount
+				order_by,
+				releases_on,
+				discount
 			FROM (((products
 						INNER JOIN sellers ON products.seller_id = sellers.seller_id)
 					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
@@ -239,7 +239,7 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 	query = AddPagesProduct(query, request.Anchor, request.Limit)
 	query += `) products ON products.product_id = product_images.product_id`
 	query = AddProductSorting(query, request.SortBy)
-
+  
 	rows, err := db.QueryContext(context.Background(), query)
 
 	defer rows.Close()
