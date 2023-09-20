@@ -6,7 +6,6 @@ import (
 	"BackendAPI/utils"
 	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 	"time"
 )
