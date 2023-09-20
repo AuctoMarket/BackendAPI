@@ -334,27 +334,27 @@ func TestCreateProduct(t *testing.T) {
 func TestAddProductSorting(t *testing.T) {
 	//Test 1: Sort by price low to high
 	query := AddProductSorting("", "price-low")
-	assert.Equal(t, ` ORDER BY products.price ASC, products.discount DESC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.price ASC, discount DESC`, query)
 
 	//Test 2: Sort by price high to low
 	query = AddProductSorting("", "price-high")
-	assert.Equal(t, ` ORDER BY products.price DESC, products.discount ASC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.price DESC, discount ASC`, query)
 
 	//Test 3: Name ascending
 	query = AddProductSorting("", "name-asc")
-	assert.Equal(t, ` ORDER BY products.title ASC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.title ASC`, query)
 
 	//Test 4: Name descending
 	query = AddProductSorting("", "name-desc")
-	assert.Equal(t, ` ORDER BY products.title DESC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.title DESC`, query)
 
 	//Test 5: Default
 	query = AddProductSorting("", "None")
-	assert.Equal(t, ` ORDER BY products.posted_date DESC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.posted_date DESC`, query)
 
 	//Test 6: Random string
 	query = AddProductSorting("", "sdjknvjk")
-	assert.Equal(t, ` ORDER BY products.posted_date DESC, product_images.image_no ASC`, query)
+	assert.Equal(t, ` ORDER BY products.posted_date DESC`, query)
 
 }
 

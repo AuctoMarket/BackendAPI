@@ -236,10 +236,12 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 				LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)`
 
 	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
+	query = AddProductSorting(query, request.SortBy)
 	query = AddPagesProduct(query, request.Anchor, request.Limit)
 	query += `) products ON products.product_id = product_images.product_id`
 	query = AddProductSorting(query, request.SortBy)
-  
+	query += `, image_no ASC`
+
 	rows, err := db.QueryContext(context.Background(), query)
 
 	defer rows.Close()
@@ -313,9 +315,9 @@ Adds the sorting to the query to determine the order of the products
 */
 func AddProductSorting(query string, sortBy string) string {
 	if sortBy == "price-low" {
-		query += ` ORDER BY products.price ASC, products.discount DESC`
+		query += ` ORDER BY products.price ASC, discount DESC`
 	} else if sortBy == "price-high" {
-		query += ` ORDER BY products.price DESC, products.discount ASC`
+		query += ` ORDER BY products.price DESC, discount ASC`
 	} else if sortBy == "name-asc" {
 		query += ` ORDER BY products.title ASC`
 	} else if sortBy == "name-desc" {
@@ -324,7 +326,6 @@ func AddProductSorting(query string, sortBy string) string {
 		query += ` ORDER BY products.posted_date DESC`
 	}
 
-	query += `, product_images.image_no ASC`
 	return query
 }
 
