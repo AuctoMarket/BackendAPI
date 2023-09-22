@@ -515,33 +515,43 @@
                         "in": "query"
                     },
                     {
-                        "type": "string",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
                         "description": "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected",
-                        "name": "product_type",
+                        "name": "product_types",
                         "in": "query"
                     },
                     {
-                        "type": "string",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
                         "description": "Get products filtered by the language of the expansion. The choices are 'Eng' or 'Jap' and default is both.",
-                        "name": "language",
+                        "name": "languages",
                         "in": "query"
                     },
                     {
-                        "type": "string",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
                         "description": "Get products filtered by the expansion of the product. Default is all expansions",
-                        "name": "expansion",
+                        "name": "expansions",
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "description": "Minimum price of the products, will fetch products of greater than or equal to value than minimum price",
-                        "name": "min_price",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price",
-                        "name": "max_price",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Gets products filtered by prices ranges, the ranges are '0-20', '20-50', '50-100', '100-200', '200'",
+                        "name": "prices",
                         "in": "query"
                     },
                     {

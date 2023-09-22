@@ -361,36 +361,44 @@ func TestAddProductSorting(t *testing.T) {
 func TestAddProductFiltering(t *testing.T) {
 
 	//Test 1: No filters
-	query := AddProductFiltering("", 0, 0, "None", "None", "None")
+	query := AddProductFiltering("", nil, nil, nil, nil)
 	assert.Equal(t, "", query)
 
 	//Test 2: Preorders
-	query = AddProductFiltering("", 0, 0, "None", "Pre-Order", "None")
+	query = AddProductFiltering("", nil, nil, []string{"Pre-Order"}, nil)
 	assert.Equal(t, query, ` WHERE products.product_type = 'Pre-Order'`)
 
 	//Test 3: Buy-Now
-	query = AddProductFiltering("", 0, 0, "None", "Buy-Now", "None")
+	query = AddProductFiltering("", nil, nil, []string{"Buy-Now"}, nil)
 	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now'`)
 
-	//Test 4: English
-	query = AddProductFiltering("", 0, 0, "Eng", "None", "None")
+	//Test 4: Buy-Now
+	query = AddProductFiltering("", nil, nil, []string{"Buy-Now", "Pre-Order"}, nil)
+	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now' OR products.product_type = 'Pre-Order'`)
+
+	//Test 5: English
+	query = AddProductFiltering("", nil, []string{"Eng"}, nil, nil)
 	assert.Equal(t, query, ` WHERE products.language = 'Eng'`)
 
-	//Test 5: Preorders and Japanese
-	query = AddProductFiltering("", 0, 0, "Jap", "Pre-Order", "None")
+	//Test 6: Preorders and Japanese
+	query = AddProductFiltering("", nil, []string{"Jap"}, []string{"Pre-Order"}, nil)
 	assert.Equal(t, query, ` WHERE products.product_type = 'Pre-Order' AND products.language = 'Jap'`)
 
-	//Test 6: Min price
-	query = AddProductFiltering("", 10, 0, "None", "None", "None")
-	assert.Equal(t, query, ` WHERE products.price >= 10`)
+	//Test 7: Min price
+	query = AddProductFiltering("", []string{"0-20"}, nil, nil, nil)
+	assert.Equal(t, query, ` WHERE products.price BETWEEN 0 AND 2000`)
 
-	//Test 7: Max price in japanese
-	query = AddProductFiltering("", 0, 100, "Jap", "None", "None")
-	assert.Equal(t, query, ` WHERE products.language = 'Jap' AND products.price <= 100`)
+	//Test 8: Max price in japanese
+	query = AddProductFiltering("", []string{"200"}, []string{"Jap", "Eng"}, nil, nil)
+	assert.Equal(t, query, ` WHERE products.language = 'Jap' OR products.language = 'Eng' AND products.price >= 20000`)
 
-	//Test 8: Max price & min price in japanese for buy-now
-	query = AddProductFiltering("", 10, 100, "Jap", "Buy-Now", "None")
-	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now' AND products.language = 'Jap' AND products.price >= 10 AND products.price <= 100`)
+	//Test 9: Max price & min price in japanese for buy-now
+	query = AddProductFiltering("", []string{"0-20"}, []string{"Jap", "Eng"}, []string{"Buy-Now"}, nil)
+	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now' AND products.language = 'Jap' OR products.language = 'Eng' AND products.price BETWEEN 0 AND 2000`)
+
+	//Test 10: Incorrect inputs
+	query = AddProductFiltering("", []string{"dksknfjk"}, []string{"csdjknv"}, []string{"vsjdv"}, nil)
+	assert.Equal(t, "", "")
 }
 
 func TestGetProductList(t *testing.T) {
@@ -406,15 +414,13 @@ func TestGetProductList(t *testing.T) {
 	assert.NoError(t, productImageErr)
 
 	//Test 1: Get Product List default options
-	req := data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req := data.GetProductListRequestData{SortBy: "None", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err := GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
 
 	//Test 2: Get Product List Sorted by Price (Low-High)
-	req = data.GetProductListRequestData{SortBy: "price-low", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "price-low", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
@@ -422,8 +428,7 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, 10000, res.Products[1].Price)
 
 	//Test 3: Get Product List Sorted by Price (High-Low)
-	req = data.GetProductListRequestData{SortBy: "price-high", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "price-high", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
@@ -431,8 +436,7 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, 10000, res.Products[1].Price)
 
 	//Test 4: Get Product List Sorted by Name (A-Z)
-	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "name-asc", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
@@ -440,8 +444,7 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Test1", res.Products[1].Title)
 
 	//Test 4: Get Product List Sorted by Name (Z-A)
-	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "name-desc", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
@@ -449,8 +452,7 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Test3", res.Products[1].Title)
 
 	//Test 5: Get Product List Buy-Now
-	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Buy-Now",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "name-desc", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: []string{"Buy-Now"}, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 4, res.ProductCount)
@@ -458,24 +460,21 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Test2", res.Products[1].Title)
 
 	//Test 6: Get Product List Pre-Order
-	req = data.GetProductListRequestData{SortBy: "name-desc", MinPrice: 0, MaxPrice: 0, ProductType: "Pre-Order",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "name-desc", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: []string{"Pre-Order"}, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 1, res.ProductCount)
 	assert.Equal(t, "Test3", res.Products[0].Title)
 
-	//Test 7: Get Product Min Price 15000
-	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 15000, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	//Test 7: Get Product Min Price 200
+	req = data.GetProductListRequestData{SortBy: "name-asc", Prices: []string{"200"}, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 1, res.ProductCount)
 	assert.Equal(t, "Test1", res.Products[0].Title)
 
-	//Test 8: Get Product Max price 15000
-	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 15000, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 10}
+	//Test 8: Get product between 50-100
+	req = data.GetProductListRequestData{SortBy: "name-asc", Prices: []string{"50-100"}, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 4, res.ProductCount)
@@ -483,8 +482,7 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Test2", res.Products[1].Title)
 
 	//Test 9: Get Product expansion Test
-	req = data.GetProductListRequestData{SortBy: "name-asc", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "Test", Anchor: 0, Limit: 10}
+	req = data.GetProductListRequestData{SortBy: "name-asc", Prices: nil, Languages: nil, Expansions: []string{"Test"}, ProductTypes: nil, Anchor: 0, Limit: 10}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 4, res.ProductCount)
@@ -493,32 +491,28 @@ func TestGetProductList(t *testing.T) {
 	assert.Equal(t, "Test3", res.Products[2].Title)
 
 	//Test 10: Get Product List Low Limit
-	req = data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 1}
+	req = data.GetProductListRequestData{SortBy: "None", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 1}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
 	assert.Equal(t, 1, len(res.Products))
 
 	//Test 11: Get Product List Limit same as count
-	req = data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 0, Limit: 3}
+	req = data.GetProductListRequestData{SortBy: "None", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 0, Limit: 3}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
 	assert.Equal(t, 3, len(res.Products))
 
 	//Test 12: Get Product List Anchor added
-	req = data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 1, Limit: 3}
+	req = data.GetProductListRequestData{SortBy: "None", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 1, Limit: 3}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
 	assert.Equal(t, 3, len(res.Products))
 
 	//Test 13: Anchor higher than count
-	req = data.GetProductListRequestData{SortBy: "None", MinPrice: 0, MaxPrice: 0, ProductType: "None",
-		Language: "None", Expansion: "None", Anchor: 10, Limit: 3}
+	req = data.GetProductListRequestData{SortBy: "None", Prices: nil, Languages: nil, Expansions: nil, ProductTypes: nil, Anchor: 10, Limit: 3}
 	res, err = GetProductList(db, req)
 	assert.Empty(t, err)
 	assert.Equal(t, 5, res.ProductCount)
