@@ -235,7 +235,7 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
 				LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)`
 
-	query = AddProductFiltering(query, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
+	query = AddProductFiltering(query, request.Prices, request.Languages, request.ProductTypes, request.Expansions)
 	query = AddProductSorting(query, request.SortBy)
 	query = AddPagesProduct(query, request.Anchor, request.Limit)
 	query += `) products ON products.product_id = product_images.product_id`
@@ -292,7 +292,7 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 	}
 
 	response.Products = products
-	response.ProductCount = getProductCount(db, request.MinPrice, request.MaxPrice, request.Language, request.ProductType, request.Expansion)
+	response.ProductCount = getProductCount(db, request.Prices, request.Languages, request.ProductTypes, request.Expansions)
 
 	return response, nil
 }
@@ -300,10 +300,10 @@ func GetProductList(db *sql.DB, request data.GetProductListRequestData) (data.Ge
 /*
 Gets the total number of products after applying filters
 */
-func getProductCount(db *sql.DB, minPrice int, maxPrice int, language string, productType string, expansion string) int {
+func getProductCount(db *sql.DB, prices []string, languages []string, productTypes []string, expansions []string) int {
 	var count int
 	query := `SELECT COUNT(*) FROM products`
-	query = AddProductFiltering(query, minPrice, maxPrice, language, productType, expansion)
+	query = AddProductFiltering(query, prices, languages, productTypes, expansions)
 
 	db.QueryRowContext(context.Background(), query).Scan(&count)
 
@@ -332,66 +332,121 @@ func AddProductSorting(query string, sortBy string) string {
 /*
 Adds the filtering to the query to filter out certain products
 */
-func AddProductFiltering(query string, minPrice int, maxPrice int, language string, productType string, expansion string) string {
+func AddProductFiltering(query string, prices []string, languages []string, productTypes []string, expansions []string) string {
 	var hasFiltered bool = false
 
-	if productType != "None" {
-		if !hasFiltered {
-			query += ` WHERE products.product_type =`
-			if productType == "Pre-Order" {
-				query += ` 'Pre-Order'`
+	if len(productTypes) > 0 {
+		for i := 0; i < len(productTypes); i++ {
+			if !hasFiltered {
+				filter := ` WHERE products.product_type =`
+				if productTypes[i] == "Pre-Order" {
+					filter += ` 'Pre-Order'`
+					query += filter
+				}
+				if productTypes[i] == "Buy-Now" {
+					filter += ` 'Buy-Now'`
+					query += filter
+				}
+				hasFiltered = true
 			} else {
-				query += ` 'Buy-Now'`
-			}
-			hasFiltered = true
-		}
-	}
-
-	if language != "None" {
-		if !hasFiltered {
-			query += ` WHERE products.language =`
-			if language == "Eng" {
-				query += ` 'Eng'`
-			} else {
-				query += ` 'Jap'`
-			}
-			hasFiltered = true
-		} else {
-			query += ` AND products.language =`
-			if language == "Eng" {
-				query += ` 'Eng'`
-			} else {
-				query += ` 'Jap'`
+				filter := ` OR products.product_type =`
+				if productTypes[i] == "Pre-Order" {
+					filter += ` 'Pre-Order'`
+					query += filter
+				}
+				if productTypes[i] == "Buy-Now" {
+					filter += ` 'Buy-Now'`
+					query += filter
+				}
 			}
 		}
 	}
 
-	if minPrice > 0 {
-		if !hasFiltered {
-			query += ` WHERE products.price >= ` + strconv.Itoa(minPrice)
-			hasFiltered = true
-		} else {
-			query += ` AND products.price >= ` + strconv.Itoa(minPrice)
+	if len(languages) > 0 {
+		for i := 0; i < len(languages); i++ {
+			if !hasFiltered {
+				filter := ` WHERE products.language =`
+				if languages[i] == "Eng" {
+					filter += ` 'Eng'`
+					query += filter
+				}
+				if languages[i] == "Jap" {
+					filter += ` 'Jap'`
+					query += filter
+				}
+				hasFiltered = true
+			} else {
+				var filter string
+				if i == 0 {
+					filter += ` AND products.language =`
+				} else {
+					filter += ` OR products.language =`
+				}
+
+				if languages[i] == "Eng" {
+					filter += ` 'Eng'`
+					query += filter
+				}
+				if languages[i] == "Jap" {
+					filter += ` 'Jap'`
+					query += filter
+				}
+			}
 		}
 	}
 
-	if maxPrice > 0 {
-		if !hasFiltered {
-			query += ` WHERE products.price <= ` + strconv.Itoa(maxPrice)
-			hasFiltered = true
-		} else {
-			query += ` AND products.price <= ` + strconv.Itoa(maxPrice)
+	if len(expansions) > 0 {
+		for i := 0; i < len(expansions); i++ {
+			if !hasFiltered {
+				query += ` WHERE products.expansion = '` + expansions[i] + `'`
+				hasFiltered = true
+			} else {
+				if i == 0 {
+					query += ` AND products.expansion = '` + expansions[i] + `'`
+				} else {
+					query += ` OR products.expansion = '` + expansions[i] + `'`
+				}
+			}
 		}
 	}
 
-	if expansion != "None" {
-		if !hasFiltered {
-			query += ` WHERE products.expansion = '` + expansion + `'`
-			hasFiltered = true
-		} else {
-			query += ` AND products.expansion = '` + expansion + `'`
+	if len(prices) > 0 {
+		for i := 0; i < len(prices); i++ {
+			var filter string
+			if !hasFiltered {
+				filter += ` WHERE products.price`
+				hasFiltered = true
+			} else {
+				if i == 0 {
+					filter += ` AND products.price`
+				} else {
+					filter += ` OR products.price`
+				}
+			}
+
+			if prices[i] == "0-20" {
+				filter += ` BETWEEN 0 AND 2000`
+				query += filter
+			}
+			if prices[i] == "20-50" {
+				filter += ` BETWEEN 2000 AND 5000`
+				query += filter
+			}
+			if prices[i] == "50-100" {
+				filter += ` BETWEEN 5000 AND 10000`
+				query += filter
+			}
+			if prices[i] == "100-200" {
+				filter += ` BETWEEN 10000 AND 20000`
+				query += filter
+			}
+			if prices[i] == "200" {
+				filter += ` >= 20000`
+				query += filter
+			}
 		}
 	}
+
 	return query
 }
 

@@ -633,31 +633,38 @@ paths:
         in: query
         name: sort_by
         type: string
-      - description: Get products by a specific product type, the types are 'Pre-Order'
+      - collectionFormat: csv
+        description: Get products by a specific product type, the types are 'Pre-Order'
           or 'Buy-Now'. Default is both will be selected
         in: query
-        name: product_type
-        type: string
-      - description: Get products filtered by the language of the expansion. The choices
+        items:
+          type: string
+        name: product_types
+        type: array
+      - collectionFormat: csv
+        description: Get products filtered by the language of the expansion. The choices
           are 'Eng' or 'Jap' and default is both.
         in: query
-        name: language
-        type: string
-      - description: Get products filtered by the expansion of the product. Default
+        items:
+          type: string
+        name: languages
+        type: array
+      - collectionFormat: csv
+        description: Get products filtered by the expansion of the product. Default
           is all expansions
         in: query
-        name: expansion
-        type: string
-      - description: Minimum price of the products, will fetch products of greater
-          than or equal to value than minimum price
+        items:
+          type: string
+        name: expansions
+        type: array
+      - collectionFormat: csv
+        description: Gets products filtered by prices ranges, the ranges are '0-20',
+          '20-50', '50-100', '100-200', '200'
         in: query
-        name: min_price
-        type: integer
-      - description: Maximum price of the products, will fetch products of lesser
-          than or equal to value than maximum price
-        in: query
-        name: max_price
-        type: integer
+        items:
+          type: string
+        name: prices
+        type: array
       - description: Indicates the offset for the products
         in: query
         name: anchor

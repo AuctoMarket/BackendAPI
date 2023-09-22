@@ -127,11 +127,10 @@ func handleCreateProductImages(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        sort_by query string false  "Sort By a specific attribute of the product. Default is posted_date"
-// @Param 		 product_type query string false "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected"
-// @Param 		 language query string false "Get products filtered by the language of the expansion. The choices are 'Eng' or 'Jap' and default is both."
-// @Param 		 expansion query string false "Get products filtered by the expansion of the product. Default is all expansions"
-// @Param 		 min_price query int false "Minimum price of the products, will fetch products of greater than or equal to value than minimum price"
-// @Param 		 max_price query int false "Maximum price of the products, will fetch products of lesser than or equal to value than maximum price"
+// @Param 		 product_types query []string false "Get products by a specific product type, the types are 'Pre-Order' or 'Buy-Now'. Default is both will be selected"
+// @Param 		 languages query []string false "Get products filtered by the language of the expansion. The choices are 'Eng' or 'Jap' and default is both."
+// @Param 		 expansions query []string false "Get products filtered by the expansion of the product. Default is all expansions"
+// @Param		 prices  query []string false "Gets products filtered by prices ranges, the ranges are '0-20', '20-50', '50-100', '100-200', '200'"
 // @Param 		 anchor query int true "Indicates the offset for the products"
 // @Param 		 limit query int true "Indicates the number of products fetched"
 // @Success      200  {object}  data.GetProductListResponseData
@@ -140,15 +139,14 @@ func handleCreateProductImages(c *gin.Context) {
 func handleGetProductList(c *gin.Context) {
 	var request data.GetProductListRequestData
 	sortBy := c.DefaultQuery("sort_by", "None")
-	minPrice := c.DefaultQuery("min_price", "None")
-	maxPrice := c.DefaultQuery("max_price", "None")
-	productType := c.DefaultQuery("product_type", "None")
-	language := c.DefaultQuery("language", "None")
-	expansion := c.DefaultQuery("expansion", "None")
+	prices := c.QueryArray("prices")
+	productTypes := c.QueryArray("product_types")
+	languages := c.QueryArray("languages")
+	expansions := c.QueryArray("expansions")
 	anchor := c.DefaultQuery("anchor", "None")
 	limit := c.DefaultQuery("limit", "None")
 
-	err := request.GetProductListDataRequestFromParams(sortBy, productType, language, minPrice, maxPrice, expansion, anchor, limit)
+	err := request.GetProductListDataRequestFromParams(sortBy, productTypes, languages, prices, expansions, anchor, limit)
 
 	if err != nil {
 		r := data.Message{Message: err.Error()}

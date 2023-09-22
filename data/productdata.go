@@ -68,14 +68,13 @@ type CreateProductImageData struct {
 }
 
 type GetProductListRequestData struct {
-	SortBy      string `json:"sort"`
-	MinPrice    int    `json:"min_price"`
-	MaxPrice    int    `json:"max_price"`
-	ProductType string `json:"product_type"`
-	Language    string `json:"language"`
-	Expansion   string `json:"expansion"`
-	Anchor      int    `json:"anchor"`
-	Limit       int    `json:"limit"`
+	SortBy       string   `json:"sort"`
+	Prices       []string `json:"prices"`
+	ProductTypes []string `json:"product_type"`
+	Languages    []string `json:"language"`
+	Expansions   []string `json:"expansion"`
+	Anchor       int      `json:"anchor"`
+	Limit        int      `json:"limit"`
 }
 
 type GetProductListResponseData struct {
@@ -102,29 +101,13 @@ func (request *CreateProductData) ProductCreateResponseFromRequest(response *Cre
 	response.Expansion = request.Expansion
 }
 
-func (request *GetProductListRequestData) GetProductListDataRequestFromParams(sortBy string, productType string, language string, minPrice string,
-	maxPrice string, expansion string, anchor string, limit string) *utils.ErrorHandler {
+func (request *GetProductListRequestData) GetProductListDataRequestFromParams(sortBy string, productTypes []string, languages []string,
+	prices []string, expansions []string, anchor string, limit string) *utils.ErrorHandler {
 	request.SortBy = sortBy
-	request.ProductType = productType
-	request.Language = language
-
-	if minPrice != "None" {
-		min, err := strconv.Atoi(minPrice)
-		if err != nil {
-			return utils.BadRequestError("Bad min price param")
-		}
-
-		request.MinPrice = min
-	}
-
-	if maxPrice != "None" {
-		max, err := strconv.Atoi(maxPrice)
-		if err != nil {
-			return utils.BadRequestError("Bad max price param")
-		}
-
-		request.MaxPrice = max
-	}
+	request.ProductTypes = productTypes
+	request.Languages = languages
+	request.Expansions = expansions
+	request.Prices = prices
 
 	if anchor != "None" {
 		anch, err := strconv.Atoi(anchor)
@@ -143,8 +126,6 @@ func (request *GetProductListRequestData) GetProductListDataRequestFromParams(so
 
 		request.Limit = lim
 	}
-
-	request.Expansion = expansion
 
 	return nil
 }
