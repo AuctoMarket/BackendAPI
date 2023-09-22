@@ -395,6 +395,10 @@ func TestAddProductFiltering(t *testing.T) {
 	//Test 9: Max price & min price in japanese for buy-now
 	query = AddProductFiltering("", []string{"0-20"}, []string{"Jap", "Eng"}, []string{"Buy-Now"}, nil)
 	assert.Equal(t, query, ` WHERE products.product_type = 'Buy-Now' AND products.language = 'Jap' OR products.language = 'Eng' AND products.price BETWEEN 0 AND 2000`)
+
+	//Test 10: Incorrect inputs
+	query = AddProductFiltering("", []string{"dksknfjk"}, []string{"csdjknv"}, []string{"vsjdv"}, nil)
+	assert.Equal(t, "", "")
 }
 
 func TestGetProductList(t *testing.T) {
