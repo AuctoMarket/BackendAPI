@@ -227,12 +227,15 @@ const docTemplate = `{
                 "summary": "Creates a new order",
                 "parameters": [
                     {
-                        "description": "The product for which we are creating an order",
-                        "name": "product_id",
+                        "description": "The products for which we are creating an order",
+                        "name": "products",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/data.ProductOrder"
+                            }
                         }
                     },
                     {
@@ -242,15 +245,6 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Quantity of the product being ordered",
-                        "name": "order_quantity",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
                         }
                     },
                     {
@@ -288,7 +282,7 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Pricing Info, Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'",
+                        "description": "Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'",
                         "name": "fees",
                         "in": "body",
                         "schema": {
@@ -330,44 +324,20 @@ const docTemplate = `{
                 "summary": "Creates a new guest order",
                 "parameters": [
                     {
-                        "description": "The product for which we are creating an order",
-                        "name": "product_id",
+                        "description": "The products for which we are creating an order",
+                        "name": "products",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/data.ProductOrder"
+                            }
                         }
                     },
                     {
                         "description": "The email of the guest user",
                         "name": "email",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Quantity of the product being ordered",
-                        "name": "order_quantity",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "description": "Payment method chosen for this order, can only be 'card' or 'paynow_online'",
-                        "name": "payment_type",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Type of delivery method, can only be 'self_collection' or 'standard_delivery'",
-                        "name": "delivery_type",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -409,12 +379,11 @@ const docTemplate = `{
                         }
                     },
                     {
-                        "description": "Amount to be paid for the order in cents",
-                        "name": "amount",
+                        "description": "Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'",
+                        "name": "fees",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/data.OrderFees"
                         }
                     }
                 ],
@@ -1084,11 +1053,10 @@ const docTemplate = `{
                 "fees",
                 "guest_order_id",
                 "order_date",
-                "order_quantity",
                 "payment_status",
                 "phone_number",
                 "postal_code",
-                "product_id"
+                "products"
             ],
             "properties": {
                 "address_line_1": {
@@ -1109,9 +1077,6 @@ const docTemplate = `{
                 "order_date": {
                     "type": "string"
                 },
-                "order_quantity": {
-                    "type": "integer"
-                },
                 "payment_status": {
                     "type": "string"
                 },
@@ -1121,8 +1086,11 @@ const docTemplate = `{
                 "postal_code": {
                     "type": "string"
                 },
-                "product_id": {
-                    "type": "string"
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.ProductOrder"
+                    }
                 },
                 "telegram_handle": {
                     "type": "string"
@@ -1137,11 +1105,10 @@ const docTemplate = `{
                 "fees",
                 "order_date",
                 "order_id",
-                "order_quantity",
                 "payment_status",
                 "phone_number",
                 "postal_code",
-                "product_id"
+                "products"
             ],
             "properties": {
                 "address_line_1": {
@@ -1162,9 +1129,6 @@ const docTemplate = `{
                 "order_id": {
                     "type": "string"
                 },
-                "order_quantity": {
-                    "type": "integer"
-                },
                 "payment_status": {
                     "type": "string"
                 },
@@ -1174,8 +1138,11 @@ const docTemplate = `{
                 "postal_code": {
                     "type": "string"
                 },
-                "product_id": {
-                    "type": "string"
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.ProductOrder"
+                    }
                 },
                 "telegram_handle": {
                     "type": "string"
@@ -1304,7 +1271,6 @@ const docTemplate = `{
             "required": [
                 "delivery_type",
                 "payment_type",
-                "product_price",
                 "total_paid"
             ],
             "properties": {
@@ -1319,9 +1285,6 @@ const docTemplate = `{
                 },
                 "payment_type": {
                     "type": "string"
-                },
-                "product_price": {
-                    "type": "integer"
                 },
                 "small_order_fee": {
                     "type": "integer"
@@ -1342,6 +1305,21 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "image_path": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.ProductOrder": {
+            "type": "object",
+            "required": [
+                "order_quantity",
+                "product_id"
+            ],
+            "properties": {
+                "order_quantity": {
+                    "type": "integer"
+                },
+                "product_id": {
                     "type": "string"
                 }
             }
