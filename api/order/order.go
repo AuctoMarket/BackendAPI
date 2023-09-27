@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -20,34 +21,58 @@ func CreateOrder(db *sql.DB, request data.CreateOrderRequestData) (data.CreateOr
 	var response data.CreateOrderResponseData
 	orderDate := time.Now()
 
-	//validate input
+	//validate order details
 	validErr := validateCreateOrderRequest(db, request)
 	if validErr != nil {
 		return response, validErr
 	}
 
+	//validate payment amount details
+	amountErr := validatePaymentAmount(db, request.Products, request.Fees)
+	if amountErr != nil {
+		return response, amountErr
+	}
+
 	//SQL Query to insert new order
 	query := `INSERT INTO orders(
-		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle, 
-		product_price) 
+		buyer_id, 
+		delivery_type, 
+		delivery_fee, 
+		payment_type, 
+		payment_fee, 
+		small_order_fee, 
+		total_paid,
+		phone_number, 
+		order_date, 
+		address_line_1, 
+		address_line_2, 
+		postal_code, 
+		telegram_handle) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) 
 		RETURNING order_id;`
 
-	//SQL query execution dependant on if address_line_2 exists
 	err := db.QueryRowContext(
 		context.Background(), query,
-		request.ProductId, request.BuyerId, request.Fees.DeliveryType, request.Fees.DeliveryFee,
+		request.BuyerId, request.Fees.DeliveryType, request.Fees.DeliveryFee,
 		request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee, request.Fees.TotalPaid,
-		request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
-		request.PostalCode, utils.NewNullableString(request.TelegramHandle), request.Fees.ProductPrice).Scan(&response.OrderId)
+		request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
+		request.PostalCode, utils.NewNullableString(request.TelegramHandle)).Scan(&response.OrderId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in inserting Order rows")
 		return response, errResp
 	}
+
+	query = `INSERT INTO order_products(product_id, order_id, quantity) VALUES`
+	for i := 0; i < len(request.Products); i++ {
+		query += `('` + request.Products[i].ProductId + `','` + response.OrderId + `',` + strconv.Itoa(request.Products[i].OrderQuantity) + `)`
+		if i < len(request.Products)-1 {
+			query += `,`
+		}
+	}
+	_, err = db.ExecContext(context.Background(), query)
 
 	paymentResponse, paymentErr := CreatePaymentRequest(float64(request.Fees.TotalPaid)/100, response.OrderId, request.Fees.PaymentType, false)
 	response.RedirectUrl = paymentResponse.Url
@@ -68,27 +93,52 @@ func CreateGuestOrder(db *sql.DB, request data.CreateGuestOrderRequestData) (dat
 		return response, validErr
 	}
 
+	//validate payment amount details
+	amountErr := validatePaymentAmount(db, request.Products, request.Fees)
+	if amountErr != nil {
+		return response, amountErr
+	}
+
 	//SQL Query to insert new guest order
 	query := `INSERT INTO guest_orders(
-		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date, address_line_1, address_line_2, postal_code, telegram_handle, 
-		product_price) 
+		email, 
+		delivery_type, 
+		delivery_fee, 
+		payment_type, 
+		payment_fee, 
+		small_order_fee, 
+		total_paid,
+		phone_number, 
+		order_date, 
+		address_line_1, 
+		address_line_2, 
+		postal_code, 
+		telegram_handle) 
 		VALUES 
-		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) 
+		($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) 
 		RETURNING guest_order_id;`
 
 	err := db.QueryRowContext(
 		context.Background(), query,
-		request.ProductId, request.Email, request.Fees.DeliveryType, request.Fees.DeliveryFee,
+		request.Email, request.Fees.DeliveryType, request.Fees.DeliveryFee,
 		request.Fees.PaymentType, request.Fees.PaymentFee, request.Fees.SmallOrderFee, request.Fees.TotalPaid,
-		request.OrderQuantity, request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
-		request.PostalCode, utils.NewNullableString(request.TelegramHandle), request.Fees.ProductPrice).Scan(&response.GuestOrderId)
+		request.PhoneNumber, orderDate, request.AddressLine1, utils.NewNullableString(request.AddressLine2),
+		request.PostalCode, utils.NewNullableString(request.TelegramHandle)).Scan(&response.GuestOrderId)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in inserting Order rows")
 		return response, errResp
 	}
+
+	query = `INSERT INTO guest_order_products(product_id, guest_order_id, quantity) VALUES`
+	for i := 0; i < len(request.Products); i++ {
+		query += `('` + request.Products[i].ProductId + `','` + response.GuestOrderId + `',` + strconv.Itoa(request.Products[i].OrderQuantity) + `)`
+		if i < len(request.Products)-1 {
+			query += `,`
+		}
+	}
+	_, err = db.ExecContext(context.Background(), query)
 
 	paymentResponse, paymentErr := CreatePaymentRequest(float64(request.Fees.TotalPaid)/100, response.GuestOrderId, request.Fees.PaymentType, true)
 	response.RedirectUrl = paymentResponse.Url
@@ -106,21 +156,49 @@ func GetOrderById(db *sql.DB, orderId string) (data.GetOrderByIdResponseData, *u
 	}
 
 	query := `SELECT
-		product_id, buyer_id, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date::TEXT, address_line_1,COALESCE(address_line_2, ''), postal_code, payment_status,
-		COALESCE(telegram_handle, ''), product_price
-	FROM orders WHERE order_id=$1;`
+		buyer_id, 
+		delivery_type, 
+		delivery_fee, 
+		payment_type, 
+		payment_fee, 
+		small_order_fee, 
+		total_paid,
+		phone_number, 
+		order_date::TEXT, 
+		address_line_1,
+		COALESCE(address_line_2, ''), 
+		postal_code, 
+		payment_status,
+		COALESCE(telegram_handle, ''),
+		order_products.product_id,
+		order_products.quantity
+	FROM (orders INNER JOIN order_products ON orders.order_id = order_products.order_id) WHERE orders.order_id=$1;`
 
-	err := db.QueryRowContext(context.Background(), query, orderId).Scan(
-		&response.ProductId, &response.BuyerId, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
-		&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
-		&response.OrderQuantity, &response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
-		&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &response.Fees.ProductPrice)
+	rows, err := db.QueryContext(context.Background(), query, orderId)
+	defer rows.Close()
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
 		utils.LogError(err, "Error in selecting Order rows")
 		return response, errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var quantity int
+		err = rows.Scan(
+			&response.BuyerId, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
+			&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
+			&response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
+			&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &productId, &quantity)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in selecting Order rows")
+			return response, errResp
+		}
+
+		response.Products = append(response.Products, data.ProductOrder{ProductId: productId, OrderQuantity: quantity})
 	}
 
 	response.OrderId = orderId
@@ -138,16 +216,26 @@ func GetGuestOrderById(db *sql.DB, guestOrderId string) (data.GetGuestOrderByIdR
 	}
 
 	query := `SELECT
-		product_id, email, delivery_type, delivery_fee, payment_type, payment_fee, small_order_fee, total_paid,
-		order_quantity, phone_number, order_date::TEXT, address_line_1, COALESCE(address_line_2, ''), postal_code, payment_status,
-		COALESCE(telegram_handle, ''), product_price
-	FROM guest_orders WHERE guest_order_id=$1;`
+		email, 
+		delivery_type, 
+		delivery_fee, 
+		payment_type, 
+		payment_fee, 
+		small_order_fee, 
+		total_paid,
+		phone_number, 
+		order_date::TEXT, 
+		address_line_1, 
+		COALESCE(address_line_2, ''), 
+		postal_code, 
+		payment_status,
+		COALESCE(telegram_handle, ''),
+		guest_order_products.product_id,
+		guest_order_products.quantity
+	FROM (guest_orders INNER JOIN guest_order_products ON guest_orders.guest_order_id = guest_order_products.guest_order_id) WHERE guest_orders.guest_order_id=$1;`
 
-	err := db.QueryRowContext(context.Background(), query, guestOrderId).Scan(
-		&response.ProductId, &response.Email, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
-		&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
-		&response.OrderQuantity, &response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
-		&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &response.Fees.ProductPrice)
+	rows, err := db.QueryContext(context.Background(), query, guestOrderId)
+	defer rows.Close()
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -155,17 +243,47 @@ func GetGuestOrderById(db *sql.DB, guestOrderId string) (data.GetGuestOrderByIdR
 		return response, errResp
 	}
 
+	for rows.Next() {
+		var productId string
+		var quantity int
+		err = rows.Scan(
+			&response.Email, &response.Fees.DeliveryType, &response.Fees.DeliveryFee,
+			&response.Fees.PaymentType, &response.Fees.PaymentFee, &response.Fees.SmallOrderFee, &response.Fees.TotalPaid,
+			&response.PhoneNumber, &response.OrderDate, &response.AddressLine1, &response.AddressLine2,
+			&response.PostalCode, &response.PaymentStatus, &response.TelegramHandle, &productId, &quantity)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in selecting Order rows")
+			return response, errResp
+		}
+
+		response.Products = append(response.Products, data.ProductOrder{ProductId: productId, OrderQuantity: quantity})
+	}
+
 	response.GuestOrderId = guestOrderId
 	return response, nil
 }
 
 /*
-Validate a create order request to ensure params are correct.
+Validate a create order request data
 */
 func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData) *utils.ErrorHandler {
-	if !product.DoesProductExist(db, request.ProductId) {
-		utils.LogMessage("Product with given id does not exist")
-		return utils.BadRequestError("Bad product_id data")
+	if len(request.Products) == 0 {
+		utils.LogMessage("Order with no products selected")
+		return utils.BadRequestError("Bad order products data")
+	}
+
+	for i := 0; i < len(request.Products); i++ {
+		if request.Products[i].OrderQuantity <= 0 {
+			utils.LogMessage("Invalid product amount selected")
+			return utils.BadRequestError("Bad order products data")
+		}
+
+		if !product.DoesProductExist(db, request.Products[i].ProductId) {
+			utils.LogMessage("Product with given id does not exist")
+			return utils.BadRequestError("Bad product_id data")
+		}
 	}
 
 	if !buyer.DoesBuyerExist(db, request.BuyerId) {
@@ -173,22 +291,9 @@ func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData)
 		return utils.BadRequestError("Bad buyer_id data")
 	}
 
-	var price int
-	var availableStock int
-	query := `SELECT (price - COALESCE(product_discounts.discount, 0)), (product_quantity - sold_quantity) 
-		FROM (products LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)  
-			WHERE products.product_id = $1;`
-	err := db.QueryRowContext(context.Background(), query, request.ProductId).Scan(&price, &availableStock)
-
-	if err != nil {
-		errResp := utils.InternalServerError(nil)
-		utils.LogError(err, "Error in selecting product rows")
-		return errResp
-	}
-
-	if request.OrderQuantity <= 0 || request.OrderQuantity > availableStock {
-		utils.LogMessage("Order quanity is invalid")
-		return utils.BadRequestError("Bad order_quantity data")
+	if len(request.PostalCode) != 6 {
+		utils.LogMessage("Postal Code Data Incorrect")
+		return utils.BadRequestError("Bad postal code data")
 	}
 
 	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
@@ -196,50 +301,82 @@ func validateCreateOrderRequest(db *sql.DB, request data.CreateOrderRequestData)
 		return utils.BadRequestError("Bad payment_type data")
 	}
 
-	if price != request.Fees.ProductPrice {
-		utils.LogMessage("Product Price is invalid")
-		return utils.BadRequestError("Bad product_price data")
-	}
-
 	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {
 		utils.LogMessage("Delivery Type is invalid")
 		return utils.BadRequestError("Bad delivery_type data")
 	}
 
-	amountErr := validatePaymentAmount(request.OrderQuantity, request.Fees)
+	//Check to make sure all product quantities are within the stock limits
+	query := `SELECT product_id, (product_quantity-sold_quantity) FROM products WHERE product_id IN (`
+	for i := 0; i < len(request.Products); i++ {
+		query += `'` + request.Products[i].ProductId + `'`
+		if i < len(request.Products)-1 {
+			query += `,`
+		}
+	}
+	query += `)`
 
-	if amountErr != nil {
-		return amountErr
+	var productMap map[string]int
+	productMap = make(map[string]int)
+
+	rows, err := db.QueryContext(context.Background(), query)
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Selecting product rows")
+		return errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var quantity int
+
+		err = rows.Scan(&productId, &quantity)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in Selecting product rows")
+			return errResp
+		}
+
+		productMap[productId] = quantity
+	}
+
+	for i := 0; i < len(request.Products); i++ {
+		if productMap[request.Products[i].ProductId] < request.Products[i].OrderQuantity {
+			utils.LogMessage("Quantity ordered is greater than available stock")
+			return utils.BadRequestError("Bad quantity data")
+		}
 	}
 
 	return nil
 }
 
 /*
-Validate a create order request to ensure params are correct.
+Validate a create guest order request to ensure params are correct.
 */
 func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRequestData) *utils.ErrorHandler {
-	if !product.DoesProductExist(db, request.ProductId) {
-		utils.LogMessage("Product with given id does not exist")
-		return utils.BadRequestError("Bad product_id data")
+	if len(request.Products) == 0 {
+		utils.LogMessage("Guest order with no products selected")
+		return utils.BadRequestError("Bad guest order products data")
 	}
 
-	var price int
-	var availableStock int
-	query := `SELECT (price - COALESCE(product_discounts.discount, 0)), (product_quantity - sold_quantity) 
-		FROM (products LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)  
-			WHERE products.product_id = $1;`
-	err := db.QueryRowContext(context.Background(), query, request.ProductId).Scan(&price, &availableStock)
+	for i := 0; i < len(request.Products); i++ {
+		if request.Products[i].OrderQuantity <= 0 {
+			utils.LogMessage("Invalid product amount selected")
+			return utils.BadRequestError("Bad order products data")
+		}
 
-	if err != nil {
-		errResp := utils.InternalServerError(nil)
-		utils.LogError(err, "Error in selecting product rows")
-		return errResp
+		if !product.DoesProductExist(db, request.Products[i].ProductId) {
+			utils.LogMessage("Product with given id does not exist")
+			return utils.BadRequestError("Bad product_id data")
+		}
 	}
 
-	if request.OrderQuantity <= 0 || request.OrderQuantity > availableStock {
-		utils.LogMessage("Order quanity is invalid")
-		return utils.BadRequestError("Bad order_quantity data")
+	if len(request.PostalCode) != 6 {
+		utils.LogMessage("Postal Code Data Incorrect")
+		return utils.BadRequestError("Bad postal code data")
 	}
 
 	if request.Fees.PaymentType != "card" && request.Fees.PaymentType != "paynow_online" {
@@ -247,20 +384,53 @@ func validateCreateGuestOrderRequest(db *sql.DB, request data.CreateGuestOrderRe
 		return utils.BadRequestError("Bad payment_type data")
 	}
 
-	if price != request.Fees.ProductPrice {
-		utils.LogMessage("Product Price is invalid")
-		return utils.BadRequestError("Bad product_price data")
-	}
-
 	if request.Fees.DeliveryType != "standard_delivery" && request.Fees.DeliveryType != "self_collection" {
 		utils.LogMessage("Delivery Type is invalid")
 		return utils.BadRequestError("Bad delivery_type data")
 	}
 
-	amountErr := validatePaymentAmount(request.OrderQuantity, request.Fees)
+	//Check to make sure all product quantities are within the stock limits
+	query := `SELECT product_id, (product_quantity-sold_quantity) FROM products WHERE product_id IN (`
+	for i := 0; i < len(request.Products); i++ {
+		query += `'` + request.Products[i].ProductId + `'`
+		if i < len(request.Products)-1 {
+			query += `,`
+		}
+	}
+	query += `)`
 
-	if amountErr != nil {
-		return amountErr
+	var productMap map[string]int
+	productMap = make(map[string]int)
+
+	rows, err := db.QueryContext(context.Background(), query)
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Selecting product rows")
+		return errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var quantity int
+
+		err = rows.Scan(&productId, &quantity)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in Selecting product rows")
+			return errResp
+		}
+
+		productMap[productId] = quantity
+	}
+
+	for i := 0; i < len(request.Products); i++ {
+		if productMap[request.Products[i].ProductId] < request.Products[i].OrderQuantity {
+			utils.LogMessage("Quantity ordered is greater than available stock")
+			return utils.BadRequestError("Bad quantity data")
+		}
 	}
 
 	return nil
@@ -274,10 +444,8 @@ func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValida
 		return utils.NotFoundError("Order with given id does not exist")
 	}
 
-	var productId string
-	var quantity int
-	query := `UPDATE orders SET payment_status = $2 WHERE order_id = $1 RETURNING product_id, order_quantity;`
-	err := db.QueryRowContext(context.Background(), query, orderId, req.Status).Scan(&productId, &quantity)
+	query := `UPDATE orders SET payment_status = $2 WHERE order_id = $1;`
+	_, err := db.ExecContext(context.Background(), query, orderId, req.Status)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
@@ -285,14 +453,43 @@ func UpdateOrderPaymentStatus(db *sql.DB, orderId string, req data.PaymentValida
 		return errResp
 	}
 
-	if req.Status == "completed" {
-		query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
-		_, err = db.ExecContext(context.Background(), query, quantity, productId)
+	var products []data.ProductOrder
+
+	query = `SELECT product_id, quantity FROM order_products WHERE order_id = $1;`
+	rows, err := db.QueryContext(context.Background(), query, orderId)
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in selecting product order rows")
+		return errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var quantity int
+		err = rows.Scan(&productId, &quantity)
 
 		if err != nil {
 			errResp := utils.InternalServerError(nil)
-			utils.LogError(err, "Error in Updating product rows")
+			utils.LogError(err, "Error in selecting product order rows")
 			return errResp
+		}
+
+		prod := data.ProductOrder{ProductId: productId, OrderQuantity: quantity}
+		products = append(products, prod)
+	}
+
+	if req.Status == "completed" {
+		for i := 0; i < len(products); i++ {
+			query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
+			_, err = db.ExecContext(context.Background(), query, products[i].OrderQuantity, products[i].ProductId)
+
+			if err != nil {
+				errResp := utils.InternalServerError(nil)
+				utils.LogError(err, "Error in Updating product rows")
+				return errResp
+			}
 		}
 	}
 
@@ -307,25 +504,52 @@ func UpdateGuestOrderPaymentStatus(db *sql.DB, guestOrderId string, req data.Pay
 		return utils.NotFoundError("Guest order with given id does not exist")
 	}
 
-	var productId string
-	var quantity int
-	query := `UPDATE guest_orders SET payment_status = $2 WHERE guest_order_id = $1 RETURNING product_id, order_quantity;`
-	err := db.QueryRowContext(context.Background(), query, guestOrderId, req.Status).Scan(&productId, &quantity)
+	query := `UPDATE guest_orders SET payment_status = $2 WHERE guest_order_id = $1;`
+	_, err := db.ExecContext(context.Background(), query, guestOrderId, req.Status)
 
 	if err != nil {
 		errResp := utils.InternalServerError(nil)
-		utils.LogError(err, "Error in Updating guest_order rows")
+		utils.LogError(err, "Error in Updating guest order rows")
 		return errResp
 	}
 
-	if req.Status == "completed" {
-		query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
-		_, err = db.ExecContext(context.Background(), query, quantity, productId)
+	var products []data.ProductOrder
+
+	query = `SELECT product_id, quantity FROM guest_order_products WHERE guest_order_id = $1;`
+	rows, err := db.QueryContext(context.Background(), query, guestOrderId)
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in selecting guest product order rows")
+		return errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var quantity int
+		err = rows.Scan(&productId, &quantity)
 
 		if err != nil {
 			errResp := utils.InternalServerError(nil)
-			utils.LogError(err, "Error in Updating product rows")
+			utils.LogError(err, "Error in selecting guest product order rows")
 			return errResp
+		}
+
+		prod := data.ProductOrder{ProductId: productId, OrderQuantity: quantity}
+		products = append(products, prod)
+	}
+
+	if req.Status == "completed" {
+		for i := 0; i < len(products); i++ {
+			query = `UPDATE products SET sold_quantity = sold_quantity + $1 WHERE product_id = $2;`
+			_, err = db.ExecContext(context.Background(), query, products[i].OrderQuantity, products[i].ProductId)
+
+			if err != nil {
+				errResp := utils.InternalServerError(nil)
+				utils.LogError(err, "Error in Updating product rows")
+				return errResp
+			}
 		}
 	}
 
@@ -335,9 +559,51 @@ func UpdateGuestOrderPaymentStatus(db *sql.DB, guestOrderId string, req data.Pay
 /*
 Calculate the payment amount given an order request
 */
-func validatePaymentAmount(quantity int, fees data.OrderFees) *utils.ErrorHandler {
-	//calculate product cost
-	amountToBePaid := quantity * fees.ProductPrice
+func validatePaymentAmount(db *sql.DB, products []data.ProductOrder, fees data.OrderFees) *utils.ErrorHandler {
+	//calculate product costs
+	query := `SELECT products.product_id, (price - COALESCE(discount, 0))
+		FROM 
+			(products LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)
+	 	WHERE products.product_id IN (`
+	for i := 0; i < len(products); i++ {
+		query += `'` + products[i].ProductId + `'`
+		if i < len(products)-1 {
+			query += `,`
+		}
+	}
+	query += `)`
+
+	var productMap map[string]int
+	productMap = make(map[string]int)
+
+	rows, err := db.QueryContext(context.Background(), query)
+	defer rows.Close()
+
+	if err != nil {
+		errResp := utils.InternalServerError(nil)
+		utils.LogError(err, "Error in Selecting product rows")
+		return errResp
+	}
+
+	for rows.Next() {
+		var productId string
+		var price int
+
+		err = rows.Scan(&productId, &price)
+
+		if err != nil {
+			errResp := utils.InternalServerError(nil)
+			utils.LogError(err, "Error in Selecting product rows")
+			return errResp
+		}
+
+		productMap[productId] = price
+	}
+
+	var amountToBePaid int
+	for i := 0; i < len(products); i++ {
+		amountToBePaid += productMap[products[i].ProductId] * products[i].OrderQuantity
+	}
 
 	//calculate small order fee
 	if amountToBePaid < 2500 {

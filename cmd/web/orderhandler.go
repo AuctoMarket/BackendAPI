@@ -14,14 +14,13 @@ import (
 // @Description  Creates a new order for a specific product. This order is created by an existing buyer with an account.
 // @Accept       json
 // @Produce      json
-// @Param 		 product_id body string true "The product for which we are creating an order"
+// @Param 		 products body []data.ProductOrder true "The products for which we are creating an order"
 // @Param 		 buyer_id body string true "The id of the buyer who is creating the order"
-// @Param 		 order_quantity body int true "Quantity of the product being ordered"
 // @Param 		 phone_number body string true "Phone number of buyer"
 // @Param        address_line_1 body string true "Delivery Address"
 // @Param        address_line_2 body string false "Delivery Address 2"
 // @Param        postal_code body string false "Postal code of address"
-// @Param        fees body data.OrderFees false "Pricing Info, Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'"
+// @Param        fees body data.OrderFees false "Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'"
 // @Success      201  {object}  data.CreateOrderResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
@@ -53,16 +52,13 @@ func handleCreateOrder(c *gin.Context) {
 // @Description  Creates a new order for a specific product. This order is created by a guest user.
 // @Accept       json
 // @Produce      json
-// @Param 		 product_id body string true "The product for which we are creating an order"
+// @Param 		 products body []data.ProductOrder true "The products for which we are creating an order"
 // @Param 		 email body string true "The email of the guest user"
-// @Param 		 order_quantity body int true "Quantity of the product being ordered"
-// @Param 		 payment_type body string true "Payment method chosen for this order, can only be 'card' or 'paynow_online'"
-// @Param 		 delivery_type body string true "Type of delivery method, can only be 'self_collection' or 'standard_delivery'"
 // @Param 		 phone_number body string true "Phone number of buyer"
 // @Param        address_line_1 body string true "Delivery Address"
 // @Param        address_line_2 body string false "Delivery Address 2"
 // @Param        postal_code body string false "Postal code of address"
-// @Param		 amount body int true "Amount to be paid for the order in cents"
+// @Param        fees body data.OrderFees false "Delivery Type is either 'self_collection' or 'standard delivery', Payment type is 'card' or 'paynow_online'"
 // @Success      201  {object}  data.CreateGuestOrderResponseData
 // @Failure      400  {object}  data.Message
 // @Failure      500  {object}  data.Message
