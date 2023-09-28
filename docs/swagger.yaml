@@ -94,16 +94,16 @@ definitions:
         type: string
       order_date:
         type: string
-      order_quantity:
-        type: integer
       payment_status:
         type: string
       phone_number:
         type: string
       postal_code:
         type: string
-      product_id:
-        type: string
+      products:
+        items:
+          $ref: '#/definitions/data.ProductOrder'
+        type: array
       telegram_handle:
         type: string
     required:
@@ -112,11 +112,10 @@ definitions:
     - fees
     - guest_order_id
     - order_date
-    - order_quantity
     - payment_status
     - phone_number
     - postal_code
-    - product_id
+    - products
     type: object
   data.GetOrderByIdResponseData:
     properties:
@@ -132,16 +131,16 @@ definitions:
         type: string
       order_id:
         type: string
-      order_quantity:
-        type: integer
       payment_status:
         type: string
       phone_number:
         type: string
       postal_code:
         type: string
-      product_id:
-        type: string
+      products:
+        items:
+          $ref: '#/definitions/data.ProductOrder'
+        type: array
       telegram_handle:
         type: string
     required:
@@ -150,11 +149,10 @@ definitions:
     - fees
     - order_date
     - order_id
-    - order_quantity
     - payment_status
     - phone_number
     - postal_code
-    - product_id
+    - products
     type: object
   data.GetProductListResponseData:
     properties:
@@ -248,8 +246,6 @@ definitions:
         type: integer
       payment_type:
         type: string
-      product_price:
-        type: integer
       small_order_fee:
         type: integer
       total_paid:
@@ -257,7 +253,6 @@ definitions:
     required:
     - delivery_type
     - payment_type
-    - product_price
     - total_paid
     type: object
   data.ProductImageData:
@@ -269,6 +264,16 @@ definitions:
     required:
     - image_no
     - image_path
+    type: object
+  data.ProductOrder:
+    properties:
+      order_quantity:
+        type: integer
+      product_id:
+        type: string
+    required:
+    - order_quantity
+    - product_id
     type: object
   data.SellerLoginResponseData:
     properties:
@@ -434,24 +439,20 @@ paths:
       description: Creates a new order for a specific product. This order is created
         by an existing buyer with an account.
       parameters:
-      - description: The product for which we are creating an order
+      - description: The products for which we are creating an order
         in: body
-        name: product_id
+        name: products
         required: true
         schema:
-          type: string
+          items:
+            $ref: '#/definitions/data.ProductOrder'
+          type: array
       - description: The id of the buyer who is creating the order
         in: body
         name: buyer_id
         required: true
         schema:
           type: string
-      - description: Quantity of the product being ordered
-        in: body
-        name: order_quantity
-        required: true
-        schema:
-          type: integer
       - description: Phone number of buyer
         in: body
         name: phone_number
@@ -474,8 +475,8 @@ paths:
         name: postal_code
         schema:
           type: string
-      - description: Pricing Info, Delivery Type is either 'self_collection' or 'standard
-          delivery', Payment type is 'card' or 'paynow_online'
+      - description: Delivery Type is either 'self_collection' or 'standard delivery',
+          Payment type is 'card' or 'paynow_online'
         in: body
         name: fees
         schema:
@@ -548,33 +549,17 @@ paths:
       description: Creates a new order for a specific product. This order is created
         by a guest user.
       parameters:
-      - description: The product for which we are creating an order
+      - description: The products for which we are creating an order
         in: body
-        name: product_id
+        name: products
         required: true
         schema:
-          type: string
+          items:
+            $ref: '#/definitions/data.ProductOrder'
+          type: array
       - description: The email of the guest user
         in: body
         name: email
-        required: true
-        schema:
-          type: string
-      - description: Quantity of the product being ordered
-        in: body
-        name: order_quantity
-        required: true
-        schema:
-          type: integer
-      - description: Payment method chosen for this order, can only be 'card' or 'paynow_online'
-        in: body
-        name: payment_type
-        required: true
-        schema:
-          type: string
-      - description: Type of delivery method, can only be 'self_collection' or 'standard_delivery'
-        in: body
-        name: delivery_type
         required: true
         schema:
           type: string
@@ -600,12 +585,12 @@ paths:
         name: postal_code
         schema:
           type: string
-      - description: Amount to be paid for the order in cents
+      - description: Delivery Type is either 'self_collection' or 'standard delivery',
+          Payment type is 'card' or 'paynow_online'
         in: body
-        name: amount
-        required: true
+        name: fees
         schema:
-          type: integer
+          $ref: '#/definitions/data.OrderFees'
       produces:
       - application/json
       responses:

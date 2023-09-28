@@ -21,16 +21,31 @@ func GetProductById(db *sql.DB, productId string) (data.GetProductResponseData, 
 	if !productExists {
 		return response, utils.NotFoundError("Product with given id does not exist")
 	}
-	query := `SELECT products.seller_id, sellers.seller_name, title, description, condition, price, 
-		product_type, language, expansion, posted_date::TEXT, product_quantity, sold_quantity, product_image_id,image_no, 
-		COALESCE(preorder_information.order_by::TEXT, ''), COALESCE(preorder_information.releases_on::TEXT, ''), 
+	query :=
+		`SELECT 
+		products.seller_id, 
+		sellers.seller_name, 
+		title, 
+		description, 
+		condition, 
+		price, 
+		product_type, 
+		language, 
+		expansion, 
+		posted_date::TEXT, 
+		product_quantity, 
+		sold_quantity, 
+		product_image_id,
+		image_no, 
+		COALESCE(preorder_information.order_by::TEXT, ''), 
+		COALESCE(preorder_information.releases_on::TEXT, ''), 
 		COALESCE(product_discounts.discount, 0) 
-		FROM ((((
-			products INNER JOIN product_images ON products.product_id = product_images.product_id)
-				INNER JOIN sellers ON products.seller_id = sellers.seller_id)
-					LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
-						LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)
-		WHERE products.product_id = $1;`
+	FROM ((((
+		products INNER JOIN product_images ON products.product_id = product_images.product_id)
+			INNER JOIN sellers ON products.seller_id = sellers.seller_id)
+				LEFT OUTER JOIN preorder_information ON products.product_id = preorder_information.product_id)
+					LEFT OUTER JOIN product_discounts ON product_discounts.product_id = products.product_id)
+	WHERE products.product_id = $1;`
 	rows, err := db.QueryContext(context.Background(), query, productId)
 	defer rows.Close()
 

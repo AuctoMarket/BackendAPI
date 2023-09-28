@@ -63,7 +63,19 @@ func createTables(db *sql.DB) error {
 		return err
 	}
 
+	err = createOrderProductsTable(db)
+
+	if err != nil {
+		return err
+	}
+
 	err = createGuestOrdersTable(db)
+
+	if err != nil {
+		return err
+	}
+
+	err = createGuestOrderProductsTable(db)
 
 	if err != nil {
 		return err
@@ -196,10 +208,8 @@ Create the table for Orders
 func createOrdersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS orders(
 		order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
-		product_id uuid REFERENCES products(product_id) NOT NULL,
 		buyer_id uuid REFERENCES buyers(buyer_id) NOT NULL,
 		delivery_type VARCHAR NOT NULL,
-		order_quantity INT NOT NULL, 
 		payment_type VARCHAR NOT NULL,
 		payment_status VARCHAR DEFAULT 'pending' NOT NULL,
 		phone_number VARCHAR NOT NULL,
@@ -208,7 +218,6 @@ func createOrdersTable(db *sql.DB) error {
 		address_line_2 VARCHAR,
 		postal_code VARCHAR NOT NULL,
 		telegram_handle VARCHAR,
-		product_price INT NOT NULL,
 		delivery_fee INT NOT NULL,
 		payment_fee INT NOT NULL,
 		small_order_fee INT NOT NULL,
@@ -220,14 +229,27 @@ func createOrdersTable(db *sql.DB) error {
 }
 
 /*
+Create table for products in a order
+*/
+func createOrderProductsTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS order_products(
+			order_id uuid REFERENCES orders(order_id),
+			product_id uuid REFERENCES products(product_id),
+			quantity INT NOT NULL,
+			PRIMARY KEY(order_id, product_id)
+		);`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
 Create the table for Guest Orders
 */
 func createGuestOrdersTable(db *sql.DB) error {
 	query := `CREATE TABLE IF NOT EXISTS guest_orders(
 		guest_order_id uuid DEFAULT uuid_generate_v1() NOT NULL,
-		product_id uuid REFERENCES products(product_id) NOT NULL,
 		delivery_type VARCHAR NOT NULL,
-		order_quantity INT NOT NULL, 
 		payment_type VARCHAR NOT NULL,
 		payment_status VARCHAR DEFAULT 'pending' NOT NULL,
 		phone_number VARCHAR NOT NULL,
@@ -237,12 +259,26 @@ func createGuestOrdersTable(db *sql.DB) error {
 		address_line_2 VARCHAR,
 		postal_code VARCHAR NOT NULL,
 		telegram_handle VARCHAR,
-		product_price INT NOT NULL,
 		delivery_fee INT NOT NULL,
 		payment_fee INT NOT NULL,
 		small_order_fee INT NOT NULL,
 		total_paid INT NOT NULL,
 		PRIMARY KEY(guest_order_id));`
+
+	_, err := db.ExecContext(context.Background(), query)
+	return err
+}
+
+/*
+Create table for products in a guest order
+*/
+func createGuestOrderProductsTable(db *sql.DB) error {
+	query := `CREATE TABLE IF NOT EXISTS guest_order_products(
+			guest_order_id uuid REFERENCES guest_orders(guest_order_id),
+			product_id uuid REFERENCES products(product_id),
+			quantity INT NOT NULL,
+			PRIMARY KEY(guest_order_id, product_id)
+		);`
 
 	_, err := db.ExecContext(context.Background(), query)
 	return err

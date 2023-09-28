@@ -79,6 +79,22 @@ const (
 		  table_schema = 'public' AND 
 		  table_name = 'guest_orders'
 	);`
+
+	queryCheckTableOrderProducts = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'order_products'
+	);`
+
+	queryCheckTableGuestOrderProducts = `SELECT EXISTS(
+		SELECT * 
+		FROM information_schema.tables 
+		WHERE 
+		  table_schema = 'public' AND 
+		  table_name = 'guest_order_products'
+	);`
 )
 
 func TestCreateTables(t *testing.T) {
@@ -312,6 +328,54 @@ func TestCreateGuestOrdersTable(t *testing.T) {
 	err = db.QueryRowContext(context.Background(), queryCheckTableGuestOrders).Scan(&guestOrdersExist)
 	assert.NoError(t, err)
 	assert.Equal(t, true, guestOrdersExist)
+
+	CloseDB(db)
+}
+
+func TestCreateOrderProductsTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating order products table
+	createSellersTable(db)
+	createProductsTable(db)
+	createOrdersTable(db)
+	err = createOrderProductsTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary order products tables exists
+	var orderProductsExist bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableOrderProducts).Scan(&orderProductsExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, orderProductsExist)
+
+	CloseDB(db)
+}
+
+func TestCreateGuestOrderProductsTable(t *testing.T) {
+	err := utils.LoadDotEnv("../.env")
+	assert.NoError(t, err)
+	db, err := initTestDB()
+	assert.NoError(t, err)
+
+	dropDB(db)
+
+	//Test 1: No Error in creating guest order products table
+	createSellersTable(db)
+	createProductsTable(db)
+	createOrdersTable(db)
+	err = createGuestOrderProductsTable(db)
+	assert.NoError(t, err)
+
+	//Test 2: Check if neccessary guest order products tables exists
+	var guestOrderProductsExist bool
+	err = db.QueryRowContext(context.Background(), queryCheckTableGuestOrderProducts).Scan(&guestOrderProductsExist)
+	assert.NoError(t, err)
+	assert.Equal(t, true, guestOrderProductsExist)
 
 	CloseDB(db)
 }
